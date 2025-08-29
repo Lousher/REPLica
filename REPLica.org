@@ -17,7 +17,7 @@ Try Best, Know thing, Understand Tao
 *** Description
 To not lose interest in this project, the first thing is to build a whole loop. As the basis of the project.
 *** Tasking
-+ [ ] Prepare Stub Assets, Picture, Icon, Sound, Voice etc.
++ [X] Prepare Stub Assets, Picture, Icon, Sound, Voice etc.
 + [ ] Get Familiar with SDL2, using C to build the most fundunmental part.
 + [ ] Design a simple Lisp like DSL to start the game
 *** Tech Notes
