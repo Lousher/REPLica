@@ -1,0 +1,26 @@
+#+TITLE: REPLica
+#+AUTHOR: Song Lin
+#+STARTUP: overview
+
+* Purpose
+* Principle
+Just For Fun!
+You do not understand untill you create!
+Follow Your Heart!
+Try Best, Know thing, Understand Tao
+* Preview
+* Progress
+** TODO Build Basic Galgame Loop
+:PROPERTIES:
+:CREATED: <2025-08-29 Fri 16:13>
+:END:
+*** Description
+To not lose interest in this project, the first thing is to build a whole loop. As the basis of the project.
+*** Tasking
++ [ ] Prepare Stub Assets, Picture, Icon, Sound, Voice etc.
++ [ ] Get Familiar with SDL2, using C to build the most fundunmental part.
++ [ ] Design a simple Lisp like DSL to start the game
+*** Tech Notes
++ [ ] SDL2 is open source, direct, and interesting.
++ [ ] C is old, powerful and machine-oriented.
++ [ ] Lisp/Scheme is also old, powerful and human-orinted. And interesting!
