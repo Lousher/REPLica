@@ -37,3 +37,10 @@ void DisplayImage(const char* path) {
   CloseWindow();
 }
 
+void PlayBGM(const char* path) {
+  InitAudioDevice();
+
+  Music music = LoadMusicStream(path);
+
+  PlayMusicStream(music);
+}
