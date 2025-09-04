@@ -1,14 +1,14 @@
-
-SOURCE := chinese.raylib.macos.c
-TARGET := chinese.raylib.macos
+NAME ?= 
+SOURCE := $(NAME).raylib.macos.c
+TARGET := $(NAME).raylib.macos.so
 
 CC := cc
+LIB := --shared -fPIC
 
 all: build
 
 build:
-	@echo "Building target exe on macos with raylib lib"
-	$(CC) $(SOURCE) -o $(TARGET) $(shell pkg-config --cflags --libs raylib)
+	$(CC) $(SOURCE) $(LIB) -o $(TARGET) $(shell pkg-config --cflags --libs raylib)
 
 clean:
 	@rm $(TARGET)

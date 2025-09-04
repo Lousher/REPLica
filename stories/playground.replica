@@ -1,0 +1,8 @@
+(assets-directory "/Users/song.lin/Desktop/MiracleBegin/Fun/REPLica")
+
+(background station
+	    (morning "assets/bg/a.jpg")
+	    (afternoon "assets/bg/b.jpg")
+	    (evening "assets/bg/c.jpg"))
+
+(station)
