@@ -20,7 +20,7 @@ To not lose interest in this project, the first thing is to build a whole loop. 
 + [X] Prepare Stub Assets, Picture, Icon, Sound, Voice etc.
 + [X] Get the way to show Chinese Characters in raylib.(in playground)
 + [ ] using C to build the most fundunmental part, or loop?
-+ [ ] Design a simple Lisp like DSL to start the game
++ [ ] Design a simple Lisp like DSL to start the game 
 *** Tech Notes
 + [ ] SDL2 is open source, direct, and interesting.
 + [ ] C is old, powerful and machine-oriented.
