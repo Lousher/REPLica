@@ -25,3 +25,6 @@ To not lose interest in this project, the first thing is to build a whole loop. 
 + [ ] SDL2 is open source, direct, and interesting.
 + [ ] C is old, powerful and machine-oriented.
 + [ ] Lisp/Scheme is also old, powerful and human-orinted. And interesting!
+** TODO Stories
++ [X] Naming - I really got a good naming of my game. That's awesome!
++ [X] Prologue - I figured out how heroine came to meet the hero, due to the friend's joke, an accident but fate. Which is karma or Yuan.
