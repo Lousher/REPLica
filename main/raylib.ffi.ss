@@ -15,7 +15,29 @@
 			  ret))]))
 
 					; Struct
-(define-ftype Image
+(define-syntax define-ftype-ex
+  (lambda (stx)
+    (syntax-case stx (struct)
+      [(_ name (struct [field-name field-type] ...))
+       (with-syntax ([make-name (datum->syntax #'name (string->symbol (format "make-~a" (symbol->string (syntax->datum #'name)))))])
+	 #`(begin
+	     (define-ftype name
+	       (struct [field-name field-type] ...))
+	     (define make-name
+	       (lambda (field-name ...)
+		 (let* ([size (ftype-sizeof name)]
+			[addr (foreign-alloc size)]
+			[fptr (make-ftype-pointer name addr)])
+		   (ftype-set! name (field-name) fptr field-name) ...
+		   fptr)))
+	     #,@(map
+		 (lambda (stx)
+		   (with-syntax ([ref-name (datum->syntax #'name (string->symbol (format "~a-~a" (syntax->datum #'name) (syntax->datum stx))))])
+		     #`(define ref-name (lambda (_) (ftype-ref name (#,stx) _)))))
+		     #'(field-name ...))
+	     ))])))
+
+(define-ftype-ex Image
   (struct
     [data void*]
     [width int]
@@ -23,7 +45,7 @@
     [mipmaps int]
     [format int]))
 
-(define-ftype Texture
+(define-ftype-ex Texture
   (struct
     [id unsigned-int]
     [width int]
@@ -33,19 +55,31 @@
 
 (alias Texture2D Texture)
 
-(define-ftype Color
+(define-ftype-ex Color
   (struct
     [r unsigned-8]
     [g unsigned-8]
     [b unsigned-8]
     [a unsigned-8]))
 
+(define-ftype-ex Rectangle
+  (struct
+    [x float]
+    [y float]
+    [width float]
+    [height float]))
+
+(define-ftype-ex Vector2
+  (struct
+    [x float]
+    [y float]))
+
 					; Init related
 (define-ffi GetMonitorWidth (int) int)
 (define-ffi GetMonitorHeight (int) int)
 (define-ffi SetConfigFlags (unsigned-int) void)
 (define-ffi InitWindow (int int string) void)
-(define-ffi SetTargetFPS (int) void)
+(define-ffi SetTargetFPS (int) void)         
 (define-ffi WindowShouldClose () boolean)
 (define-ffi CloseWindow () void)
 
@@ -53,6 +87,7 @@
 (define-ffi BeginDrawing () void)
 (define-ffi EndDrawing () void)
 (define-ffi DrawTexture ((& Texture2D) int int (& Color)) void)
+(define-ffi DrawTexturePro ((& Texture2D) (& Rectangle) (& Rectangle) (& Vector2) float (& Color)) void)
 (define-ffi UnloadTexture ((& Texture2D)) void)
 (define-ffi ClearBackground ((& Color)) void)
 
@@ -68,17 +103,3 @@
 (define-ffi LoadTextureFromImage ((& Image)) (& Texture2D))
 
 (define-ffi UnloadImage ((& Image)) void)
-
-					; Extension
-(define make-color
-  (lambda (r g b a)
-    (let* ([size (ftype-sizeof Color)]
-	   [addr (foreign-alloc size)]
-	   [fptr (make-ftype-pointer Color addr)])
-      (ftype-set! Color (r) fptr r)
-      (ftype-set! Color (g) fptr g)
-      (ftype-set! Color (b) fptr b)
-      (ftype-set! Color (a) fptr a)
-      fptr)))
-
-

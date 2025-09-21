@@ -3,8 +3,8 @@
 
 (define FLAG_FULLSCREEN_MODE #x00000002)
 
-(define BLACK (make-color 0 0 0 255))
-(define WHITE (make-color 255 255 255 255))
+(define BLACK (make-Color 0 0 0 255))
+(define WHITE (make-Color 255 255 255 255))
 
 (define LOG_ALL 0)
 (define LOG_TRACE 1)
@@ -15,37 +15,44 @@
 (define LOG_FATAL 6)
 (define LOG_NONE 7)
 
-(define init-fullscreen
-  (lambda (title)
-    (let ([width (GetMonitorWidth 0)]
-	  [height (GetMonitorHeight 0)])
-      (SetConfigFlags FLAG_FULLSCREEN_MODE)
-      (InitWindow width height title)
-      (SetTargetFPS 60)
-      )))
+(define-syntax with-fullscreen
+  (syntax-rules ()
+    [(_ title rest ...)
+     (let ([w (GetMonitorWidth 0)]
+	   [h (GetMonitorHeight 0)])
+       (SetConfigFlags FLAG_FULLSCREEN_MODE)
+       (SetTargetFPS 60)
+       (InitWindow w h title)
+       rest ...
+       (CloseWindow)
+       )]))
 
-(define display-image
-  (lambda (path)
-    (unless (IsWindowReady)
-      (TraceLog LOG_WARNING "Must call init before"))
-
-    (let* ([img (LoadImage path)]
-	   [texture (LoadTextureFromImage img)])
-      (UnloadImage img)
-
-      (let loop ()
-	(let ([close? (WindowShouldClose)])
-	  (unless close?
-	    (BeginDrawing)
-	    (ClearBackground BLACK)
-	    (DrawTexture texture 0 0 WHITE)
-	    (EndDrawing)
-	    (loop))))
-
-      (UnloadTexture texture)
-      (CloseWindow))))
+(define-syntax drawing-loop
+  (syntax-rules ()
+    [(_ [updating ...] [drawing ...])
+     (let loop ()
+       updating ...
+       (unless (WindowShouldClose)
+	 (BeginDrawing)
+	 (ClearBackground BLACK)
+	 drawing ...
+	 (EndDrawing)
+	 (loop)))]))
 
 (define main
   (lambda ()
-    (init-fullscreen "Test Fullscreen")
-    (display-image "../assets/bg/livingroom.jpg")))
+    (with-fullscreen
+     "缘心饲契"
+     (let* ([img (LoadImage "../assets/bg/a.jpg")]
+	    [tex (LoadTextureFromImage img)])
+       (UnloadImage img)
+       (drawing-loop
+	[]
+	[(DrawTexturePro
+	  tex
+	  (make-Rectangle 0.0 0.0 (exact->inexact (Texture-width tex)) (exact->inexact (Texture-height tex)))
+	  (make-Rectangle 0.0 0.0 (exact->inexact (GetMonitorWidth 0)) (exact->inexact (GetMonitorHeight 0)))
+	  (make-Vector2 0.0 0.0)
+	  0.0 WHITE
+	  )])
+       (UnloadTexture tex)))))
