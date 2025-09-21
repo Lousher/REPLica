@@ -74,9 +74,19 @@
     [x float]
     [y float]))
 
+(define-ftype-ex RenderTexture
+  (struct
+    [id unsigned-int]
+    [texture Texture]
+    [depth Texture]))
+
+(alias RenderTexture2D RenderTexture)
+
 					; Init related
 (define-ffi GetMonitorWidth (int) int)
 (define-ffi GetMonitorHeight (int) int)
+(define-ffi GetScreenWidth () int)
+(define-ffi GetScreenHeight () int)
 (define-ffi SetConfigFlags (unsigned-int) void)
 (define-ffi InitWindow (int int string) void)
 (define-ffi SetTargetFPS (int) void)         
@@ -90,6 +100,9 @@
 (define-ffi DrawTexturePro ((& Texture2D) (& Rectangle) (& Rectangle) (& Vector2) float (& Color)) void)
 (define-ffi UnloadTexture ((& Texture2D)) void)
 (define-ffi ClearBackground ((& Color)) void)
+(define-ffi LoadRenderTexture (int int) (& RenderTexture2D))
+(define-ffi BeginTextureMode ((& RenderTexture2D)) void)
+(define-ffi EndTextureMode () void)
 
 					; Predicate
 (define-ffi IsWindowReady () boolean)
@@ -101,5 +114,6 @@
 					; Image
 (define-ffi LoadImage (string) (& Image))
 (define-ffi LoadTextureFromImage ((& Image)) (& Texture2D))
+(define-ffi LoadTexture (string) (& Texture2D))
 
 (define-ffi UnloadImage ((& Image)) void)
