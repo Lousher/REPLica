@@ -1,5 +1,7 @@
 (load-shared-object "libraylib.5.5.0.dylib")
+(load-shared-object "raylib.ffi.so")
 (load "raylib.ffi.ss")
+
 
 (define FLAG_FULLSCREEN_MODE #x00000002)
 (define FLAG_WINDOW_RESIZABLE #x00000004)
@@ -18,6 +20,21 @@
 (define LOG_FATAL 6)
 (define LOG_NONE 7)
 
+(define-syntax with-fullscreen
+  (syntax-rules ()
+    [(_ title rest ...)
+     (let ([w (GetMonitorWidth 0)]
+	   [h (GetMonitorHeight 0)]
+	   [flags (logor FLAG_WINDOW_MAXIMIZED
+			 FLAG_WINDOW_MINIMIZED
+			 FLAG_WINDOW_RESIZABLE)])
+       (SetConfigFlags flags)
+       (SetTargetFPS 60)
+       (InitWindow w h title)
+       rest ...
+       (CloseWindow)
+       )]))
+
 (define-syntax drawing-loop
   (syntax-rules ()
     [(_ [updating ...] [drawing ...])
@@ -30,24 +47,29 @@
 	 (EndDrawing)
 	 (loop)))]))
 
-(define RECTANGLE-TEXTURE-FULL-DEFAULT
-  (lambda (tex)
-    (let ([w (Texture-width tex)]
-	  [h (Texture-height tex)])
-      (make-Rectangle 0.0 0.0
-		      w h))))
-
-(define RECTANGLE-SCREEN-FULL-DEFAULT
-  (lambda ()
-    (let ([w (GetScreenWidth)]
-	  [h (GetScreenHeight)])
-      (make-Rectangle 0.0 0.0 w h))))
-
 (define main
   (lambda ()
     (with-fullscreen
      "缘心饲契"
-     (let* ()
+     (let* ([screen-w (GetScreenWidth)]
+	    [screen-h (GetScreenHeight)]
+	    [bg-RT (LoadRenderTexture screen-w screen-h)]
+	    [bg-img (LoadImage "../assets/bg/a.jpg")]
+	    [_ (ImageResize bg-img screen-w screen-h)]
+	    [bg-tex (LoadTextureFromImage bg-img)])
+       (UnloadImage bg-img)
+       (BeginTextureMode bg-RT)
+       (ClearBackground BLACK)
+       (DrawTexture bg-tex 0 0 WHITE)
+       (EndTextureMode)
+       (UnloadTexture bg-tex)
        (drawing-loop
 	[] ;updating
-	[])))))
+	[(DrawTextureRec
+	  (RenderTexture-texture bg-RT)
+	  (make-Rectangle 0.0 0.0
+			  (exact->inexact screen-w)
+			  (exact->inexact (- screen-h)))
+	  (make-Vector2 0.0 0.0)
+	  WHITE)]
+       )))))

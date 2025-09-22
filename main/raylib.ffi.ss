@@ -1,3 +1,4 @@
+					; Syntax Extension
 (define-syntax define-ffi
   (syntax-rules ()
     [(_ name (args ...) (& ret))
@@ -34,7 +35,7 @@
 		 (lambda (stx)
 		   (with-syntax ([ref-name (datum->syntax #'name (string->symbol (format "~a-~a" (syntax->datum #'name) (syntax->datum stx))))])
 		     #`(define ref-name (lambda (_) (ftype-ref name (#,stx) _)))))
-		     #'(field-name ...))
+		 #'(field-name ...))
 	     ))])))
 
 (define-ftype-ex Image
@@ -74,7 +75,8 @@
     [x float]
     [y float]))
 
-(define-ftype-ex RenderTexture
+; nested complex structure
+(define-ftype RenderTexture
   (struct
     [id unsigned-int]
     [texture Texture]
@@ -98,6 +100,7 @@
 (define-ffi EndDrawing () void)
 (define-ffi DrawTexture ((& Texture2D) int int (& Color)) void)
 (define-ffi DrawTexturePro ((& Texture2D) (& Rectangle) (& Rectangle) (& Vector2) float (& Color)) void)
+(define-ffi DrawTextureRec ((& Texture2D) (& Rectangle) (& Vector2) (& Color)) void)
 (define-ffi UnloadTexture ((& Texture2D)) void)
 (define-ffi ClearBackground ((& Color)) void)
 (define-ffi LoadRenderTexture (int int) (& RenderTexture2D))
@@ -117,3 +120,12 @@
 (define-ffi LoadTexture (string) (& Texture2D))
 
 (define-ffi UnloadImage ((& Image)) void)
+(define-ffi ImageResize ((* Image) int int) void)
+
+;; Custome Extension
+(define RenderTexture-texture
+  (lambda params
+    (let ([fun-ori (foreign-procedure #f "RenderTexture_texture" ((& RenderTexture2D)) (& Texture2D))]
+	  [result (make-ftype-pointer Texture2D (foreign-alloc (ftype-sizeof Texture2D)))])
+      (apply fun-ori result params)
+      result)))
