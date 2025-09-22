@@ -95,6 +95,9 @@
 (define-ffi WindowShouldClose () boolean)
 (define-ffi CloseWindow () void)
 
+					;Color
+(define-ffi Fade ((& Color) float) (& Color))
+
 					; Drawing
 (define-ffi BeginDrawing () void)
 (define-ffi EndDrawing () void)
@@ -122,6 +125,12 @@
 (define-ffi UnloadImage ((& Image)) void)
 (define-ffi ImageResize ((* Image) int int) void)
 
+;; Event Handling
+(define-ffi IsMouseButtonPressed (int) boolean)
+(define-ffi IsMouseButtonDown (int) boolean)
+(define-ffi IsMouseButtonReleased (int) boolean)
+(define-ffi IsMouseButtonUp (int) boolean)
+
 ;; Custome Extension
 (define RenderTexture-texture
   (lambda params
@@ -129,3 +138,4 @@
 	  [result (make-ftype-pointer Texture2D (foreign-alloc (ftype-sizeof Texture2D)))])
       (apply fun-ori result params)
       result)))
+

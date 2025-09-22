@@ -1,24 +1,7 @@
 (load-shared-object "libraylib.5.5.0.dylib")
 (load-shared-object "raylib.ffi.so")
 (load "raylib.ffi.ss")
-
-
-(define FLAG_FULLSCREEN_MODE #x00000002)
-(define FLAG_WINDOW_RESIZABLE #x00000004)
-(define FLAG_WINDOW_MINIMIZED #x00000200)
-(define FLAG_WINDOW_MAXIMIZED #x00000400)
-
-(define BLACK (make-Color 0 0 0 255))
-(define WHITE (make-Color 255 255 255 255))
-
-(define LOG_ALL 0)
-(define LOG_TRACE 1)
-(define LOG_DEBUG 2)
-(define LOG_INFO 3)
-(define LOG_WARNING 4)
-(define LOG_ERROR 5)
-(define LOG_FATAL 6)
-(define LOG_NONE 7)
+(load "raylib.constant.ss")
 
 (define-syntax with-fullscreen
   (syntax-rules ()
@@ -47,29 +30,78 @@
 	 (EndDrawing)
 	 (loop)))]))
 
+; game state
+(define GAME_RT_BG #f)
+(define GAME_RT_DIALOG #f)
+(define GAME_WIDTH_SCREEN 0)
+(define GAME_HEIGHT_SCREEN 0)
+(define GAME_DIALOG_ALPHA 0.5)
+
+(define game-state-init
+  (lambda ()
+     (set! GAME_WIDTH_SCREEN (GetScreenWidth))
+     (set! GAME_HEIGHT_SCREEN (GetScreenHeight))
+     (set! GAME_RT_BG (LoadRenderTexture GAME_WIDTH_SCREEN GAME_HEIGHT_SCREEN))
+     (set! GAME_RT_DIALOG (LoadRenderTexture GAME_WIDTH_SCREEN (round (/ GAME_HEIGHT_SCREEN 3))))
+     ((update-dialog-given-wh GAME_WIDTH_SCREEN GAME_HEIGHT_SCREEN) "../assets/dialog/b.jpg")))
+
+(define update-dialog-given-wh
+  (lambda (w h)
+    (let ([w w] [h h])
+      (lambda (path)
+	(let ([img (LoadImage path)])
+	  (ImageResize img w (round (/ h 3)))
+	  (let ([tex (LoadTextureFromImage img)])
+	    (UnloadImage img)
+	    (BeginTextureMode GAME_RT_DIALOG)
+	    (ClearBackground BLACK)
+	    (DrawTexture tex 0 0 WHITE)
+	    (EndTextureMode)
+	    (UnloadTexture tex)))))))
+
+(define draw-bg-given-wh
+  (lambda (w h)
+    (let ([rect (make-Rectangle 0.0 0.0 (exact->inexact w) (exact->inexact (- h)))]
+	  [default-vec (make-Vector2 0.0 0.0)])
+      (lambda ()
+	(DrawTextureRec
+	 (RenderTexture-texture GAME_RT_BG)
+	 rect default-vec WHITE)))))
+
+(define draw-dialog-given-wh
+  (lambda (w h)
+    (let ([rect (make-Rectangle 0.0 0.0 (exact->inexact w) (exact->inexact (- (round (/ h 3)))))]
+	  [default-vec (make-Vector2 0.0 (exact->inexact (* h 2/3)))])
+      (lambda ()
+	(DrawTextureRec
+	 (RenderTexture-texture GAME_RT_DIALOG)
+	 rect default-vec (Fade WHITE GAME_DIALOG_ALPHA))))))
+
+(define update-bg-given-wh
+  (lambda (w h)
+    (let ([w w] [h h])
+      (lambda (path)
+	(let ([img (LoadImage path)])
+	  (ImageResize img w h)
+	  (let ([tex (LoadTextureFromImage img)])
+	    (UnloadImage img)
+	    (BeginTextureMode GAME_RT_BG)
+	    (ClearBackground BLACK)
+	    (DrawTexture tex 0 0 WHITE)
+	    (EndTextureMode)
+	    (UnloadTexture tex)))))))
+
 (define main
   (lambda ()
     (with-fullscreen
      "缘心饲契"
-     (let* ([screen-w (GetScreenWidth)]
-	    [screen-h (GetScreenHeight)]
-	    [bg-RT (LoadRenderTexture screen-w screen-h)]
-	    [bg-img (LoadImage "../assets/bg/a.jpg")]
-	    [_ (ImageResize bg-img screen-w screen-h)]
-	    [bg-tex (LoadTextureFromImage bg-img)])
-       (UnloadImage bg-img)
-       (BeginTextureMode bg-RT)
-       (ClearBackground BLACK)
-       (DrawTexture bg-tex 0 0 WHITE)
-       (EndTextureMode)
-       (UnloadTexture bg-tex)
+     (game-state-init)
+     (let* ([draw-bg (draw-bg-given-wh GAME_WIDTH_SCREEN GAME_HEIGHT_SCREEN)]
+	    [update-bg (update-bg-given-wh GAME_WIDTH_SCREEN GAME_HEIGHT_SCREEN)]
+	    [draw-dialog (draw-dialog-given-wh GAME_WIDTH_SCREEN GAME_HEIGHT_SCREEN)])
+       (update-bg "../assets/bg/a.jpg")
        (drawing-loop
-	[] ;updating
-	[(DrawTextureRec
-	  (RenderTexture-texture bg-RT)
-	  (make-Rectangle 0.0 0.0
-			  (exact->inexact screen-w)
-			  (exact->inexact (- screen-h)))
-	  (make-Vector2 0.0 0.0)
-	  WHITE)]
-       )))))
+	[] ;updating logic
+	[(draw-bg)
+	 (draw-dialog)] ;drawing
+	)))))
