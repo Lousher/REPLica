@@ -103,6 +103,7 @@
 (define-ffi EndDrawing () void)
 (define-ffi DrawTexture ((& Texture2D) int int (& Color)) void)
 (define-ffi DrawTexturePro ((& Texture2D) (& Rectangle) (& Rectangle) (& Vector2) float (& Color)) void)
+(define-ffi DrawTextureV ((& Texture2D) (& Vector2) (& Color)) void)
 (define-ffi DrawTextureRec ((& Texture2D) (& Rectangle) (& Vector2) (& Color)) void)
 (define-ffi UnloadTexture ((& Texture2D)) void)
 (define-ffi ClearBackground ((& Color)) void)
