@@ -42,6 +42,7 @@
    (immutable height)
    (mutable RT-BG)
    (mutable RT-Dialog)
+   (mutable Tex-CH)
    ))
 					; draw config
 (define-record-type DrawConfig
@@ -54,7 +55,8 @@
       (make-GameState
        w h
        (LoadRenderTexture w h)
-       (LoadRenderTexture w (round (/ h 3)))))))
+       (LoadRenderTexture w (round (/ h 3)))
+       #f))))
 
 (define draw<-RT<-DrawConfig
   (lambda (draw-config)
@@ -95,6 +97,11 @@
        (make-Vector2 0.0 (exact->inexact (* h 2/3)))
        (Fade WHITE 0.5)))))
 
+(define ch-nums (map (lambda (x) (+ 894 x)) (iota (1+ (- 941 894)))))
+(define ch-path (map (lambda (n) (format "0~a.png" n)) ch-nums))
+(define full-ch-path (map (lambda (path) (string-append "../assets/character/" path)) ch-path))
+(set-cdr! (last-pair full-ch-path) full-ch-path)
+
 (define main
   (lambda ()
     (with-fullscreen
@@ -110,9 +117,14 @@
 	     [update-dialog ((update<-RT<-wh screen-w (round (/ screen-h 3))) dialog-RT)])
 	 (update-bg "../assets/bg/a.jpg")
 	 (update-dialog "../assets/dialog/e.jpg")
+	 (GameState-Tex-CH-set! state (LoadTexture (car full-ch-path)))
 	 (drawing-loop
-	  [] ;updating logic
+	  [(when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+	     (UnloadTexture (GameState-Tex-CH state))
+	     (set! full-ch-path (cdr full-ch-path))
+	     (GameState-Tex-CH-set! state (LoadTexture (car full-ch-path))))] ;updating logic
 	  [(draw-bg)
+	   (DrawTexture (GameState-Tex-CH state) 0 0 WHITE)
 	   (draw-dialog)] ;drawing
 	  [(UnloadRenderTexture bg-RT)
 	   (UnloadRenderTexture dialog-RT)] ;cleaning
