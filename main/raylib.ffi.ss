@@ -106,6 +106,7 @@
 (define-ffi DrawTextureV ((& Texture2D) (& Vector2) (& Color)) void)
 (define-ffi DrawTextureRec ((& Texture2D) (& Rectangle) (& Vector2) (& Color)) void)
 (define-ffi UnloadTexture ((& Texture2D)) void)
+(define-ffi UnloadRenderTexture ((& RenderTexture2D)) void)
 (define-ffi ClearBackground ((& Color)) void)
 (define-ffi LoadRenderTexture (int int) (& RenderTexture2D))
 (define-ffi BeginTextureMode ((& RenderTexture2D)) void)

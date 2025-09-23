@@ -20,15 +20,20 @@
 
 (define-syntax drawing-loop
   (syntax-rules ()
-    [(_ [updating ...] [drawing ...])
-     (let loop ()
-       updating ...
-       (unless (WindowShouldClose)
-	 (BeginDrawing)
-	 (ClearBackground BLACK)
-	 drawing ...
-	 (EndDrawing)
-	 (loop)))]))
+    [(_ [updating ...] [drawing ...] [cleanup ...])
+     (dynamic-wind
+       (lambda () #f)
+       (lambda ()
+	 (let loop ()
+	   updating ...
+	   (unless (WindowShouldClose)
+	     (BeginDrawing)
+	     (ClearBackground BLACK)
+	     drawing ...
+	     (EndDrawing)
+	     (loop))))
+       (lambda ()
+	 cleanup ...))]))
 
 					; Game State
 (define-record-type GameState
@@ -109,4 +114,6 @@
 	  [] ;updating logic
 	  [(draw-bg)
 	   (draw-dialog)] ;drawing
+	  [(UnloadRenderTexture bg-RT)
+	   (UnloadRenderTexture dialog-RT)] ;cleaning
 	  ))))))
