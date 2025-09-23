@@ -28,3 +28,6 @@ To not lose interest in this project, the first thing is to build a whole loop. 
 ** TODO Stories
 + [X] Naming - I really got a good naming of my game. That's awesome!
 + [X] Prologue - I figured out how heroine came to meet the hero, due to the friend's joke, an accident but fate. Which is karma or Yuan.
+* Tech Notes
+1. Raylib does not support Chinese Char originally, Need Pre-Process
+2. Raylib only support specific .ogg file, using 'ffmpeg -i xx.ogg -c:a libvorbis -qscale:a 5 xx.ogg' to covert

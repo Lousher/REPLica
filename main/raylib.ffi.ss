@@ -84,6 +84,19 @@
 
 (alias RenderTexture2D RenderTexture)
 
+(define-ftype AudioStream
+  (struct
+    [buffer void*]
+    [processor void*]
+    [sampleRate unsigned-int]
+    [sampleSize unsigned-int]
+    [channels unsigned-int]))
+
+(define-ftype Sound
+  (struct
+    [stream AudioStream]
+    [frameCount unsigned-int]))
+
 					; Init related
 (define-ffi GetMonitorWidth (int) int)
 (define-ffi GetMonitorHeight (int) int)
@@ -132,6 +145,16 @@
 (define-ffi IsMouseButtonDown (int) boolean)
 (define-ffi IsMouseButtonReleased (int) boolean)
 (define-ffi IsMouseButtonUp (int) boolean)
+
+;; Sound
+(define-ffi InitAudioDevice () void)
+(define-ffi CloseAudioDevice () void)
+(define-ffi LoadSound (string) (& Sound))
+(define-ffi UnloadSound ((& Sound)) void)
+(define-ffi PlaySound ((& Sound)) void)
+(define-ffi StopSound ((& Sound)) void)
+(define-ffi PauseSound ((& Sound)) void)
+(define-ffi ResumeSound ((& Sound)) void)
 
 ;; Custome Extension
 (define RenderTexture-texture

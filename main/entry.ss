@@ -14,7 +14,9 @@
        (SetConfigFlags flags)
        (SetTargetFPS 60)
        (InitWindow w h title)
+       (InitAudioDevice)
        rest ...
+       (CloseAudioDevice)
        (CloseWindow)
        )]))
 
@@ -115,9 +117,11 @@
 	     [update-bg ((update<-RT<-wh screen-w screen-h) bg-RT)]
 	     [draw-dialog ((draw<-RT<-DrawConfig (DrawConfig-Dialog-init)) dialog-RT)]
 	     [update-dialog ((update<-RT<-wh screen-w (round (/ screen-h 3))) dialog-RT)])
+	 (set! BGM (LoadSound "../assets/va/1.new.ogg"))
 	 (update-bg "../assets/bg/a.jpg")
 	 (update-dialog "../assets/dialog/e.jpg")
 	 (GameState-Tex-CH-set! state (LoadTexture (car full-ch-path)))
+	 	   (PlaySound BGM)
 	 (drawing-loop
 	  [(when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
 	     (UnloadTexture (GameState-Tex-CH state))
@@ -127,5 +131,6 @@
 	   (DrawTexture (GameState-Tex-CH state) 0 0 WHITE)
 	   (draw-dialog)] ;drawing
 	  [(UnloadRenderTexture bg-RT)
-	   (UnloadRenderTexture dialog-RT)] ;cleaning
+	   (UnloadRenderTexture dialog-RT)
+	   (UnloadSound BGM)] ;cleaning
 	  ))))))
