@@ -156,6 +156,9 @@
 (define-ffi PauseSound ((& Sound)) void)
 (define-ffi ResumeSound ((& Sound)) void)
 
+					; Text
+(define-ffi DrawText (string int int int (& Color)) void)
+
 ;; Custome Extension
 (define RenderTexture-texture
   (lambda params

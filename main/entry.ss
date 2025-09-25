@@ -44,7 +44,8 @@
    (immutable height)
    (mutable RT-BG)
    (mutable RT-Dialog)
-   (mutable Tex-CH)
+   (mutable characters)
+   (mutable BGM)
    ))
 					; draw config
 (define-record-type DrawConfig
@@ -58,7 +59,8 @@
        w h
        (LoadRenderTexture w h)
        (LoadRenderTexture w (round (/ h 3)))
-       #f))))
+       (make-eq-hashtable)
+       "../assets/bgm/midnight-trip.mp3"))))
 
 (define draw<-RT<-DrawConfig
   (lambda (draw-config)
@@ -99,10 +101,34 @@
        (make-Vector2 0.0 (exact->inexact (* h 2/3)))
        (Fade WHITE 0.5)))))
 
-(define ch-nums (map (lambda (x) (+ 894 x)) (iota (1+ (- 941 894)))))
-(define ch-path (map (lambda (n) (format "0~a.png" n)) ch-nums))
-(define full-ch-path (map (lambda (path) (string-append "../assets/character/" path)) ch-path))
-(set-cdr! (last-pair full-ch-path) full-ch-path)
+(define GAME_SPLIT 5)
+(define symbols->symbol
+  (lambda syms
+    (let ([strs (map symbol->string syms)])
+      (string->symbol
+       (fold-left
+       (lambda (acc next)
+	 (string-append acc "-" next))
+       (car strs)
+       (cdr strs))))))
+
+(define draw-CH<-ht<-wh
+  (lambda (w h)
+    (let* ([w-seg (/ w GAME_SPLIT)]
+	   [center-positions (map (lambda (index) (+ (/ w-seg 2.0) (* index w-seg))) (iota GAME_SPLIT))])
+     (lambda (ch-table)
+      (lambda (i . selectors)
+	(assert (< i GAME_SPLIT))
+	(let* ([tex (hashtable-ref ch-table (apply symbols->symbol selectors) 'NotFound)]
+	       [xPos (- (list-ref center-positions i) (/ (Texture-width tex) 2.0))]
+	       [yPos (- (* h 1.0) (Texture-height tex))])
+	  (DrawTextureV tex (make-Vector2 xPos yPos) WHITE)))))))
+
+(define update-CH<-ht
+  (lambda (ch-ht)
+    (lambda (path . selectors)
+      (let ([tex (LoadTexture path)])
+	(hashtable-set! ch-ht (apply symbols->symbol selectors) tex)))))
 
 (define main
   (lambda ()
@@ -112,23 +138,29 @@
 	    [screen-w (GameState-width state)]
 	    [screen-h (GameState-height state)]
 	    [bg-RT (GameState-RT-BG state)]
-	    [dialog-RT (GameState-RT-Dialog state)])
+	    [dialog-RT (GameState-RT-Dialog state)]
+	    [ch-table (GameState-characters state)]
+	    )
        (let ([draw-bg ((draw<-RT<-DrawConfig (DrawConfig-BG-init)) bg-RT)]
 	     [update-bg ((update<-RT<-wh screen-w screen-h) bg-RT)]
 	     [draw-dialog ((draw<-RT<-DrawConfig (DrawConfig-Dialog-init)) dialog-RT)]
-	     [update-dialog ((update<-RT<-wh screen-w (round (/ screen-h 3))) dialog-RT)])
-	 (set! BGM (LoadSound "../assets/va/1.new.ogg"))
+	     [update-dialog ((update<-RT<-wh screen-w (round (/ screen-h 3))) dialog-RT)]
+	     [draw-ch ((draw-CH<-ht<-wh screen-w screen-h) ch-table)]
+	     [update-ch (update-CH<-ht ch-table)])
+	 (set! BGM (LoadSound "../assets/bgm/midnight-trip.mp3"))
+	 (set! VA (LoadSound "../assets/va/1.new.ogg"))
 	 (update-bg "../assets/bg/a.jpg")
 	 (update-dialog "../assets/dialog/e.jpg")
-	 (GameState-Tex-CH-set! state (LoadTexture (car full-ch-path)))
-	 	   (PlaySound BGM)
+	 (update-ch "../assets/character/0895.png" 'yuki 'smile)
+;	 (update-ch "../assets/character/0909.png" 'yuki 'suprise)
+	 (PlaySound BGM)
 	 (drawing-loop
 	  [(when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-	     (UnloadTexture (GameState-Tex-CH state))
-	     (set! full-ch-path (cdr full-ch-path))
-	     (GameState-Tex-CH-set! state (LoadTexture (car full-ch-path))))] ;updating logic
+	     (PlaySound VA))] ;updating logic
 	  [(draw-bg)
-	   (DrawTexture (GameState-Tex-CH state) 0 0 WHITE)
+	   (draw-ch 2 'yuki 'smile)
+	   (DrawText "这个不行吧" 100 100 56 WHITE)
+;	   (draw-ch 4 'yuki 'suprise)
 	   (draw-dialog)] ;drawing
 	  [(UnloadRenderTexture bg-RT)
 	   (UnloadRenderTexture dialog-RT)
