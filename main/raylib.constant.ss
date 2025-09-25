@@ -22,3 +22,10 @@
 (define MOUSE_BUTTON_EXTRA   4)  ; 鼠标额外键（高级鼠标设备）
 (define MOUSE_BUTTON_FORWARD 5)  ; 鼠标前进键（高级鼠标设备）
 (define MOUSE_BUTTON_BACK    6)  ; 鼠标后退键（高级鼠标设备）
+
+(define KEY_RIGHT 262)
+(define KEY_LEFT 263)
+(define KEY_DOWN 264)
+(define KEY_UP 265)
+
+

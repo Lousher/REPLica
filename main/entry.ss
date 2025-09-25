@@ -147,19 +147,34 @@
 	     [update-dialog ((update<-RT<-wh screen-w (round (/ screen-h 3))) dialog-RT)]
 	     [draw-ch ((draw-CH<-ht<-wh screen-w screen-h) ch-table)]
 	     [update-ch (update-CH<-ht ch-table)])
+	 (let* ([all-text (LoadFileText "./allchars.txt")]
+		[codepoint-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int)))]
+		[codepoints (LoadCodepoints all-text codepoint-count)])
+	   (set! FONT (LoadFontEx "../assets/font/Circle.otf" 56 codepoints (ftype-ref int () codepoint-count))))
 	 (set! BGM (LoadSound "../assets/bgm/midnight-trip.mp3"))
 	 (set! VA (LoadSound "../assets/va/1.new.ogg"))
 	 (update-bg "../assets/bg/a.jpg")
 	 (update-dialog "../assets/dialog/e.jpg")
 	 (update-ch "../assets/character/0895.png" 'yuki 'smile)
-;	 (update-ch "../assets/character/0909.png" 'yuki 'suprise)
+	 (set! POS (cons 100.0 100.0))
 	 (PlaySound BGM)
 	 (drawing-loop
 	  [(when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-	     (PlaySound VA))] ;updating logic
+	     (PlaySound VA))
+	   (cond
+	    [(IsKeyPressed KEY_DOWN)
+	     (set-cdr! POS (+ 10 (cdr POS)))]
+	    [(IsKeyPressed KEY_UP)
+	     (set-cdr! POS (- 10 (cdr POS)))]
+	    [(IsKeyPressed KEY_LEFT)
+	     (set-car! POS (- 10 (car POS)))]
+	    [(IsKeyPressed KEY_RIGHT)
+	     (set-car! POS (+ 10 (car POS)))])
+	   ] ;updating logic
 	  [(draw-bg)
 	   (draw-ch 2 'yuki 'smile)
-	   (DrawText "这个不行吧" 100 100 56 WHITE)
+	   (DrawTextEx FONT (format "你好世界 ~a ~a" (car POS) (cdr POS))
+		       (make-Vector2 (car POS) (cdr POS)) 56.0 0.0 WHITE)
 ;	   (draw-ch 4 'yuki 'suprise)
 	   (draw-dialog)] ;drawing
 	  [(UnloadRenderTexture bg-RT)

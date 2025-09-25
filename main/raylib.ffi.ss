@@ -1,6 +1,6 @@
 					; Syntax Extension
 (define-syntax define-ffi
-  (syntax-rules ()
+  (syntax-rules (&)
     [(_ name (args ...) (& ret))
      (define name
        (lambda params
@@ -97,6 +97,15 @@
     [stream AudioStream]
     [frameCount unsigned-int]))
 
+(define-ftype Font
+  (struct
+    [baseSize int]
+    [glyphCount int]
+    [glyphPadding int]
+    [texture Texture2D]
+    [recs void*]
+    [glyphs void*]))
+
 					; Init related
 (define-ffi GetMonitorWidth (int) int)
 (define-ffi GetMonitorHeight (int) int)
@@ -146,6 +155,14 @@
 (define-ffi IsMouseButtonReleased (int) boolean)
 (define-ffi IsMouseButtonUp (int) boolean)
 
+(define-ffi IsKeyPressed (int) boolean)
+(define-ffi IsKeyPressedRepeat (int) boolean)
+(define-ffi IsKeyDown (int) boolean)
+(define-ffi IsKeyReleased (int) boolean)
+(define-ffi IsKeyUp (int) boolean)
+(define-ffi GetKeyPressed () int)
+(define-ffi GetCharPressed () int)
+
 ;; Sound
 (define-ffi InitAudioDevice () void)
 (define-ffi CloseAudioDevice () void)
@@ -158,6 +175,13 @@
 
 					; Text
 (define-ffi DrawText (string int int int (& Color)) void)
+(define-ffi LoadFileText (string) string)
+(define-ffi LoadCodepoints (string (* int)) (* int))
+(define-ffi LoadFontEx (string int (* int) int) (& Font))
+(define-ffi UnloadFileText (string) void)
+(define-ffi UnloadCodepoints ((* int)) void)
+(define-ffi UnloadFont ((& Font)) void)
+(define-ffi DrawTextEx ((& Font) string (& Vector2) float float (& Color)) void)
 
 ;; Custome Extension
 (define RenderTexture-texture
