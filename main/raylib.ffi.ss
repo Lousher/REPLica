@@ -175,10 +175,10 @@
 
 					; Text
 (define-ffi DrawText (string int int int (& Color)) void)
-(define-ffi LoadFileText (string) string)
-(define-ffi LoadCodepoints (string (* int)) (* int))
+(define-ffi LoadFileText (string) (* char))
+(define-ffi LoadCodepoints ((* char) (* int)) (* int))
 (define-ffi LoadFontEx (string int (* int) int) (& Font))
-(define-ffi UnloadFileText (string) void)
+(define-ffi UnloadFileText ((* char)) void)
 (define-ffi UnloadCodepoints ((* int)) void)
 (define-ffi UnloadFont ((& Font)) void)
 (define-ffi DrawTextEx ((& Font) string (& Vector2) float float (& Color)) void)

@@ -107,28 +107,53 @@
     (let ([strs (map symbol->string syms)])
       (string->symbol
        (fold-left
-       (lambda (acc next)
-	 (string-append acc "-" next))
-       (car strs)
-       (cdr strs))))))
+	(lambda (acc next)
+	  (string-append acc "-" next))
+	(car strs)
+	(cdr strs))))))
 
 (define draw-CH<-ht<-wh
   (lambda (w h)
     (let* ([w-seg (/ w GAME_SPLIT)]
 	   [center-positions (map (lambda (index) (+ (/ w-seg 2.0) (* index w-seg))) (iota GAME_SPLIT))])
-     (lambda (ch-table)
-      (lambda (i . selectors)
-	(assert (< i GAME_SPLIT))
-	(let* ([tex (hashtable-ref ch-table (apply symbols->symbol selectors) 'NotFound)]
-	       [xPos (- (list-ref center-positions i) (/ (Texture-width tex) 2.0))]
-	       [yPos (- (* h 1.0) (Texture-height tex))])
-	  (DrawTextureV tex (make-Vector2 xPos yPos) WHITE)))))))
+      (lambda (ch-table)
+	(lambda (i . selectors)
+	  (assert (< i GAME_SPLIT))
+	  (let* ([tex (hashtable-ref ch-table (apply symbols->symbol selectors) 'NotFound)]
+		 [xPos (- (list-ref center-positions i) (/ (Texture-width tex) 2.0))]
+		 [yPos (- (* h 1.0) (Texture-height tex))])
+	    (DrawTextureV tex (make-Vector2 xPos yPos) WHITE)))))))
 
 (define update-CH<-ht
   (lambda (ch-ht)
     (lambda (path . selectors)
       (let ([tex (LoadTexture path)])
 	(hashtable-set! ch-ht (apply symbols->symbol selectors) tex)))))
+
+(define FILE_ALLTEXT "./allchars.txt")
+(define FILE_FONT "../assets/font/Circle.otf")
+(define draw-text<-wh
+  (lambda (w h)
+    (let* ([all-text (LoadFileText FILE_ALLTEXT)]
+	   [codepoint-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int)))]
+	   [codepoints (LoadCodepoints all-text codepoint-count)]
+	   [font (LoadFontEx FILE_FONT 50 codepoints (ftype-ref int () codepoint-count))])
+      (foreign-free (ftype-pointer-address codepoint-count))
+      (UnloadCodepoints codepoints)
+      (UnloadFileText all-text)
+      (let* ([x 0.0] [y (* h 2/3 1.0)]
+	     [size 50.0] [color WHITE]
+	     [text-vec (make-Vector2 (+ x 100) (+ y 50))]
+	     [ch-vec (make-Vector2 (+ x 100) (- y 50))])
+	(case-lambda
+	  [(ch text)
+	   (begin
+	     (DrawTextEx font (symbol->string ch) ch-vec 75.0 0.0 color)
+	     (DrawTextEx font text text-vec size 0.0 color))]
+	  [(ch text size color)
+	   (begin
+	     (DrawTextEx font (symbol->string ch) ch-vec 75.0 0.0 color)
+	     (DrawTextEx font text text-vec size 0.0 color))])))))
 
 (define main
   (lambda ()
@@ -139,44 +164,28 @@
 	    [screen-h (GameState-height state)]
 	    [bg-RT (GameState-RT-BG state)]
 	    [dialog-RT (GameState-RT-Dialog state)]
-	    [ch-table (GameState-characters state)]
-	    )
+	    [ch-table (GameState-characters state)])
        (let ([draw-bg ((draw<-RT<-DrawConfig (DrawConfig-BG-init)) bg-RT)]
 	     [update-bg ((update<-RT<-wh screen-w screen-h) bg-RT)]
 	     [draw-dialog ((draw<-RT<-DrawConfig (DrawConfig-Dialog-init)) dialog-RT)]
 	     [update-dialog ((update<-RT<-wh screen-w (round (/ screen-h 3))) dialog-RT)]
 	     [draw-ch ((draw-CH<-ht<-wh screen-w screen-h) ch-table)]
-	     [update-ch (update-CH<-ht ch-table)])
-	 (let* ([all-text (LoadFileText "./allchars.txt")]
-		[codepoint-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int)))]
-		[codepoints (LoadCodepoints all-text codepoint-count)])
-	   (set! FONT (LoadFontEx "../assets/font/Circle.otf" 56 codepoints (ftype-ref int () codepoint-count))))
+	     [update-ch (update-CH<-ht ch-table)]
+	     [draw-text (draw-text<-wh screen-w screen-h)])
 	 (set! BGM (LoadSound "../assets/bgm/midnight-trip.mp3"))
 	 (set! VA (LoadSound "../assets/va/1.new.ogg"))
 	 (update-bg "../assets/bg/a.jpg")
 	 (update-dialog "../assets/dialog/e.jpg")
 	 (update-ch "../assets/character/0895.png" 'yuki 'smile)
-	 (set! POS (cons 100.0 100.0))
-	 (PlaySound BGM)
 	 (drawing-loop
 	  [(when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
 	     (PlaySound VA))
-	   (cond
-	    [(IsKeyPressed KEY_DOWN)
-	     (set-cdr! POS (+ 10 (cdr POS)))]
-	    [(IsKeyPressed KEY_UP)
-	     (set-cdr! POS (- 10 (cdr POS)))]
-	    [(IsKeyPressed KEY_LEFT)
-	     (set-car! POS (- 10 (car POS)))]
-	    [(IsKeyPressed KEY_RIGHT)
-	     (set-car! POS (+ 10 (car POS)))])
 	   ] ;updating logic
 	  [(draw-bg)
 	   (draw-ch 2 'yuki 'smile)
-	   (DrawTextEx FONT (format "你好世界 ~a ~a" (car POS) (cdr POS))
-		       (make-Vector2 (car POS) (cdr POS)) 56.0 0.0 WHITE)
-;	   (draw-ch 4 'yuki 'suprise)
-	   (draw-dialog)] ;drawing
+	   (draw-dialog)
+	   (draw-text 'yuki "你好世界，这是一个测试。")
+	   ] ;drawing
 	  [(UnloadRenderTexture bg-RT)
 	   (UnloadRenderTexture dialog-RT)
 	   (UnloadSound BGM)] ;cleaning
