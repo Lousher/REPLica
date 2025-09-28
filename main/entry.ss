@@ -3,41 +3,8 @@
 (load "raylib.ffi.ss")
 (load "raylib.constant.ss")
 
-(define-syntax with-fullscreen
-  (syntax-rules ()
-    [(_ title rest ...)
-     (let ([w (GetMonitorWidth 0)]
-	   [h (GetMonitorHeight 0)]
-	   [flags (logor FLAG_WINDOW_MAXIMIZED
-			 FLAG_WINDOW_MINIMIZED
-			 FLAG_WINDOW_RESIZABLE)])
-       (SetConfigFlags flags)
-       (SetTargetFPS 60)
-       (InitWindow w h title)
-       (InitAudioDevice)
-       rest ...
-       (CloseAudioDevice)
-       (CloseWindow)
-       )]))
+(load "syntax.ss")
 
-(define-syntax drawing-loop
-  (syntax-rules ()
-    [(_ [updating ...] [drawing ...] [cleanup ...])
-     (dynamic-wind
-       (lambda () #f)
-       (lambda ()
-	 (let loop ()
-	   updating ...
-	   (unless (WindowShouldClose)
-	     (BeginDrawing)
-	     (ClearBackground BLACK)
-	     drawing ...
-	     (EndDrawing)
-	     (loop))))
-       (lambda ()
-	 cleanup ...))]))
-
-					; Game State
 (define-record-type GameState
   (fields
    (immutable width)
@@ -47,7 +14,7 @@
    (mutable characters)
    (mutable BGM)
    ))
-					; draw config
+
 (define-record-type DrawConfig
   (fields source position color))
 
@@ -172,21 +139,27 @@
 	     [draw-ch ((draw-CH<-ht<-wh screen-w screen-h) ch-table)]
 	     [update-ch (update-CH<-ht ch-table)]
 	     [draw-text (draw-text<-wh screen-w screen-h)])
+	 (update-dialog "../assets/dialog/e.jpg")
 	 (set! BGM (LoadSound "../assets/bgm/midnight-trip.mp3"))
 	 (set! VA (LoadSound "../assets/va/1.new.ogg"))
 	 (update-bg "../assets/bg/a.jpg")
-	 (update-dialog "../assets/dialog/e.jpg")
-	 (update-ch "../assets/character/0895.png" 'yuki 'smile)
+	 (update-ch "../assets/character/0895.png" 'yuki 'smile)	     
 	 (drawing-loop
 	  [(when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-	     (PlaySound VA))
+	     (next-scene))
 	   ] ;updating logic
 	  [(draw-bg)
 	   (draw-ch 2 'yuki 'smile)
 	   (draw-dialog)
-	   (draw-text 'yuki "你好世界，这是一个测试。")
+	   (draw-text 'yuki "好久不见")
 	   ] ;drawing
 	  [(UnloadRenderTexture bg-RT)
 	   (UnloadRenderTexture dialog-RT)
 	   (UnloadSound BGM)] ;cleaning
 	  ))))))
+
+(define-record-type Frame
+  (fields background characters spekaer voice text next))
+
+(define first-frame
+  (make-Frame '(station morning) '(((yuki smile). 2)) 'yuki '(yuki first) "好久不见" #f))

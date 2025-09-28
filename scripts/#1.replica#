@@ -1,0 +1,44 @@
+(background-music "../assets/bgm/midnight-trip.mp3" midnight)
+(voice "../assets/va/1.new.ogg" yuki first)
+(voice "../assets/va/2.new.ogg" yuki second)
+(background "../assets/bg/a.jpg" station morning)
+(background "../assets/bg/b.jpg" station afternoon)
+(background "../assets/bg/c.jpg" station evening)
+(background "../assets/bg/d.jpg" station night)
+
+(character "../assets/character/0895.png" yuki smile)
+(character "../assets/character/0898.png" yuki happy)
+
+(chapter 富婆契约
+	 (music midnight)
+	 (scene :location station morning
+       		:characters [yuki :speaker :expression smile :position 2]
+		:voice yuki first :text "好久不见啊，应该有七年了吧")
+					; wait for click action
+	 (scene :location station morning
+		:characters [yuki :speaker :expression happy :position 2]
+		:voice yuki second :text "没想到你居然在求富婆包养啊～"))
+
+(define :id? (lambda (id) (and (symbol? id) (char=? #\: (string-ref (symbol->string id) 0)))))
+(define parse-params
+  (lambda (params)
+    (fold-left
+     (lambda (acc next)
+       (if (:id? next)
+	   (append acc (list (list next)))
+	   (let ([last (last-pair acc)])
+	     (set-cdr! (car last) (append (cdar last) (list next)))
+	     acc)))
+     '()
+     params)))
+
+(define-syntax scene
+  (lambda (stx)
+    (syntax-case stx ()
+      [(k params ...)
+       (let ([param-pairs (parse-params (syntax->datum #'(params ...)))]
+	     [keys '(:location :characters :voice)])
+	 (with-syntax ([:location (datum->syntax #'k (assoc ':location param-pairs))]
+		       [:characters (datum->syntax #'k (assoc ':characters param-pairs))]
+		       [:voice (datum->syntax #'k (assoc ':voice param-pairs))])
+	   #`(
