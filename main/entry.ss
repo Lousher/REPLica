@@ -2,6 +2,7 @@
 (load-shared-object "raylib.ffi.so")
 (load "raylib.ffi.ss")
 (load "raylib.constant.ss")
+(load "../scripts/1.replica")
 
 (load "syntax.ss")
 
@@ -126,40 +127,16 @@
   (lambda ()
     (with-fullscreen
      "缘心饲契"
-     (let* ([state (game-state-init)]
-	    [screen-w (GameState-width state)]
-	    [screen-h (GameState-height state)]
-	    [bg-RT (GameState-RT-BG state)]
-	    [dialog-RT (GameState-RT-Dialog state)]
-	    [ch-table (GameState-characters state)])
-       (let ([draw-bg ((draw<-RT<-DrawConfig (DrawConfig-BG-init)) bg-RT)]
-	     [update-bg ((update<-RT<-wh screen-w screen-h) bg-RT)]
-	     [draw-dialog ((draw<-RT<-DrawConfig (DrawConfig-Dialog-init)) dialog-RT)]
-	     [update-dialog ((update<-RT<-wh screen-w (round (/ screen-h 3))) dialog-RT)]
-	     [draw-ch ((draw-CH<-ht<-wh screen-w screen-h) ch-table)]
-	     [update-ch (update-CH<-ht ch-table)]
-	     [draw-text (draw-text<-wh screen-w screen-h)])
-	 (update-dialog "../assets/dialog/e.jpg")
-	 (set! BGM (LoadSound "../assets/bgm/midnight-trip.mp3"))
-	 (set! VA (LoadSound "../assets/va/1.new.ogg"))
-	 (update-bg "../assets/bg/a.jpg")
-	 (update-ch "../assets/character/0895.png" 'yuki 'smile)	     
-	 (drawing-loop
-	  [(when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-	     (next-scene))
-	   ] ;updating logic
-	  [(draw-bg)
-	   (draw-ch 2 'yuki 'smile)
-	   (draw-dialog)
-	   (draw-text 'yuki "好久不见")
-	   ] ;drawing
-	  [(UnloadRenderTexture bg-RT)
-	   (UnloadRenderTexture dialog-RT)
-	   (UnloadSound BGM)] ;cleaning
-	  ))))))
+     (let ([render:location display]
+	   [render:characters display]
+	   [render:voice display]
+	   [render:text display])
+ 	 (drawing-loop
+	  [] ;updating logic
+	  [(scene :location (station morning)
+		:characters `#(#f #f ,(yuki smile) #f #f)
+		:voice (yuki first)
+		:text '("苏喻文" "好久不见啊，应该有七年了吧"))] ;drawing
+	  [(void)] ;cleaning
+	  )))))
 
-(define-record-type Frame
-  (fields background characters spekaer voice text next))
-
-(define first-frame
-  (make-Frame '(station morning) '(((yuki smile). 2)) 'yuki '(yuki first) "好久不见" #f))

@@ -1,23 +1,34 @@
-(background-music "../assets/bgm/midnight-trip.mp3" midnight)
-(voice "../assets/va/1.new.ogg" yuki first)
-(voice "../assets/va/2.new.ogg" yuki second)
-(background "../assets/bg/a.jpg" station morning)
-(background "../assets/bg/b.jpg" station afternoon)
-(background "../assets/bg/c.jpg" station evening)
-(background "../assets/bg/d.jpg" station night)
+(define-syntax asset
+  (lambda (stx)
+    (syntax-case stx ()
+      [(_ name (diff path) ...)
+       (let ([saved #f])
+	 (with-syntax ([slot (datum->syntax #'name 'saved)])
+	   #'(define-syntax name
+	       (make-variable-transformer
+		(lambda (x)
+		  (syntax-case x (diff ...)
+		    [id (identifier? #'id) #'slot]
+		    [(id) (identifier? #'id) #'(set! slot #f)]
+		    [(set! id new) (identifier? #'id) #'(set! slot new)]
+		    [(_ diff) #'path] ...))))))])))
 
-(character "../assets/character/0895.png" yuki smile)
-(character "../assets/character/0898.png" yuki happy)
+(asset music
+       (midnight "../assets/bgm/midnight-trip.mp3"))
 
-(chapter 富婆契约
-	 (music midnight)
-	 (scene :location station morning
-       		:characters [yuki :speaker :expression smile :position 2]
-		:voice yuki first :text "好久不见啊，应该有七年了吧")
-					; wait for click action
-	 (scene :location station morning
-		:characters [yuki :speaker :expression happy :position 2]
-		:voice yuki second :text "没想到你居然在求富婆包养啊～"))
+(asset station
+	    (morning "../assets/bg/a.jpg")
+	    (afternoon "../assets/bg/b.jpg")
+	    (evening "../assets/bg/c.jpg")
+	    (night "../assets/bg/d.jpg"))
+
+(asset yuki
+	   (smile "../assets/character/0895.png")
+	   (happy "../assets/character/0898.png")
+	   (first "../assets/va/1.new.ogg")
+	   (second "../assets/va/2.new.ogg"))
+
+	 
 
 (define :id? (lambda (id) (and (symbol? id) (char=? #\: (string-ref (symbol->string id) 0)))))
 (define parse-params
@@ -32,13 +43,23 @@
      '()
      params)))
 
+(define symbol-format
+  (lambda (fmt-str . rest)
+    (let* ([strs (map symbol->string rest)]
+	   [outcome (apply format fmt-str strs)])
+      (string->symbol outcome))))
+
 (define-syntax scene
   (lambda (stx)
     (syntax-case stx ()
       [(k params ...)
-       (let ([param-pairs (parse-params (syntax->datum #'(params ...)))]
-	     [keys '(:location :characters :voice)])
-	 (with-syntax ([:location (datum->syntax #'k (assoc ':location param-pairs))]
-		       [:characters (datum->syntax #'k (assoc ':characters param-pairs))]
-		       [:voice (datum->syntax #'k (assoc ':voice param-pairs))])
-	   #`
+       (let ([keys '(:location :characters :text :voice)]
+	     [param-pairs (parse-params (syntax->datum #'(params ...)))])
+	 (with-syntax ([(funs ...) (datum->syntax #'k (map (lambda (key)
+							      (let ([res (assoc key param-pairs)])
+								(set-car! res (symbol-format "render~a" key))
+								res))
+							   keys))])
+	   #'(begin
+	       funs ...)
+	   ))])))
