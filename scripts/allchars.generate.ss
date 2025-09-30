@@ -1,12 +1,6 @@
 #!/usr/local/bin/chez --script
 
 (load "../main/tools.ss")
-
-(define reads
-  (lambda (port)
-    (let ([content (read port)])
-      (if (eof-object? content) '()
-	  (cons content (reads port))))))
 	  
 (let* ([file (cadr (command-line))]
        [port (open-input-file file)]

@@ -11,6 +11,12 @@
      '()
      params)))
 
+(define reads
+  (lambda (port)
+    (let ([content (read port)])
+      (if (eof-object? content) '()
+	  (cons content (reads port))))))
+
 (define symbol-format
   (lambda (fmt-str . rest)
     (let* ([strs (map symbol->string rest)]

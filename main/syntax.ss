@@ -64,9 +64,10 @@
 						    (set-car! res (symbol-format "render~a" key))
 						    res))
 						frame-keys))])
-	   #'(begin
+	   #'(lambda ()
+	       (begin
 	       play-funs ...
 	       (lambda ()
-	       render-funs ...))
+	       render-funs ...)))
 	   ))])))
 
