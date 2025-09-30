@@ -3,36 +3,13 @@
 (load "raylib.ffi.ss")
 (load "raylib.constant.ss")
 (load "syntax.ss")
+(load "tools.ss")
+(load "assets.ss")
 
 (define GAME_SPLIT 5)
 (define DIALOG_ALPHA 0.5)
-(define FILE_ALLTEXT "./allchars.txt")
+(define FILE_ALLTEXT "../scripts/allchars.txt")
 (define FILE_FONT "../assets/font/Circle.otf")
-
-(asset music
-       (midnight "../assets/bgm/midnight-trip.mp3"))
-
-(asset station
-       (morning "../assets/bg/a.jpg")
-       (afternoon "../assets/bg/b.jpg")
-       (evening "../assets/bg/c.jpg")
-       (night "../assets/bg/d.jpg"))
-
-(asset yuki
-       (smile "../assets/character/0895.png")
-       (happy "../assets/character/0898.png")
-       (first "../assets/va/1.new.ogg")
-       (second "../assets/va/2.new.ogg"))
-
-(define symbols->symbol
-  (lambda syms
-    (let ([strs (map symbol->string syms)])
-      (string->symbol
-       (fold-left
-	(lambda (acc next)
-	  (string-append acc "-" next))
-	(car strs)
-	(cdr strs))))))
 
 (define draw-location
   (lambda (w h)
@@ -122,24 +99,25 @@
       (set! prev-sound (LoadSound path))
       (PlaySound prev-sound))))
 
-
-(define main
-  (lambda ()
-    (with-fullscreen
-     "缘心饲契"
-     (let ([screen-width (GetScreenWidth)]
-	   [screen-height (GetScreenHeight)])
-       (let ([render:location (draw-location screen-width screen-height)]
-	     [render:characters (draw-characters screen-width screen-height)]
-	     [render:text (draw-text screen-width screen-height)]
-	     [play:voice play-voice])
-	 (let ([scene-render (read-scene (scene :location (station morning)
-			      :characters `#(#f #f ,(yuki smile) #f #f)
-			      :voice (yuki first)
-			      :text "苏喻文" "真是厉害啊"))])
-	 (drawing-loop
-	  [] ;updating logic
-	  [(scene-render)] ;drawing
-	  [(void)] ;cleaning
-	  )))))))
+(define-syntax replica
+  (lambda (file)
+    (syntax-case file ()
+      [(k filename)
+       (let* ([port (open-input-file (datum filename))]
+	      [script (read port)])
+	 #`(with-fullscreen
+	   "缘心饲契"
+	  (let ([screen-width (GetScreenWidth)]
+		[screen-height (GetScreenHeight)])
+	    (let ([render:location (draw-location screen-width screen-height)]
+		  [render:characters (draw-characters screen-width screen-height)]
+		  [render:text (draw-text screen-width screen-height)]
+		  [play:voice play-voice])
+	      #,(with-syntax ([content (datum->syntax #'with-fullscreen script)])
+		#'(let ([scene-render content])
+		    (drawing-loop
+		     [] ;updating logic
+		     [(scene-render)] ;drawing
+		     [(void)] ;cleaning
+		     )))))))])))
 

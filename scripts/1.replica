@@ -1,5 +1,11 @@
+
 (scene :location (station morning)
 		:characters `#(#f #f ,(yuki smile) #f #f)
 		:voice (yuki first)
-		:text '("苏喻文" "好久不见啊，应该有七年了吧"))
+		:text "苏喻文" "好久不见啊，应该有七年了吧")
+
+(scene :location (station evening)
+       :characters `(#f #f ,(yuki happy) #f #f)
+       :voice (yuki second)
+       :text "苏喻文" "没想到你居然在求富婆包养啊")
 
