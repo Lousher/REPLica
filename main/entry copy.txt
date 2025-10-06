@@ -115,70 +115,40 @@
        (lambda () (UnloadSound prev-sound))
        ))))
 
-(define read-scripts
+(define-syntax replica
   (lambda (file)
-    (let* ([port (open-input-file file)]
-	   [scripts (reads port)]
-	   [len (length scripts)]
-	   [index 0])
-      (close-input-port port)
-      (values
-       (lambda () (set! index (max 0 (- index 1))))
-       (lambda () (list-ref scripts index))
-       (lambda () (set! index (min (- len 1) (+ index 1))))))))
-
-(define eval-script
-  (lambda (funs-bundle)
-    (lambda (cur next)
-      (let e ([res (eval (cur))])
-	(let ([outcome (res funs-bundle)])
-	  (if (procedure? outcome) outcome
-	      (begin
-		(next)
-		(e (eval (cur))))))))))
-
-(define play-music
-  (lambda ()
-    (let ([music (make-ftype-pointer Music (foreign-alloc (ftype-sizeof Music)))])
-      (values
-       (lambda (path)
-	 (UnloadMusicStream music)
-	 (set! music (LoadMusicStream path))
-	 (PlayMusicStream music))
-       (lambda ()
-	 (UpdateMusicStream music))
-       (lambda () (UnloadMusicStream music))))))
-
-(define replica
-  (lambda (file)
-    (with-fullscreen
-     "缘心饲契"
-     (let ([screen-width (GetScreenWidth)]
-	   [screen-height (GetScreenHeight)])
-       (let-values ([(render:location clear:location) (draw-location screen-width screen-height)]
-		    [(render:characters clear:characters) (draw-characters screen-width screen-height)]
-		    [(render:text clear:text) (draw-text screen-width screen-height)]
-		    [(play:voice clear:voice) (play-voice)]
-		    [(play:music update:music clear:music) (play-music)])
-	 (let ([funs-bundle `((:location ,render:location)
-			      (:characters ,render:characters)
-			      (:text ,render:text) (:voice ,play:voice)
-			      (:play ,play:music))])
-	   (let-values ([(prev cur next) (read-scripts file)])
-	     (let* ([script-evaluator (eval-script funs-bundle)]
-		    [render:cur (script-evaluator cur next)]
-		    [render:next! (lambda () (next) (set! render:cur (script-evaluator cur next)))])
-	       (drawing-loop
-		[(update:music)
-		 (when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-		   (render:next!)
-		   )] ;updating
-		[(render:cur)
-		 ] ;drawing
-		[(clear:location)
-		 (clear:characters)
-		 (clear:text)
-		 (clear:voice)
-		 (clear:music)] ;cleaning
-		)))))))))
-
+    (syntax-case file ()
+      [(k filename)
+       (let* ([port (open-input-file (datum filename))]
+	      [scripts (reads port)])
+	 #`(with-fullscreen
+	    "缘心饲契"
+	    (let ([screen-width (GetScreenWidth)]
+		  [screen-height (GetScreenHeight)])
+	      (let-values ([(render:location clear:location) (draw-location screen-width screen-height)]
+			   [(render:characters clear:characters) (draw-characters screen-width screen-height)]
+			   [(render:text clear:text) (draw-text screen-width screen-height)]
+			   [(play:voice clear:voice) (play-voice)])
+		#,(with-syntax ([(scenes ...) (datum->syntax #'with-fullscreen scripts)])
+		    #`(let* ([scenes:all (list scenes ...)]
+			     [scene:next (lambda ()
+					   (unless (atom? scenes:all)
+					     (set! scenes:all (cdr scenes:all))))]
+			     [scene:current (let ([cur (car scenes:all)])
+					      (lambda ()
+						(unless (atom? scenes:all)
+						  (set! cur (car scenes:all)))
+						cur))]
+			     [scene:render ((scene:current))])
+			(drawing-loop
+			 [(when (and (IsMouseButtonPressed MOUSE_BUTTON_LEFT) (not (atom? scenes:all)))
+			    (scene:next)
+			    (set! scene:render ((scene:current)))
+			    )] ;updating
+			 [(scene:render)] ;drawing
+			 [(clear:location)
+			  (clear:characters)
+			  (clear:text)
+			  (clear:voice)] ;cleaning
+			 )
+			))))))])))

@@ -1,4 +1,4 @@
-(asset music
+(asset bgm
        (midnight "../assets/bgm/midnight-trip.mp3"))
 
 (asset station

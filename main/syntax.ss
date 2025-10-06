@@ -47,6 +47,14 @@
 		    [(set! id new) (identifier? #'id) #'(set! slot new)]
 		    [(_ diff) #'path] ...))))))])))
 
+(define-syntax music
+  (lambda (stx)
+    (syntax-case stx (:play :stop)
+      [(k :play params ...)
+      #`(lambda (funs)
+	  (let ([play-fun (cadr (assoc ':play funs))])
+	    (play-fun params ...)))])))
+	  
 (define-syntax scene
   (lambda (stx)
     (syntax-case stx ()
@@ -54,20 +62,14 @@
        (let ([frame-keys '(:location :characters :text)]
 	     [play-keys '(:voice)]
 	     [param-pairs (parse-params (syntax->datum #'(params ...)))])
-	 (with-syntax ([(play-funs ...) (datum->syntax #'k (map (lambda (key) (let ([res (assoc key param-pairs)])
-										(set-car! res (symbol-format "play~a" key))
-										res))
-								play-keys))]
-		       [(render-funs ...)
-			(datum->syntax #'k (map (lambda (key)
-						  (let ([res (assoc key param-pairs)])
-						    (set-car! res (symbol-format "render~a" key))
-						    res))
-						frame-keys))])
-	   #'(lambda ()
-	       (begin
-	       play-funs ...
-	       (lambda ()
-	       render-funs ...)))
+	 (with-syntax ([(play-funs ...) (datum->syntax #'k (map (lambda (key) (assoc key param-pairs)) play-keys))]
+		       [(render-funs ...) (datum->syntax #'k (map (lambda (key) (assoc key param-pairs)) frame-keys))]
+		       [(all-key ...) (datum->syntax #'k (append frame-keys play-keys))])
+	   #`(lambda (funcs)
+	       (let ([all-key (cadr (assoc 'all-key funcs))] ...)
+		 (begin
+		   play-funs ...
+		   (lambda ()
+		     render-funs ...))))
 	   ))])))
 

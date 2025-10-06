@@ -1,3 +1,5 @@
+(music :play (bgm midnight))
+
 (scene :location (station morning)
 		:characters `#(#f #f ,(yuki smile) #f #f)
 		:voice (yuki first)
@@ -7,4 +9,5 @@
        :characters `#(#f #f ,(yuki happy) #f #f)
        :voice (yuki second)
        :text "苏喻文" "没想到你居然在求富婆包养啊")
+
 

@@ -97,6 +97,14 @@
     [stream AudioStream]
     [frameCount unsigned-int]))
 
+(define-ftype Music
+  (struct
+    [stream AudioStream]
+    [frameCount unsigned-int]
+    [looping boolean]
+    [ctxType int]
+    [ctxData void*]))
+
 (define-ftype Font
   (struct
     [baseSize int]
@@ -172,6 +180,13 @@
 (define-ffi StopSound ((& Sound)) void)
 (define-ffi PauseSound ((& Sound)) void)
 (define-ffi ResumeSound ((& Sound)) void)
+
+;; Music
+(define-ffi LoadMusicStream (string) (& Music))
+(define-ffi UnloadMusicStream ((& Music)) void)
+(define-ffi PlayMusicStream ((& Music)) void)
+(define-ffi UpdateMusicStream ((& Music)) void)
+(define-ffi StopMusicStream ((& Music)) void)
 
 					; Text
 (define-ffi DrawText (string int int int (& Color)) void)
