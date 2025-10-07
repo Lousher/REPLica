@@ -1,6 +1,6 @@
 NAME ?= 
 SOURCE := $(NAME).raylib.macos.c
-TARGET := $(NAME).raylib.macos.so
+TARGET := $(NAME).raylib.macos
 
 CC := cc
 LIB := --shared -fPIC
@@ -8,7 +8,7 @@ LIB := --shared -fPIC
 all: build
 
 build:
-	$(CC) $(SOURCE) $(LIB) -o $(TARGET) $(shell pkg-config --cflags --libs raylib)
+	$(CC) $(SOURCE) -o $(TARGET) $(shell pkg-config --cflags --libs raylib)
 
 clean:
 	@rm $(TARGET)

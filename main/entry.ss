@@ -10,6 +10,7 @@
 (define DIALOG_ALPHA 0.5)
 (define FILE_ALLTEXT "../scripts/allchars.txt")
 (define FILE_FONT "../assets/font/Circle.otf")
+(define TEXT_SHOWN 0)
 
 (define draw-location
   (lambda (w h)
@@ -96,7 +97,7 @@
 	       (DrawTextureRec (RenderTexture-texture rt) rect vec (Fade WHITE DIALOG_ALPHA))
 	       (DrawTextEx font who name-vec 75.0 0.0 color)
 	       (for-each (lambda (t)
-			   (DrawTextEx font t text-vec size 0.0 color))
+			   (DrawTextEx font (TextSubtext t 0 (* 3 (floor (/ TEXT_SHOWN 10)))) text-vec size 0.0 color))
 			 text))
 	     (lambda ()
 	       (UnloadRenderTexture rt)
@@ -170,7 +171,9 @@
 		    [render:next! (lambda () (next) (set! render:cur (script-evaluator cur next)))])
 	       (drawing-loop
 		[(update:music)
+		 (set! TEXT_SHOWN (+ TEXT_SHOWN 2))
 		 (when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+		   (set! TEXT_SHOWN 0)
 		   (render:next!)
 		   )] ;updating
 		[(render:cur)

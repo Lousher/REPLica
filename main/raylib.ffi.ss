@@ -1,4 +1,4 @@
-					; Syntax Extension
+					; syntax Extension
 (define-syntax define-ffi
   (syntax-rules (&)
     [(_ name (args ...) (& ret))
@@ -197,6 +197,8 @@
 (define-ffi UnloadCodepoints ((* int)) void)
 (define-ffi UnloadFont ((& Font)) void)
 (define-ffi DrawTextEx ((& Font) string (& Vector2) float float (& Color)) void)
+(define-ffi TextSubtext (string int int) string)
+(define-ffi GetCodepointCount (string) int)
 
 ;; Custome Extension
 (define RenderTexture-texture
