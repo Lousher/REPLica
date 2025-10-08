@@ -1,6 +1,9 @@
 (asset bgm
        (midnight "../assets/bgm/midnight-trip.mp3"))
 
+(asset reveal
+       (horizontal "../assets/glsl/reveal.horizontal.fs"))
+
 (asset wipe
 	(right "../assets/glsl/wipe.right.fs"))
 

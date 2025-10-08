@@ -7,9 +7,9 @@
 (load "assets.ss")
 
 (define GAME_SPLIT 5)
-(define DIALOG_ALPHA 0.5)
+(define DIALOG_ALPHA 0.4)
 (define FILE_ALLTEXT "../scripts/allchars.txt")
-(define FILE_FONT "../assets/font/Circle.otf")
+(define FILE_FONT "../assets/font/Xiaolai-Regular.ttf")
 (define TEXT_SHOWN 0)
 
 (define draw-location
