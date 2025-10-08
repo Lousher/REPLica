@@ -1,13 +1,9 @@
-(scene :location (station night))
-(scene :characters `#(#f #f ,(yuki happy) #f #f))
-(scene :text "" "唉，不知道什么时候的事情呢" :voice (yuki second))
 (music :play (bgm midnight))
 
 (scene :location (station morning)
 		:characters `#(#f #f ,(yuki smile) #f #f)
 		:voice (yuki first)
-		:text "苏喻文" "好久不见啊，应该有七年了吧" 
-		:transition (wipe right))
+		:text "苏喻文" "好久不见啊，应该有七年了吧")
 
 (scene :location (station evening)
        :characters `#(#f #f ,(yuki happy) #f #f)

@@ -130,6 +130,9 @@
 (define-ffi WindowShouldClose () boolean)
 (define-ffi CloseWindow () void)
 
+					; Time
+(define-ffi GetTime () double)
+
 					;Color
 (define-ffi Fade ((& Color) float) (& Color))
 
@@ -200,6 +203,7 @@
 (define-ffi PlayMusicStream ((& Music)) void)
 (define-ffi UpdateMusicStream ((& Music)) void)
 (define-ffi StopMusicStream ((& Music)) void)
+(define-ffi SetMusicVolume ((& Music) float) void)
 
 					; Text
 (define-ffi DrawText (string int int int (& Color)) void)

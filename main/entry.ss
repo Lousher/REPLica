@@ -56,8 +56,9 @@
 		  (set-car! prev-i vec))
 		(let* ([tex (cdr prev-i)]
 		       [xpos (- (+ (/ w-seg 2.0) (* i w-seg)) (/ (Texture-width tex) 2.0))]
-		       [ypos (- (* h 1.0) (Texture-height tex))])
-		  (DrawTextureV (cdr prev-i) (make-Vector2 xpos ypos) WHITE)))))
+		       [ypos (- (* h 1.0) (Texture-height tex))]
+		       [ypos-mov (+ ypos (* (sin (* (GetTime) 1.5)) 3.0))])
+		  (DrawTextureV (cdr prev-i) (make-Vector2 xpos ypos-mov) WHITE)))))
 	  vec-5
 	  (list->vector (iota GAME_SPLIT))))
        (lambda () (vector-for-each (lambda (vec) (let ([tex (cdr vec)]) (UnloadTexture tex))) prev))
@@ -143,6 +144,8 @@
 	 (PlayMusicStream music))
        (lambda ()
 	 (UpdateMusicStream music))
+       (lambda (volume)
+	 (SetMusicVolume music volume))
        (lambda () (UnloadMusicStream music))))))
 
 (define replica
@@ -155,7 +158,7 @@
 		    [(render:characters clear:characters) (draw-characters screen-width screen-height)]
 		    [(render:text clear:text) (draw-text screen-width screen-height)]
 		    [(play:voice clear:voice) (play-voice)]
-		    [(play:music update:music clear:music) (play-music)])
+		    [(play:music update:music set-volume:music clear:music) (play-music)])
 	 (let ([funs-bundle `((:location ,render:location)
 			      (:characters ,render:characters)
 			      (:text ,render:text) (:voice ,play:voice)
