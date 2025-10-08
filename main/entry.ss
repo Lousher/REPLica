@@ -36,8 +36,7 @@
 	     (set! prev path)))
 	 (DrawTextureRec (RenderTexture-texture rt)
 			 rect vec WHITE))
-       (lambda () UnloadRenderTexture rt)
-       ))))
+       (lambda () UnloadRenderTexture rt)))))
 
 (define draw-characters
   (lambda (w h)
@@ -93,17 +92,13 @@
 		 [text-vec (make-Vector2 (+ x 100) (+ y 50))]
 		 [name-vec (make-Vector2 (+ x 100) (- y 50))])
 	    (values 
-	     (lambda (who . text)
+	     (lambda (who text)
 	       (DrawTextureRec (RenderTexture-texture rt) rect vec (Fade WHITE DIALOG_ALPHA))
 	       (DrawTextEx font who name-vec 75.0 0.0 color)
-	       (for-each (lambda (t)
-			   (DrawTextEx font (TextSubtext t 0 (* 3 (floor (/ TEXT_SHOWN 10)))) text-vec size 0.0 color))
-			 text))
+	       (DrawTextEx font (TextSubtext text 0 (* 3 (floor (/ TEXT_SHOWN 10)))) text-vec size 0.0 color))
 	     (lambda ()
 	       (UnloadRenderTexture rt)
-	       (UnloadFont font)
-	       ))
-	    ))))))
+	       (UnloadFont font)))))))))
 
 (define play-voice
   (lambda ()
@@ -164,19 +159,22 @@
 	 (let ([funs-bundle `((:location ,render:location)
 			      (:characters ,render:characters)
 			      (:text ,render:text) (:voice ,play:voice)
-			      (:play ,play:music))])
+			      (:play ,play:music)
+			      (:transition ,display))])
 	   (let-values ([(prev cur next) (read-scripts file)])
 	     (let* ([script-evaluator (eval-script funs-bundle)]
 		    [render:cur (script-evaluator cur next)]
 		    [render:next! (lambda () (next) (set! render:cur (script-evaluator cur next)))])
 	       (drawing-loop
 		[(update:music)
-		 (set! TEXT_SHOWN (+ TEXT_SHOWN 2))
+		 (unless (> TEXT_SHOWN 1000)
+		   (set! TEXT_SHOWN (+ TEXT_SHOWN 2)))
 		 (when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
 		   (set! TEXT_SHOWN 0)
 		   (render:next!)
 		   )] ;updating
-		[(render:cur)
+		[
+		 (render:cur)
 		 ] ;drawing
 		[(clear:location)
 		 (clear:characters)

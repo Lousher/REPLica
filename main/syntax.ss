@@ -61,10 +61,12 @@
       [(k params ...)
        (let ([frame-keys '(:location :characters :text)]
 	     [play-keys '(:voice)]
+	     [shader-keys '(:transition)]
 	     [param-pairs (parse-params (syntax->datum #'(params ...)))])
 	 (with-syntax ([(play-funs ...) (datum->syntax #'k (map (lambda (key) (assoc key param-pairs)) play-keys))]
 		       [(render-funs ...) (datum->syntax #'k (map (lambda (key) (assoc key param-pairs)) frame-keys))]
-		       [(all-key ...) (datum->syntax #'k (append frame-keys play-keys))])
+		       [(shader-funs ...) (datum->syntax #'k (map (lambda (key) (assoc key param-pairs)) shader-keys))]
+		       [(all-key ...) (datum->syntax #'k (append frame-keys play-keys shader-keys))])
 	   #`(lambda (funcs)
 	       (let ([all-key (cadr (assoc 'all-key funcs))] ...)
 		 (begin

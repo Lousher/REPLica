@@ -105,6 +105,11 @@
     [ctxType int]
     [ctxData void*]))
 
+(define-ftype Shader
+  (struct
+    [id unsigned-int]
+    [locs (* int)]))
+
 (define-ftype Font
   (struct
     [baseSize int]
@@ -141,6 +146,14 @@
 (define-ffi LoadRenderTexture (int int) (& RenderTexture2D))
 (define-ffi BeginTextureMode ((& RenderTexture2D)) void)
 (define-ffi EndTextureMode () void)
+
+					; Shader
+(define-ffi BeginShaderMode ((& Shader)) void)
+(define-ffi EndShaderMode () void)
+(define-ffi LoadShader (string string) (& Shader))
+(define-ffi UnloadShader ((& Shader)) void)
+(define-ffi GetShaderLocation ((& Shader) string) int)
+(define-ffi SetShaderValue ((& Shader) int void* int) void)
 
 					; Predicate
 (define-ffi IsWindowReady () boolean)
@@ -207,4 +220,3 @@
 	  [result (make-ftype-pointer Texture2D (foreign-alloc (ftype-sizeof Texture2D)))])
       (apply fun-ori result params)
       result)))
-

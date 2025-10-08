@@ -1,6 +1,9 @@
 (asset bgm
        (midnight "../assets/bgm/midnight-trip.mp3"))
 
+(asset wipe
+	(right "../assets/glsl/wipe.right.fs"))
+
 (asset station
        (morning "../assets/bg/a.jpg")
        (afternoon "../assets/bg/b.jpg")
