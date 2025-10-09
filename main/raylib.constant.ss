@@ -6,6 +6,8 @@
 (define BLACK (make-Color 0 0 0 255))
 (define WHITE (make-Color 255 255 255 255))
 
+(define SHADER_UNIFORM_FLOAT 0)
+
 (define LOG_ALL 0)
 (define LOG_TRACE 1)
 (define LOG_DEBUG 2)

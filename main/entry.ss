@@ -112,28 +112,6 @@
        (lambda () (UnloadSound prev-sound))
        ))))
 
-(define read-scripts
-  (lambda (file)
-    (let* ([port (open-input-file file)]
-	   [scripts (reads port)]
-	   [len (length scripts)]
-	   [index 0])
-      (close-input-port port)
-      (values
-       (lambda () (set! index (max 0 (- index 1))))
-       (lambda () (list-ref scripts index))
-       (lambda () (set! index (min (- len 1) (+ index 1))))))))
-
-(define eval-script
-  (lambda (funs-bundle)
-    (lambda (cur next)
-      (let e ([res (eval (cur))])
-	(let ([outcome (res funs-bundle)])
-	  (if (procedure? outcome) outcome
-	      (begin
-		(next)
-		(e (eval (cur))))))))))
-
 (define play-music
   (lambda ()
     (let ([music (make-ftype-pointer Music (foreign-alloc (ftype-sizeof Music)))])
@@ -159,30 +137,72 @@
 		    [(render:text clear:text) (draw-text screen-width screen-height)]
 		    [(play:voice clear:voice) (play-voice)]
 		    [(play:music update:music set-volume:music clear:music) (play-music)])
-	 (let ([funs-bundle `((:location ,render:location)
-			      (:characters ,render:characters)
-			      (:text ,render:text) (:voice ,play:voice)
-			      (:play ,play:music)
-			      (:transition ,display))])
-	   (let-values ([(prev cur next) (read-scripts file)])
-	     (let* ([script-evaluator (eval-script funs-bundle)]
-		    [render:cur (script-evaluator cur next)]
-		    [render:next! (lambda () (next) (set! render:cur (script-evaluator cur next)))])
-	       (drawing-loop
-		[(update:music)
-		 (unless (> TEXT_SHOWN 1000)
-		   (set! TEXT_SHOWN (+ TEXT_SHOWN 2)))
-		 (when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-		   (set! TEXT_SHOWN 0)
-		   (render:next!)
-		   )] ;updating
-		[
-		 (render:cur)
-		 ] ;drawing
-		[(clear:location)
-		 (clear:characters)
-		 (clear:text)
-		 (clear:voice)
-		 (clear:music)] ;cleaning
-		)))))))))
+	 (play:music "../assets/bgm/midnight-trip.mp3")
+	 (set! shader (LoadShader #f "../assets/glsl/fade.fs"))
+	 (set! newTexture (LoadTexture "../assets/bg/b.jpg"))
+	 (set! texture1Loc (GetShaderLocation shader "texture1"))
+	 (set! progressLoc (GetShaderLocation shader "progress"))
+	 (set! progress 0.0)
+	 (set! passed 0.0)
+	 (set! progress-addr (make-ftype-pointer float (foreign-alloc (ftype-sizeof float))))
+	 (ftype-set! float () progress-addr 0 progress)
+	 (drawing-loop
+	  [(when (< progress 1.0)
+	     (set! passed (+ passed (GetFrameTime)))
+	     (set! progress (/ passed 3.0))
+	     (ftype-set! float () progress-addr 0 progress))
+	   (SetShaderValue shader progressLoc (ftype-pointer-address progress-addr) 0)
+	   (update:music)
+	   (unless (> TEXT_SHOWN 1000)
+	     (set! TEXT_SHOWN (+ TEXT_SHOWN 2)))
+	   (when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+	     (EndShaderMode)
+	     )] ;updating
+	  [(BeginShaderMode shader)
+           (SetShaderValueTexture shader texture1Loc newTexture)
+	   (render:location "../assets/bg/a.jpg")
+	   (EndShaderMode)
+	   ] ;drawing
+	  [(clear:location)
+	   (clear:characters)
+	   (clear:text)
+	   (clear:voice)
+	   (clear:music)] ;cleaning
+	  ))))))
 
+(define shader:fade
+  (lambda ()
+    (with-fullscreen
+     "Fade Shader"
+     (let ([oldImg (LoadImage "../assets/bg/a.jpg")]
+	   [newImg (LoadImage "../assets/bg/b.jpg")]
+	   [fade (LoadShader #f "../assets/glsl/fade.fs")])
+       (ImageResize oldImg (GetScreenWidth) (GetScreenHeight))
+       (ImageResize newImg (GetScreenWidth) (GetScreenHeight))
+       (let ([oldTex (LoadTextureFromImage oldImg)]
+	     [newTex (LoadTextureFromImage newImg)])
+	 (UnloadImage oldImg)
+	 (UnloadImage newImg)
+	 (let* ([texture1Loc (GetShaderLocation fade "texture1")]
+		[progressLoc (GetShaderLocation fade "progress")]
+		[progress-ptr (foreign-alloc (ftype-sizeof float))]
+		[progress-fptr (make-ftype-pointer float progress-ptr)]
+		[progress 0.0] [passed 0.0])
+	   (ftype-set! float () progress-fptr progress)
+	   (drawing-loop
+	    [(set! passed (+ passed (GetFrameTime)))
+	     (set! progress (/ passed 2.0))
+	     (when (>= progress 1.0)
+	       (set! progress 0.0)
+	       (set! passed 0.0))
+	     (ftype-set! float () progress-fptr progress)
+	     (SetShaderValue fade progressLoc progress-ptr SHADER_UNIFORM_FLOAT)
+	     ]
+	    [(BeginShaderMode fade)
+	     (SetShaderValueTexture fade texture1Loc newTex)
+	     (DrawTexture oldTex 0 0 WHITE)
+	     (EndShaderMode)]
+	    [(foreign-free progress-ptr)
+	     (UnloadTexture oldTex)
+	     (UnloadTexture newTex)
+	     (UnloadShader fade)])))))))

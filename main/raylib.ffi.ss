@@ -132,6 +132,7 @@
 
 					; Time
 (define-ffi GetTime () double)
+(define-ffi GetFrameTime () float)
 
 					;Color
 (define-ffi Fade ((& Color) float) (& Color))
@@ -149,6 +150,7 @@
 (define-ffi LoadRenderTexture (int int) (& RenderTexture2D))
 (define-ffi BeginTextureMode ((& RenderTexture2D)) void)
 (define-ffi EndTextureMode () void)
+(define-ffi DrawRectangle (int int int int (& Color)) void)
 
 					; Shader
 (define-ffi BeginShaderMode ((& Shader)) void)
@@ -157,6 +159,7 @@
 (define-ffi UnloadShader ((& Shader)) void)
 (define-ffi GetShaderLocation ((& Shader) string) int)
 (define-ffi SetShaderValue ((& Shader) int void* int) void)
+(define-ffi SetShaderValueTexture ((& Shader) int (& Texture2D)) void)
 
 					; Predicate
 (define-ffi IsWindowReady () boolean)

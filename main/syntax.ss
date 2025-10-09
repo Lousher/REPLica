@@ -1,8 +1,8 @@
 (define-syntax with-fullscreen
   (syntax-rules ()
     [(_ title rest ...)
-     (let ([w (GetMonitorWidth 0)]
-	   [h (GetMonitorHeight 0)]
+     (let ([w (GetScreenWidth)]
+	   [h (GetScreenHeight)]
 	   [flags (logor FLAG_WINDOW_MAXIMIZED
 			 FLAG_WINDOW_MINIMIZED
 			 FLAG_WINDOW_RESIZABLE)])
