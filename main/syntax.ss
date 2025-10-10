@@ -12,8 +12,7 @@
        (InitAudioDevice)
        rest ...
        (CloseAudioDevice)
-       (CloseWindow)
-       )]))
+       (CloseWindow))]))
 
 (define-syntax drawing-loop
   (syntax-rules ()
@@ -47,31 +46,32 @@
 		    [(set! id new) (identifier? #'id) #'(set! slot new)]
 		    [(_ diff) #'path] ...))))))])))
 
-(define-syntax music
-  (lambda (stx)
-    (syntax-case stx (:play :stop)
-      [(k :play params ...)
-      #`(lambda (funs)
-	  (let ([play-fun (cadr (assoc ':play funs))])
-	    (play-fun params ...)))])))
+(define ASSETS (make-hashtable string-hash string=?))
+
+(define asset-cache
+  (lambda (path)
+    (if (hashtable-contains? ASSETS path)
+	(hashtable-ref ASSETS path 'NULL)
+	(let* ([img (LoadImage path)]
+	       [_ (ImageResize img (GetScreenWidth) (GetScreenHeight))]
+	       [tex (LoadTextureFromImage img)])
+	  (UnloadImage img)
+	  (hashtable-set! ASSETS path tex)
+	  (asset-cache path)))))
+
+(define asset-clear
+  (lambda (path)
+    (when (hashtable-contains? ASSETS path)
+      (UnloadTexture (asset-cache path))
+      (hashtable-delete! ASSETS path))))
 	  
-(define-syntax scene
+(define-syntax texture
   (lambda (stx)
     (syntax-case stx ()
-      [(k params ...)
-       (let ([frame-keys '(:location :characters :text)]
-	     [play-keys '(:voice)]
-	     [shader-keys '(:transition)]
-	     [param-pairs (parse-params (syntax->datum #'(params ...)))])
-	 (with-syntax ([(play-funs ...) (datum->syntax #'k (map (lambda (key) (assoc key param-pairs)) play-keys))]
-		       [(render-funs ...) (datum->syntax #'k (map (lambda (key) (assoc key param-pairs)) frame-keys))]
-		       [(shader-funs ...) (datum->syntax #'k (map (lambda (key) (assoc key param-pairs)) shader-keys))]
-		       [(all-key ...) (datum->syntax #'k (append frame-keys play-keys shader-keys))])
-	   #`(lambda (funcs)
-	       (let ([all-key (cadr (assoc 'all-key funcs))] ...)
-		 (begin
-		   play-funs ...
-		   (lambda ()
-		     render-funs ...))))
-	   ))])))
-
+      [(_ name (diff path) ...)
+       #'(define-syntax name
+	   (make-variable-transformer
+	    (lambda (x)
+	      (syntax-case x (diff ...)
+		[(id) #'(begin (asset-clear path) ...)]
+		[(_ diff) #'(asset-cache path)] ...))))])))

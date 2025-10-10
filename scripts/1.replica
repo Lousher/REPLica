@@ -1,14 +1,5 @@
-(music :play (bgm midnight))
-
-(scene :location (station morning))
-(scene :location (station afternoon)
-		:characters `#(#f #f ,(yuki smile) #f #f)
-		:voice (yuki first)
-		:text "苏喻文" "好久不见啊，应该有七年了吧")
-
-(scene :location (station evening)
-       :characters `#(#f #f ,(yuki happy) #f #f)
-       :voice (yuki second)
-       :text "苏喻文" "没想到你居然在求富婆包养啊")
-
-
+(texture yuwen-bedroom
+	 (morning "../assets/bg/yuwen.bedroom.morning.png")
+	 (afternoon "../assets/bg/yuwen.bedroom.afternoon.png")
+	 (night "../assets/bg/yuwen.bedroom.night.png")
+	 (night-with-light "../assets/bg/yuwen.bedroom.night.light.png"))

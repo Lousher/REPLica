@@ -4,39 +4,28 @@
 (load "raylib.constant.ss")
 (load "syntax.ss")
 (load "tools.ss")
-(load "assets.ss")
 
 (define GAME_SPLIT 5)
 (define DIALOG_ALPHA 0.4)
 (define FILE_ALLTEXT "../scripts/allchars.txt")
 (define FILE_FONT "../assets/font/Xiaolai-Regular.ttf")
 (define TEXT_SHOWN 0)
+(define TRANSITION_DURATION 3.0)
+
+(define *render:background* #f) ;texture
+(define *render:character* #f) ;texture pos(like 1/5)
+(define *screen-width* #f)
+(define *screen-height* #f)
 
 (define draw-location
-  (lambda (w h)
-    (let ([prev ""]
-	  [rt (LoadRenderTexture w h)]
-	  [rect (make-Rectangle
-		 0.0 0.0
-		 (exact->inexact w)
-		 (exact->inexact (- h)))]
-	  [vec (make-Vector2 0.0 0.0)])
-      (values 
-       (lambda (path)
-	 (unless (string=? prev path)
-	   (let ([img (LoadImage path)])
-	     (ImageResize img w h)
-	     (let ([tex (LoadTextureFromImage img)])
-	       (UnloadImage img)
-	       (BeginTextureMode rt)
-	       (ClearBackground BLACK)
-	       (DrawTexture tex 0 0 WHITE)
-	       (EndTextureMode)
-	       (UnloadTexture tex))
-	     (set! prev path)))
-	 (DrawTextureRec (RenderTexture-texture rt)
-			 rect vec WHITE))
-       (lambda () UnloadRenderTexture rt)))))
+  (let ([origin (make-Vector2 0.0 0.0)])
+    (lambda (tex)
+      (let ([tex-w (Texture-width tex)]
+	    [tex-h (Texture-height tex)])
+	(let ([src-rec (make-Rectangle 0.0 0.0 (exact->inexact tex-w) (exact->inexact tex-h))]
+	      [dst-rec (make-Rectangle 0.0 0.0 (exact->inexact *screen-width*) (exact->inexact *screen-height*))])
+	  (DrawTexturePro tex src-rec dst-rec origin 0.0 WHITE))))))
+
 
 (define draw-characters
   (lambda (w h)
@@ -130,79 +119,13 @@
   (lambda (file)
     (with-fullscreen
      "缘心饲契"
-     (let ([screen-width (GetScreenWidth)]
-	   [screen-height (GetScreenHeight)])
-       (let-values ([(render:location clear:location) (draw-location screen-width screen-height)]
-		    [(render:characters clear:characters) (draw-characters screen-width screen-height)]
-		    [(render:text clear:text) (draw-text screen-width screen-height)]
-		    [(play:voice clear:voice) (play-voice)]
-		    [(play:music update:music set-volume:music clear:music) (play-music)])
-	 (play:music "../assets/bgm/midnight-trip.mp3")
-	 (set! shader (LoadShader #f "../assets/glsl/fade.fs"))
-	 (set! newTexture (LoadTexture "../assets/bg/b.jpg"))
-	 (set! texture1Loc (GetShaderLocation shader "texture1"))
-	 (set! progressLoc (GetShaderLocation shader "progress"))
-	 (set! progress 0.0)
-	 (set! passed 0.0)
-	 (set! progress-addr (make-ftype-pointer float (foreign-alloc (ftype-sizeof float))))
-	 (ftype-set! float () progress-addr 0 progress)
-	 (drawing-loop
-	  [(when (< progress 1.0)
-	     (set! passed (+ passed (GetFrameTime)))
-	     (set! progress (/ passed 3.0))
-	     (ftype-set! float () progress-addr 0 progress))
-	   (SetShaderValue shader progressLoc (ftype-pointer-address progress-addr) 0)
-	   (update:music)
-	   (unless (> TEXT_SHOWN 1000)
-	     (set! TEXT_SHOWN (+ TEXT_SHOWN 2)))
-	   (when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-	     (EndShaderMode)
-	     )] ;updating
-	  [(BeginShaderMode shader)
-           (SetShaderValueTexture shader texture1Loc newTexture)
-	   (render:location "../assets/bg/a.jpg")
-	   (EndShaderMode)
-	   ] ;drawing
-	  [(clear:location)
-	   (clear:characters)
-	   (clear:text)
-	   (clear:voice)
-	   (clear:music)] ;cleaning
-	  ))))))
-
-(define shader:fade
-  (lambda ()
-    (with-fullscreen
-     "Fade Shader"
-     (let ([oldImg (LoadImage "../assets/bg/a.jpg")]
-	   [newImg (LoadImage "../assets/bg/b.jpg")]
-	   [fade (LoadShader #f "../assets/glsl/fade.fs")])
-       (ImageResize oldImg (GetScreenWidth) (GetScreenHeight))
-       (ImageResize newImg (GetScreenWidth) (GetScreenHeight))
-       (let ([oldTex (LoadTextureFromImage oldImg)]
-	     [newTex (LoadTextureFromImage newImg)])
-	 (UnloadImage oldImg)
-	 (UnloadImage newImg)
-	 (let* ([texture1Loc (GetShaderLocation fade "texture1")]
-		[progressLoc (GetShaderLocation fade "progress")]
-		[progress-ptr (foreign-alloc (ftype-sizeof float))]
-		[progress-fptr (make-ftype-pointer float progress-ptr)]
-		[progress 0.0] [passed 0.0])
-	   (ftype-set! float () progress-fptr progress)
+     (let* ()
+       (texture yuwen-bedroom (morning "../assets/bg/yuwen.bedroom.morning.png")
+		(night "../assets/bg/yuwen.bedroom.night.png"))
+       (fluid-let ([*screen-width* (GetScreenWidth)] [*screen-height* (GetScreenHeight)])
+	 (fluid-let ([*render:background* draw-location])
 	   (drawing-loop
-	    [(set! passed (+ passed (GetFrameTime)))
-	     (set! progress (/ passed 2.0))
-	     (when (>= progress 1.0)
-	       (set! progress 0.0)
-	       (set! passed 0.0))
-	     (ftype-set! float () progress-fptr progress)
-	     (SetShaderValue fade progressLoc progress-ptr SHADER_UNIFORM_FLOAT)
-	     ]
-	    [(BeginShaderMode fade)
-	     (SetShaderValueTexture fade texture1Loc newTex)
-	     (DrawTexture oldTex 0 0 WHITE)
-	     (EndShaderMode)]
-	    [(foreign-free progress-ptr)
-	     (UnloadTexture oldTex)
-	     (UnloadTexture newTex)
-	     (UnloadShader fade)])))))))
+	    [] ;updating
+	    [(*render:background* (yuwen-bedroom night))] ;drawing
+	    [(yuwen-bedroom)] ;cleaning
+	    )))))))

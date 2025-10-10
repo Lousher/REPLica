@@ -5,7 +5,7 @@ void InitFullscreen(const char* title) {
   int width = GetMonitorWidth(0);
   int height = GetMonitorHeight(0);
 
-  SetConfigFlags(FLAG_FULLSCREEN_MODE);
+  //SetConfigFlags(FLAG_FULLSCREEN_MODE);
   InitWindow(width, height, title);
   SetTargetFPS(60);
 }
@@ -29,7 +29,9 @@ void DisplayImage(const char* path) {
   while (!WindowShouldClose()) {
     BeginDrawing();
     ClearBackground(BLACK);
-    DrawTextureEx(texture, (Vector2){0, 0}, 0.0f, 1.0f, WHITE);
+    DrawTexturePro(texture, (Rectangle){0, 0, texture.width, texture.height },
+		   (Rectangle){0, 0, GetMonitorWidth(0), GetMonitorHeight(0) },
+		   (Vector2){0, 0}, 0.0f, WHITE);
     EndDrawing();
   }
 
@@ -37,10 +39,7 @@ void DisplayImage(const char* path) {
   CloseWindow();
 }
 
-void PlayBGM(const char* path) {
-  InitAudioDevice();
-
-  Music music = LoadMusicStream(path);
-
-  PlayMusicStream(music);
+int main() {
+  InitFullscreen("Test Original Raylib");
+  DisplayImage("../../assets/bg/yuwen.bedroom.morning.png");
 }
