@@ -183,41 +183,46 @@
 (define ftype-pointer->ftype-symbol
   (let* ([prefix "#<ftype-pointer"]
 	 [start (string-length prefix)])
-  (lambda (fptr)
-    (let* ([str (with-output-to-string (lambda () (display fptr)))]
-	   [len (string-length str)])
-      (let find ([end (- len 1)])
-	(if (char=? #\space (string-ref str end))
-	    (string->symbol (substring str (+ start 1) end))
-	    (find (- end 1))))))))
+    (lambda (fptr)
+      (let* ([str (with-output-to-string (lambda () (display fptr)))]
+	     [len (string-length str)])
+	(let find ([end (- len 1)])
+	  (if (char=? #\space (string-ref str end))
+	      (string->symbol (substring str (+ start 1) end))
+	      (find (- end 1))))))))
 
 (define unload-resource
   (lambda (resource)
-      (case (ftype-pointer->ftype-symbol resource)
-	[(Texture Texture2D) (UnloadTexture resource)]
-	[(Sound) (UnloadSound resource)]
-	[(Music) (UnloadMusicStream resource)]
-	[else (error 'unload-resource "Not a valid resource type" resource)])))
+    (case (ftype-pointer->ftype-symbol resource)
+      [(Texture Texture2D) (UnloadTexture resource)]
+      [(Sound) (UnloadSound resource)]
+      [(Music) (UnloadMusicStream resource)]
+      [else (error 'unload-resource "Not a valid resource type" resource)])))
 
-(define-syntax make-frame
+(define-syntax make-chapter-render
   (lambda (scripts)
     (syntax-case scripts (assets)
       [(_ (assets (name (diff path) ...) ...))
-       (with-syntax ([(resource-id ...) (generate-temporaries #'(path ... ...))]
-		     [(paths ...) (datum->syntax #'assets (datum (path ... ...)))])
-	 #'(let ([resource-id #f] ...)
-	     (dynamic-wind
-	       (lambda ()
-		 (set! resource-id (load-resource paths)) ...)
-	       (fluid-let-syntax ([name (syntax-rules (diff ...)
-					  [(_ diff) resource-id] ...)] ...)
-		 (lambda ()
-		   (drawing-loop
-		    [(void)] []
-		    [(scene (another night))]
-		    [(void)])))
-	       (lambda ()
-		 (unload-resource resource-id) ...))))])))
+       (with-syntax ([((resource-ref ...) ...)
+		      (map generate-temporaries (syntax->list #'((path ...) ...)))])
+	 (with-syntax ([(resource-id ...) (datum->syntax #'assets (datum (resource-ref ... ...)))]
+		       [(paths ...) (datum->syntax #'assets (datum (path ... ...)))])
+	   #'(syntax-rules ()
+	       [(_ direct)
+		(let ([resource-id #f] ...)
+		  (dynamic-wind
+		    (lambda ()
+		      (set! resource-id (load-resource paths)) ...)
+		    (fluid-let-syntax ([name (syntax-rules (diff ...)
+					       [(_ diff) resource-ref] ...)] ...)
+		      (lambda ()
+			(drawing-loop
+			 [(void)] []
+			 [direct]
+			 [(void)])))
+		    (lambda ()
+		      (unload-resource resource-id) ...
+		      (set! resource-id #f) ...)))])))])))
 
 (define replica
   (lambda ()
@@ -226,8 +231,10 @@
      (fluid-let ([*screen-height* (GetScreenHeight)]
 		 [*screen-width* (GetScreenWidth)]
 		 [scene draw-location])
-       (make-frame
-	(assets
-;	 (bedroom (morning "../assets/bg/yuwen.bedroom.morning.png"))
-	 (another (night "../assets/bg/yuwen.bedroom.night.png"))))
-       ))))
+       (let-syntax ([render (make-chapter-render
+			     (assets
+			      (bedroom (morning "../assets/bg/yuwen.bedroom.morning.png")
+				       (night "../assets/bg/yuwen.bedroom.night.png"))
+			      ))])
+	 (render (scene (bedroom night)))
+       )))))
