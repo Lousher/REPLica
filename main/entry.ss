@@ -19,25 +19,50 @@
 (define *background* #f)
 (define scene #f)
 
-(define ASSETS (make-hashtable string-hash string=?))
+(define *assets* #f)
+
+(define file-suffix
+  (lambda (name)
+    (let ([len (string-length name)])
+      (let col ([i (- len 1)] [res '()])
+	(let ([ch (string-ref name i)])
+	  (if (char=? #\. ch)
+	      (list->string res)
+	      (col (- i 1) (cons ch res))))))))
 
 (define asset-cache
   (lambda (path)
-    (if (hashtable-contains? ASSETS path)
-	(hashtable-ref ASSETS path 'NULL)
-	(let* ([img (LoadImage path)]
-	       [_ (ImageResize img (GetScreenWidth) (GetScreenHeight))]
-	       [tex (LoadTextureFromImage img)])
-	  (UnloadImage img)
-	  (hashtable-set! ASSETS path tex)
+    (if (hashtable-contains? *assets* path)
+	(hashtable-ref *assets* path 'NULL)
+	(begin
+	  (case (file-suffix path)
+	    [("png" "jpg")
+	     (let* ([img (LoadImage path)]
+		    [_ (ImageResize img (GetScreenWidth) (GetScreenHeight))]
+		    [tex (LoadTextureFromImage img)])
+	       (UnloadImage img)
+	       (hashtable-set! *assets* path tex))]
+	    [("ogg")
+	     (hashtable-set! *assets* path (LoadSound path))]
+	    [("mp3" "wav")
+	     (hashtable-set! *assets* path (LoadMusicStream path))]
+	    [else (error 'asset-cache "Not a valid asset type!")])
 	  (asset-cache path)))))
 
-(define asset-clear
+(define asset-delete
   (lambda (path)
-    (when (hashtable-contains? ASSETS path)
-      (UnloadTexture (asset-cache path))
-      (hashtable-delete! ASSETS path))))
+    (when (hashtable-contains? *assets* path)
+      (let ([resource (asset-cache path)])
+	(case (file-suffix path)
+	  [("png" "jpg") (UnloadTexture resource)]
+	  [("ogg") (UnloadSound resource)]
+	  [("mp3" "wav") (UnloadMusicStream resource)])
+	(hashtable-delete! *assets* path)))))
 
+(define asset-clear
+  (lambda ()
+    (let ([paths (hashtable-keys *assets*)])
+      (vector-for-each asset-delete paths))))
 
 (define draw-location
   (let ([origin (make-Vector2 0.0 0.0)])
@@ -47,7 +72,6 @@
 	(let ([src-rec (make-Rectangle 0.0 0.0 (exact->inexact tex-w) (exact->inexact tex-h))]
 	      [dst-rec (make-Rectangle 0.0 0.0 (exact->inexact *screen-width*) (exact->inexact *screen-height*))])
 	  (DrawTexturePro tex src-rec dst-rec origin 0.0 WHITE))))))
-
 
 (define draw-characters
   (lambda (w h)
@@ -137,41 +161,73 @@
 	 (SetMusicVolume music volume))
        (lambda () (UnloadMusicStream music))))))
 
-(define texture-transformer
-  (lambda (stx)
-    (syntax-case stx ()
-      [(_ name (diff path) ...)
-       #'(define-syntax name
-	   (make-variable-transformer
-	    (lambda (x)
-	      (syntax-case x (diff ...)
-		[(id) #'(begin (asset-clear path) ...)]
-		[(_ diff) #'(asset-cache path)] ...))))])))
+(define asset-script '(assets
+		       (bedroom (morning "../assets/bg/yuwen.bedroom.morning.png"))
+		       (yuki (smile "../assets/character/0895.png"))
+		       (yuki-va (first "../assets/va/1.new.ogg"))
+		       (midnight "../assets/bgm/midnight-trip.mp3")))
+
+(define load-resource
+  (lambda (path)
+    (let ([suffix (file-suffix path)])
+      (case suffix
+	[("png" "jpg")
+	 (let ([img (LoadImage path)])
+	   (ImageResize img *screen-width* *screen-height*)
+	   (let ([tex (LoadTextureFromImage img)])
+	     (UnloadImage img)
+	     tex))]
+	[("ogg") (LoadSound path)]
+	[("mp3" "wav") (LoadMusicStream path)]
+	[else (error 'load-resource "Not a valid resource type")]))))
+(define ftype-pointer->ftype-symbol
+  (let* ([prefix "#<ftype-pointer"]
+	 [start (string-length prefix)])
+  (lambda (fptr)
+    (let* ([str (with-output-to-string (lambda () (display fptr)))]
+	   [len (string-length str)])
+      (let find ([end (- len 1)])
+	(if (char=? #\space (string-ref str end))
+	    (string->symbol (substring str (+ start 1) end))
+	    (find (- end 1))))))))
+
+(define unload-resource
+  (lambda (resource)
+      (case (ftype-pointer->ftype-symbol resource)
+	[(Texture Texture2D) (UnloadTexture resource)]
+	[(Sound) (UnloadSound resource)]
+	[(Music) (UnloadMusicStream resource)]
+	[else (error 'unload-resource "Not a valid resource type" resource)])))
+
+(define-syntax make-frame
+  (lambda (scripts)
+    (syntax-case scripts (assets)
+      [(_ (assets (name (diff path) ...) ...))
+       (with-syntax ([(resource-id ...) (generate-temporaries #'(path ... ...))]
+		     [(paths ...) (datum->syntax #'assets (datum (path ... ...)))])
+	 #'(let ([resource-id #f] ...)
+	     (dynamic-wind
+	       (lambda ()
+		 (set! resource-id (load-resource paths)) ...)
+	       (fluid-let-syntax ([name (syntax-rules (diff ...)
+					  [(_ diff) resource-id] ...)] ...)
+		 (lambda ()
+		   (drawing-loop
+		    [(void)] []
+		    [(scene (another night))]
+		    [(void)])))
+	       (lambda ()
+		 (unload-resource resource-id) ...))))])))
 
 (define replica
-  (lambda (script)
-    (let ([w (GetScreenWidth)] [h (GetScreenHeight)]
-	  [flags (logor FLAG_WINDOW_MAXIMIZED
-			FLAG_WINDOW_MINIMIZED
-			FLAG_WINDOW_MAXIMIZED)])
-      (SetConfigFlags flags)
-      (SetTargetFPS 60)
-      (InitWindow w h "缘心饲契")
-      (InitAudioDevice)
-
-      (fluid-let ([*screen-height* (GetScreenHeight)]
-		  [*screen-width* (GetScreenWidth)]
-		  [scene draw-location])
-	(fluid-let-syntax ([texture texture-transformer])
-	  (texture yuwen-bedroom (morning "../assets/bg/yuwen.bedroom.morning.png"))
-	  (let loop ()
-	    (unless (WindowShouldClose)
-	      (BeginDrawing)
-	      (ClearBackground BLACK)
-	      (scene (yuwen-bedroom morning))
-	      (EndDrawing)
-	      (loop)))))
-      
-      (CloseAudioDevice)
-      (CloseWindow))))
-
+  (lambda ()
+    (with-fullscreen
+     "缘心饲契"
+     (fluid-let ([*screen-height* (GetScreenHeight)]
+		 [*screen-width* (GetScreenWidth)]
+		 [scene draw-location])
+       (make-frame
+	(assets
+;	 (bedroom (morning "../assets/bg/yuwen.bedroom.morning.png"))
+	 (another (night "../assets/bg/yuwen.bedroom.night.png"))))
+       ))))
