@@ -3,3 +3,7 @@
 	 (afternoon "../assets/bg/yuwen.bedroom.afternoon.png")
 	 (night "../assets/bg/yuwen.bedroom.night.png")
 	 (night-with-light "../assets/bg/yuwen.bedroom.night.light.png"))
+
+(scene (yuwen-bedroom morning))
+
+(scene (yuwen-bedroom night))

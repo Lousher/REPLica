@@ -16,6 +16,28 @@
 (define *render:character* #f) ;texture pos(like 1/5)
 (define *screen-width* #f)
 (define *screen-height* #f)
+(define *background* #f)
+(define scene #f)
+
+(define ASSETS (make-hashtable string-hash string=?))
+
+(define asset-cache
+  (lambda (path)
+    (if (hashtable-contains? ASSETS path)
+	(hashtable-ref ASSETS path 'NULL)
+	(let* ([img (LoadImage path)]
+	       [_ (ImageResize img (GetScreenWidth) (GetScreenHeight))]
+	       [tex (LoadTextureFromImage img)])
+	  (UnloadImage img)
+	  (hashtable-set! ASSETS path tex)
+	  (asset-cache path)))))
+
+(define asset-clear
+  (lambda (path)
+    (when (hashtable-contains? ASSETS path)
+      (UnloadTexture (asset-cache path))
+      (hashtable-delete! ASSETS path))))
+
 
 (define draw-location
   (let ([origin (make-Vector2 0.0 0.0)])
@@ -115,17 +137,41 @@
 	 (SetMusicVolume music volume))
        (lambda () (UnloadMusicStream music))))))
 
+(define texture-transformer
+  (lambda (stx)
+    (syntax-case stx ()
+      [(_ name (diff path) ...)
+       #'(define-syntax name
+	   (make-variable-transformer
+	    (lambda (x)
+	      (syntax-case x (diff ...)
+		[(id) #'(begin (asset-clear path) ...)]
+		[(_ diff) #'(asset-cache path)] ...))))])))
+
 (define replica
-  (lambda (file)
-    (with-fullscreen
-     "缘心饲契"
-     (let* ()
-       (texture yuwen-bedroom (morning "../assets/bg/yuwen.bedroom.morning.png")
-		(night "../assets/bg/yuwen.bedroom.night.png"))
-       (fluid-let ([*screen-width* (GetScreenWidth)] [*screen-height* (GetScreenHeight)])
-	 (fluid-let ([*render:background* draw-location])
-	   (drawing-loop
-	    [] ;updating
-	    [(*render:background* (yuwen-bedroom night))] ;drawing
-	    [(yuwen-bedroom)] ;cleaning
-	    )))))))
+  (lambda (script)
+    (let ([w (GetScreenWidth)] [h (GetScreenHeight)]
+	  [flags (logor FLAG_WINDOW_MAXIMIZED
+			FLAG_WINDOW_MINIMIZED
+			FLAG_WINDOW_MAXIMIZED)])
+      (SetConfigFlags flags)
+      (SetTargetFPS 60)
+      (InitWindow w h "缘心饲契")
+      (InitAudioDevice)
+
+      (fluid-let ([*screen-height* (GetScreenHeight)]
+		  [*screen-width* (GetScreenWidth)]
+		  [scene draw-location])
+	(fluid-let-syntax ([texture texture-transformer])
+	  (texture yuwen-bedroom (morning "../assets/bg/yuwen.bedroom.morning.png"))
+	  (let loop ()
+	    (unless (WindowShouldClose)
+	      (BeginDrawing)
+	      (ClearBackground BLACK)
+	      (scene (yuwen-bedroom morning))
+	      (EndDrawing)
+	      (loop)))))
+      
+      (CloseAudioDevice)
+      (CloseWindow))))
+
