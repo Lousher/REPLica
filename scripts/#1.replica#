@@ -1,6 +1,0 @@
-(assets
- (bedroom (morning "../assets/bg/yuwen.bedroom.morning.png"))
- (yuki (smile "../assets/character/0895.png"))
- (yuki-va (first "../assets/va/1.new.ogg"))
- (bgm (midnight "../assets/bgm/midnight-trip.mp3")))
-

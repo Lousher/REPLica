@@ -4,3 +4,5 @@
  (yuki-va (first "../assets/va/1.new.ogg"))
  (bgm (midnight "../assets/bgm/midnight-trip.mp3")))
 
+(scene (bedroom night))
+

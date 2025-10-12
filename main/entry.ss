@@ -208,7 +208,7 @@
 	 (with-syntax ([(resource-id ...) (datum->syntax #'assets (datum (resource-ref ... ...)))]
 		       [(paths ...) (datum->syntax #'assets (datum (path ... ...)))])
 	   #'(syntax-rules ()
-	       [(_ direct)
+	       [(_ direct ......)
 		(let ([resource-id #f] ...)
 		  (dynamic-wind
 		    (lambda ()
@@ -218,23 +218,35 @@
 		      (lambda ()
 			(drawing-loop
 			 [(void)] []
-			 [direct]
+			 [direct ......]
 			 [(void)])))
 		    (lambda ()
 		      (unload-resource resource-id) ...
 		      (set! resource-id #f) ...)))])))])))
 
 (define replica
+  (lambda (file)
+    (let* ([port (open-input-file file)]
+	   [asset (read port)])
+      (close-input-port port)
+      (with-syntax ([asset-part (datum->syntax #'file asset)])
+	(syntax-rules ()
+	  [(_ cmd ...)
+	   (with-fullscreen
+	    "缘心饲契"
+	      (fluid-let ([*screen-height* (GetScreenHeight)]
+			  [*screen-width* (GetScreenWidth)]
+			  [scene draw-location])
+		(let-syntax ([render (make-chapter-render asset-part)])
+		  (render
+		   cmd ...))))])))))
+
+(define main
   (lambda ()
-    (with-fullscreen
-     "缘心饲契"
-     (fluid-let ([*screen-height* (GetScreenHeight)]
-		 [*screen-width* (GetScreenWidth)]
-		 [scene draw-location])
-       (let-syntax ([render (make-chapter-render
-			     (assets
-			      (bedroom (morning "../assets/bg/yuwen.bedroom.morning.png")
-				       (night "../assets/bg/yuwen.bedroom.night.png"))
-			      ))])
-	 (render (scene (bedroom night)))
-       )))))
+    (let-syntax ([game (replica "../scripts/1.replica")])
+      (game (scene (bedroom morning))
+	    (scene (yuki smile))
+	    ))))
+
+
+
