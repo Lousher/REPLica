@@ -1,3 +1,18 @@
+(define reads
+  (lambda (port)
+    (let ([content (read port)])
+      (if (eof-object? content) '()
+	  (cons content (reads port))))))
+
+(define file-suffix
+  (lambda (name)
+    (let ([len (string-length name)])
+      (let col ([i (- len 1)] [res '()])
+	(let ([ch (string-ref name i)])
+	  (if (char=? #\. ch)
+	      (list->string res)
+	      (col (- i 1) (cons ch res))))))))
+
 (define :id? (lambda (id) (and (symbol? id) (char=? #\: (string-ref (symbol->string id) 0)))))
 (define parse-params
   (lambda (params)
@@ -11,11 +26,7 @@
      '()
      params)))
 
-(define reads
-  (lambda (port)
-    (let ([content (read port)])
-      (if (eof-object? content) '()
-	  (cons content (reads port))))))
+					; --- divider --- ;
 
 (define symbol-format
   (lambda (fmt-str . rest)

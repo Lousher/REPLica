@@ -8,27 +8,21 @@
 (define GAME_SPLIT 5)
 (define DIALOG_ALPHA 0.4)
 (define FILE_ALLTEXT "../scripts/allchars.txt")
+(define REPLICA_FILE_SUFFIX "rpl")
+(define REPLICA_MANIFEST_SUFFIX "rpcm")
+
 (define FILE_FONT "../assets/font/Xiaolai-Regular.ttf")
 (define TEXT_SHOWN 0)
 (define TRANSITION_DURATION 3.0)
 
+(define *script-files* #f)
 (define *render:background* #f) ;texture
 (define *render:character* #f) ;texture pos(like 1/5)
 (define *screen-width* #f)
 (define *screen-height* #f)
 (define *background* #f)
 (define scene #f)
-
 (define *assets* #f)
-
-(define file-suffix
-  (lambda (name)
-    (let ([len (string-length name)])
-      (let col ([i (- len 1)] [res '()])
-	(let ([ch (string-ref name i)])
-	  (if (char=? #\. ch)
-	      (list->string res)
-	      (col (- i 1) (cons ch res))))))))
 
 (define asset-cache
   (lambda (path)
@@ -174,12 +168,16 @@
 	[("png" "jpg")
 	 (let ([img (LoadImage path)])
 	   (ImageResize img *screen-width* *screen-height*)
+	   (display *screen-height*)
+	   (newline)
+	   (display *screen-width*)
 	   (let ([tex (LoadTextureFromImage img)])
 	     (UnloadImage img)
 	     tex))]
 	[("ogg") (LoadSound path)]
 	[("mp3" "wav") (LoadMusicStream path)]
 	[else (error 'load-resource "Not a valid resource type")]))))
+
 (define ftype-pointer->ftype-symbol
   (let* ([prefix "#<ftype-pointer"]
 	 [start (string-length prefix)])
@@ -199,54 +197,44 @@
       [(Music) (UnloadMusicStream resource)]
       [else (error 'unload-resource "Not a valid resource type" resource)])))
 
-(define-syntax make-chapter-render
+(define render-init
   (lambda (scripts)
-    (syntax-case scripts (assets)
-      [(_ (assets (name (diff path) ...) ...))
+    (syntax-case (datum->syntax #'render-init scripts) (assets)
+      [(assets (name (diff path) ...) ...)
        (with-syntax ([((resource-ref ...) ...)
 		      (map generate-temporaries (syntax->list #'((path ...) ...)))])
 	 (with-syntax ([(resource-id ...) (datum->syntax #'assets (datum (resource-ref ... ...)))]
 		       [(paths ...) (datum->syntax #'assets (datum (path ... ...)))])
-	   #'(syntax-rules ()
-	       [(_ direct ......)
+	   (syntax-rules () 
+	       [(_ . direct)
 		(let ([resource-id #f] ...)
-		  (dynamic-wind
-		    (lambda ()
-		      (set! resource-id (load-resource paths)) ...)
-		    (fluid-let-syntax ([name (syntax-rules (diff ...)
-					       [(_ diff) resource-ref] ...)] ...)
+		    (dynamic-wind
 		      (lambda ()
-			(drawing-loop
-			 [(void)] []
-			 [direct ......]
-			 [(void)])))
-		    (lambda ()
-		      (unload-resource resource-id) ...
-		      (set! resource-id #f) ...)))])))])))
+			(set! resource-id (load-resource paths)) ...)
+		      (lambda ()
+			(fluid-let-syntax
+			    ([name (syntax-rules (diff ...) [(_ diff) resource-ref] ...)] ...)
+			  (drawing-loop direct)))
+		      (lambda ()
+			(unload-resource resource-id) ...
+			(set! resource-id #f) ...)))])))])))
 
 (define replica
-  (lambda (file)
-    (let* ([port (open-input-file file)]
-	   [asset (read port)])
-      (close-input-port port)
-      (with-syntax ([asset-part (datum->syntax #'file asset)])
-	(syntax-rules ()
-	  [(_ cmd ...)
-	   (with-fullscreen
-	    "缘心饲契"
-	      (fluid-let ([*screen-height* (GetScreenHeight)]
-			  [*screen-width* (GetScreenWidth)]
-			  [scene draw-location])
-		(let-syntax ([render (make-chapter-render asset-part)])
-		  (render
-		   cmd ...))))])))))
-
-(define main
-  (lambda ()
-    (let-syntax ([game (replica "../scripts/1.replica")])
-      (game (scene (bedroom morning))
-	    (scene (yuki smile))
-	    ))))
-
+  (lambda (manifest-file)
+    (assert (string=? REPLICA_MANIFEST_SUFFIX (file-suffix manifest-file)))
+    (let* ([manifest (call-with-input-file manifest-file read)]
+	   [configs (parse-params (cdr manifest))]
+	   [title (symbol->string (cadr (assoc ':title configs)))]
+	   [entry-file-name (symbol->string (cadr (assoc ':entry configs)))])
+      (let-values ([(entry-asset entry-scripts)
+		    (call-with-input-file entry-file-name
+		      (lambda (p) (let* ([a (read p)] [s (reads p)]) (values a s))))])
+	(let-syntax ([game-ctx (with-fullscreen title)]
+		     [render-ctx (render-init '(assets (bedroom (morning "../assets/bg/yuwen.bedroom.morning.png"))))])
+	  (game-ctx
+	   (render-ctx
+	    (fluid-let ([scene draw-location])
+	      (scene (bedroom morning))))
+	   ))))))
 
 
