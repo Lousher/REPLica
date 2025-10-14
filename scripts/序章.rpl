@@ -1,8 +1,11 @@
 (assets
- (bedroom (morning "../assets/bg/yuwen.bedroom.morning.png"))
- (yuki (smile "../assets/character/0895.png"))
- (yuki-va (first "../assets/va/1.new.ogg"))
- (bgm (midnight "../assets/bgm/midnight-trip.mp3")))
+ (bedroom
+  (morning "yuwen.bedroom.morning.png")
+  (night "yuwen.bedroom.night.png"))
+ (yuki (smile "0895.png")
+       (happy "0898.png"))
+ (yuki-va (first "1.new.ogg"))
+ (bgm (midnight "midnight-trip.mp3")))
 
-(scene (bedroom night))
-
+(scene (bedroom morning))
+(character (yuki happy) 3 4)

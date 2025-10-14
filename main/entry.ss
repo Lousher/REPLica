@@ -16,47 +16,14 @@
 (define TRANSITION_DURATION 3.0)
 
 (define *script-files* #f)
-(define *render:background* #f) ;texture
-(define *render:character* #f) ;texture pos(like 1/5)
 (define *screen-width* #f)
 (define *screen-height* #f)
-(define *background* #f)
+(define BACKGROUND-DIRECTORY #F)
+(define CHARACTERS-DIRECTORY #f)
+(define VOICE-DIRECTORY #f)
+(define MUSIC-DIRECTORY #f)
 (define scene #f)
-(define *assets* #f)
-
-(define asset-cache
-  (lambda (path)
-    (if (hashtable-contains? *assets* path)
-	(hashtable-ref *assets* path 'NULL)
-	(begin
-	  (case (file-suffix path)
-	    [("png" "jpg")
-	     (let* ([img (LoadImage path)]
-		    [_ (ImageResize img (GetScreenWidth) (GetScreenHeight))]
-		    [tex (LoadTextureFromImage img)])
-	       (UnloadImage img)
-	       (hashtable-set! *assets* path tex))]
-	    [("ogg")
-	     (hashtable-set! *assets* path (LoadSound path))]
-	    [("mp3" "wav")
-	     (hashtable-set! *assets* path (LoadMusicStream path))]
-	    [else (error 'asset-cache "Not a valid asset type!")])
-	  (asset-cache path)))))
-
-(define asset-delete
-  (lambda (path)
-    (when (hashtable-contains? *assets* path)
-      (let ([resource (asset-cache path)])
-	(case (file-suffix path)
-	  [("png" "jpg") (UnloadTexture resource)]
-	  [("ogg") (UnloadSound resource)]
-	  [("mp3" "wav") (UnloadMusicStream resource)])
-	(hashtable-delete! *assets* path)))))
-
-(define asset-clear
-  (lambda ()
-    (let ([paths (hashtable-keys *assets*)])
-      (vector-for-each asset-delete paths))))
+(define character #f)
 
 (define draw-location
   (let ([origin (make-Vector2 0.0 0.0)])
@@ -68,30 +35,12 @@
 	  (DrawTexturePro tex src-rec dst-rec origin 0.0 WHITE))))))
 
 (define draw-characters
-  (lambda (w h)
-    (let* ([prev (make-vector GAME_SPLIT 0)]
-	   [_ (for-each (lambda (i) (vector-set! prev i `("" . ,(make-ftype-pointer Texture2D (foreign-alloc (ftype-sizeof Texture2D)))))) (iota GAME_SPLIT))]
-	   [w-seg (/ w GAME_SPLIT)])
-      (values
-       (lambda (vec-5)
-	 (vector-for-each
-	  (lambda (vec i)
-	    (when vec
-	      (let ([prev-i (vector-ref prev i)])
-		(unless (equal? (car prev-i) vec)
-		  (UnloadTexture (cdr prev-i))
-		  (foreign-free (ftype-pointer-address (cdr prev-i)))
-		  (set-cdr! prev-i (LoadTexture vec))
-		  (set-car! prev-i vec))
-		(let* ([tex (cdr prev-i)]
-		       [xpos (- (+ (/ w-seg 2.0) (* i w-seg)) (/ (Texture-width tex) 2.0))]
-		       [ypos (- (* h 1.0) (Texture-height tex))]
-		       [ypos-mov (+ ypos (* (sin (* (GetTime) 1.5)) 3.0))])
-		  (DrawTextureV (cdr prev-i) (make-Vector2 xpos ypos-mov) WHITE)))))
-	  vec-5
-	  (list->vector (iota GAME_SPLIT))))
-       (lambda () (vector-for-each (lambda (vec) (let ([tex (cdr vec)]) (UnloadTexture tex))) prev))
-       ))))
+  (lambda (tex loc total)
+    (let* ([w-seg (/ *screen-width* total)]
+      [xpos (- (+ (/ w-seg 2.0) (* (1- loc) w-seg)) (/ (Texture-width tex) 2.0))]
+      [ypos (- (* *screen-height* 1.0) (Texture-height tex))]
+      [ypos-mov (+ ypos (* (sin (* (GetTime) 1.5)) 3.0))])
+    (DrawTextureV tex (make-Vector2 xpos ypos-mov) WHITE))))
 
 (define draw-text
   (lambda (w h)
@@ -155,11 +104,10 @@
 	 (SetMusicVolume music volume))
        (lambda () (UnloadMusicStream music))))))
 
-(define asset-script '(assets
-		       (bedroom (morning "../assets/bg/yuwen.bedroom.morning.png"))
-		       (yuki (smile "../assets/character/0895.png"))
-		       (yuki-va (first "../assets/va/1.new.ogg"))
-		       (midnight "../assets/bgm/midnight-trip.mp3")))
+(define string-prefix?
+  (lambda (pre str)
+    (let ([len (string-length pre)])
+      (string=? pre (substring str 0 len)))))
 
 (define load-resource
   (lambda (path)
@@ -167,10 +115,8 @@
       (case suffix
 	[("png" "jpg")
 	 (let ([img (LoadImage path)])
-	   (ImageResize img *screen-width* *screen-height*)
-	   (display *screen-height*)
-	   (newline)
-	   (display *screen-width*)
+	   (when (string-prefix? BACKGROUND-DIRECTORY path)
+	     (ImageResize img *screen-width* *screen-height*))
 	   (let ([tex (LoadTextureFromImage img)])
 	     (UnloadImage img)
 	     tex))]
@@ -199,25 +145,28 @@
 
 (define render-init
   (lambda (scripts)
-    (syntax-case (datum->syntax #'render-init scripts) (assets)
-      [(assets (name (diff path) ...) ...)
-       (with-syntax ([((resource-ref ...) ...)
-		      (map generate-temporaries (syntax->list #'((path ...) ...)))])
-	 (with-syntax ([(resource-id ...) (datum->syntax #'assets (datum (resource-ref ... ...)))]
-		       [(paths ...) (datum->syntax #'assets (datum (path ... ...)))])
-	   (syntax-rules () 
-	       [(_ . direct)
-		(let ([resource-id #f] ...)
-		    (dynamic-wind
-		      (lambda ()
-			(set! resource-id (load-resource paths)) ...)
-		      (lambda ()
-			(fluid-let-syntax
-			    ([name (syntax-rules (diff ...) [(_ diff) resource-ref] ...)] ...)
-			  (drawing-loop direct)))
-		      (lambda ()
-			(unload-resource resource-id) ...
-			(set! resource-id #f) ...)))])))])))
+    (assert (eqv? 'assets (car scripts)))
+    (let ([resources (cdr scripts)])
+      (with-syntax ([((name (diff path) ...) ...) (datum->syntax #'f resources)])
+	(with-syntax ([((resource-ref ...) ...)
+		       (map generate-temporaries (syntax->list #'((path ...) ...)))])
+	  (with-syntax ([(resource-id ...) (datum->syntax #'assets (datum (resource-ref ... ...)))]
+			[(paths ...) (datum->syntax #'assets (datum (path ... ...)))])
+	    (syntax-rules () 
+	      [(_ . direct)
+	       (let ([resource-id #f] ...)
+		 (dynamic-wind
+		   (lambda ()
+		     (let* ([full-paths (map (lambda (dir) (string-append dir paths)) (list BACKGROUND-DIRECTORY CHARACTERS-DIRECTORY VOICE-DIRECTORY MUSIC-DIRECTORY))]
+			    [exist-path (find file-exists? full-paths)])
+		       (set! resource-id (load-resource exist-path))) ...)
+		   (lambda ()
+		     (fluid-let-syntax
+			 ([name (syntax-rules (diff ...) [(_ diff) resource-ref] ...)] ...)
+		       (drawing-loop direct)))
+		   (lambda ()
+		     (unload-resource resource-id) ...
+		     (set! resource-id #f) ...)))])))))))
 
 (define replica
   (lambda (manifest-file)
@@ -226,15 +175,25 @@
 	   [configs (parse-params (cdr manifest))]
 	   [title (symbol->string (cadr (assoc ':title configs)))]
 	   [entry-file-name (symbol->string (cadr (assoc ':entry configs)))])
+      (set! BACKGROUND-DIRECTORY (cadr (assoc ':background configs)))
+      (set! CHARACTERS-DIRECTORY (cadr (assoc ':characters configs)))
+      (set! VOICE-DIRECTORY (cadr (assoc ':voice configs)))
+      (set! MUSIC-DIRECTORY (cadr (assoc ':music configs)))
       (let-values ([(entry-asset entry-scripts)
 		    (call-with-input-file entry-file-name
 		      (lambda (p) (let* ([a (read p)] [s (reads p)]) (values a s))))])
-	(let-syntax ([game-ctx (with-fullscreen title)]
-		     [render-ctx (render-init '(assets (bedroom (morning "../assets/bg/yuwen.bedroom.morning.png"))))])
-	  (game-ctx
-	   (render-ctx
-	    (fluid-let ([scene draw-location])
-	      (scene (bedroom morning))))
-	   ))))))
+	(with-syntax ([as (datum->syntax #'replica entry-asset)]
+		      [ti (datum->syntax #'replica title)]
+		      [(ss ...) (datum->syntax #'replica entry-scripts)])
+	  (syntax-rules ()
+	    [(_)
+	     (let-syntax ([game-ctx (with-fullscreen ti)]
+			  [render-ctx (render-init 'as)])
+	       (game-ctx
+		(render-ctx
+		 (fluid-let ([scene draw-location]
+			     [character draw-characters])
+		   ss ...
+		   ))))]))))))
 
-
+(define-syntax karma*feed (replica "../scripts/manifest.rpcm"))
