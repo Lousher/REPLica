@@ -207,6 +207,7 @@
 (define-ffi UpdateMusicStream ((& Music)) void)
 (define-ffi StopMusicStream ((& Music)) void)
 (define-ffi SetMusicVolume ((& Music) float) void)
+(define-ffi IsMusicStreamPlaying ((& Music)) boolean)
 
 					; Text
 (define-ffi DrawText (string int int int (& Color)) void)

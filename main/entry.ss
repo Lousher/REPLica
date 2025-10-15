@@ -5,7 +5,6 @@
 (load "syntax.ss")
 (load "tools.ss")
 
-(define GAME_SPLIT 5)
 (define DIALOG_ALPHA 0.4)
 (define FILE_ALLTEXT "../scripts/allchars.txt")
 (define REPLICA_FILE_SUFFIX "rpl")
@@ -13,7 +12,6 @@
 
 (define FILE_FONT "../assets/font/Xiaolai-Regular.ttf")
 (define TEXT_SHOWN 0)
-(define TRANSITION_DURATION 3.0)
 
 (define *script-files* #f)
 (define *screen-width* #f)
@@ -24,6 +22,16 @@
 (define MUSIC-DIRECTORY #f)
 (define scene #f)
 (define character #f)
+(define music #f)
+(define done #f)
+
+(define-record-type frame
+  (fields
+   (immutable scene)
+   (immutable characters)
+   (immutable text)
+   (immutable music)
+   (immutable wait)))
 
 (define draw-location
   (let ([origin (make-Vector2 0.0 0.0)])
@@ -37,47 +45,31 @@
 (define draw-characters
   (lambda (tex loc total)
     (let* ([w-seg (/ *screen-width* total)]
-      [xpos (- (+ (/ w-seg 2.0) (* (1- loc) w-seg)) (/ (Texture-width tex) 2.0))]
-      [ypos (- (* *screen-height* 1.0) (Texture-height tex))]
-      [ypos-mov (+ ypos (* (sin (* (GetTime) 1.5)) 3.0))])
-    (DrawTextureV tex (make-Vector2 xpos ypos-mov) WHITE))))
+	   [xpos (- (+ (/ w-seg 2.0) (* (1- loc) w-seg)) (/ (Texture-width tex) 2.0))]
+	   [ypos (- (* *screen-height* 1.0) (Texture-height tex))]
+	   [ypos-mov (+ ypos (* (sin (* (GetTime) 1.5)) 3.0))])
+      (DrawTextureV tex (make-Vector2 xpos ypos-mov) WHITE))))
 
-(define draw-text
-  (lambda (w h)
-    (let ([rt (LoadRenderTexture w (round (/ h 3)))]
-	  [rect (make-Rectangle
-		 0.0 0.0
-		 (exact->inexact w)
-		 (exact->inexact (- (round (/ h 3)))))]
-	  [vec (make-Vector2 0.0 (exact->inexact (* h 2/3)))])
-      (let ([img (LoadImage "../assets/dialog/e.jpg")])
-	(ImageResize img w (round (/ h 3)))
-	(let ([tex (LoadTextureFromImage img)])
-	  (UnloadImage img)
-	  (BeginTextureMode rt)
-	  (ClearBackground BLACK)
-	  (DrawTexture tex 0 0 WHITE)
-	  (EndTextureMode)
-	  (UnloadTexture tex))
-	(let* ([all-text (LoadFileText FILE_ALLTEXT)]
-	       [codepoint-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int)))]
-	       [codepoints (LoadCodepoints all-text codepoint-count)]
-	       [font (LoadFontEx FILE_FONT 50 codepoints (ftype-ref int () codepoint-count))])
-	  (foreign-free (ftype-pointer-address codepoint-count))
-	  (UnloadCodepoints codepoints)
-	  (UnloadFileText all-text)
-	  (let* ([x 0.0] [y (* h 2/3 1.0)]
-		 [size 50.0] [color WHITE]
-		 [text-vec (make-Vector2 (+ x 100) (+ y 50))]
-		 [name-vec (make-Vector2 (+ x 100) (- y 50))])
-	    (values 
-	     (lambda (who text)
-	       (DrawTextureRec (RenderTexture-texture rt) rect vec (Fade WHITE DIALOG_ALPHA))
-	       (DrawTextEx font who name-vec 75.0 0.0 color)
-	       (DrawTextEx font (TextSubtext text 0 (* 3 (floor (/ TEXT_SHOWN 10)))) text-vec size 0.0 color))
-	     (lambda ()
-	       (UnloadRenderTexture rt)
-	       (UnloadFont font)))))))))
+#|(define draw-text
+(lambda (who saying)
+(let ([img (LoadImage "../assets/dialog/e.jpg")])
+(ImageResize img w (round (/ h 3)))
+(let ([tex (LoadTextureFromImage img)])
+(let* ([all-text (LoadFileText FILE_ALLTEXT)]
+[codepoint-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int)))]
+[codepoints (LoadCodepoints all-text codepoint-count)]
+[font (LoadFontEx FILE_FONT 50 codepoints (ftype-ref int () codepoint-count))])
+(foreign-free (ftype-pointer-address codepoint-count))
+(UnloadCodepoints codepoints)
+(UnloadFileText all-text)
+(let* ([x 0.0] [y (* h 2/3 1.0)]
+[size 50.0] [color WHITE]
+[text-vec (make-Vector2 (+ x 100) (+ y 50))]
+[name-vec (make-Vector2 (+ x 100) (- y 50))])
+(lambda (who text)
+(DrawTextureRec (RenderTexture-texture rt) rect vec (Fade WHITE DIALOG_ALPHA))
+(DrawTextEx font who name-vec 75.0 0.0 color)
+(DrawTextEx font (TextSubtext text 0 (* 3 (floor (/ TEXT_SHOWN 10)))) text-vec size 0.0 color)) |#
 
 (define play-voice
   (lambda ()
@@ -91,18 +83,10 @@
        ))))
 
 (define play-music
-  (lambda ()
-    (let ([music (make-ftype-pointer Music (foreign-alloc (ftype-sizeof Music)))])
-      (values
-       (lambda (path)
-	 (UnloadMusicStream music)
-	 (set! music (LoadMusicStream path))
-	 (PlayMusicStream music))
-       (lambda ()
-	 (UpdateMusicStream music))
-       (lambda (volume)
-	 (SetMusicVolume music volume))
-       (lambda () (UnloadMusicStream music))))))
+  (lambda (mus)
+    (if (IsMusicStreamPlaying mus)
+	(UpdateMusicStream mus)
+	(PlayMusicStream mus))))
 
 (define string-prefix?
   (lambda (pre str)
@@ -163,10 +147,61 @@
 		   (lambda ()
 		     (fluid-let-syntax
 			 ([name (syntax-rules (diff ...) [(_ diff) resource-ref] ...)] ...)
-		       (drawing-loop direct)))
+		       direct))
 		   (lambda ()
 		     (unload-resource resource-id) ...
 		     (set! resource-id #f) ...)))])))))))
+
+(define read-scripts
+  (lambda (port)
+    (let col ([scripts '()] [script (read-script port)])
+      (if (null? script) (reverse scripts)
+	  (col (cons script scripts) (read-script port))))))
+
+(define read-script
+  (lambda (port)
+    (let ([content (read port)])
+      (cond
+       [(eof-object? content) '()]
+       [(wait-command? content) (list content)]
+       [else (cons content (read-script port))]))))
+
+(define wait-command?
+  (lambda (cmd) (eqv? 'wait (car cmd))))
+
+(define script->frame
+  (lambda (ss)
+    (let ([scene (assv 'scene ss)]
+	  [characters (filter (lambda (x) (eqv? (car x) 'character)) ss)]
+	  [music (assv 'music ss)]
+	  [text (assv 'text ss)]
+	  [wait (assv 'wait ss)])
+      (make-frame scene characters text music wait))))
+
+(define draw-frame
+  (lambda (frame)
+    (let ([scene (frame-scene frame)]
+	  [characters (frame-characters frame-characters)]
+	  [music (frame-music frame)]
+	  [text (frame-text frane)])
+      #f)))
+
+(define frame-drawer
+  (lambda (frame)
+    (let ([scene-part (frame-scene frame)]
+	  [characters-part (frame-characters frame)]
+	  [music-part (frame-music frame)])
+      (lambda (stx)
+	(syntax-case stx ()
+	  [(k)
+	   (with-syntax ([sc (datum->syntax #'k scene-part)]
+			 [(chs ...) (datum->syntax #'k characters-part)]
+			 [mu (datum->syntax #'k music-part)])
+	     #'(begin
+		 mu
+		 sc
+		 chs ...)
+	     )])))))
 
 (define replica
   (lambda (manifest-file)
@@ -179,21 +214,26 @@
       (set! CHARACTERS-DIRECTORY (cadr (assoc ':characters configs)))
       (set! VOICE-DIRECTORY (cadr (assoc ':voice configs)))
       (set! MUSIC-DIRECTORY (cadr (assoc ':music configs)))
-      (let-values ([(entry-asset entry-scripts)
-		    (call-with-input-file entry-file-name
-		      (lambda (p) (let* ([a (read p)] [s (reads p)]) (values a s))))])
+      (let*-values ([(entry-asset entry-scripts)
+		     (call-with-input-file entry-file-name
+		       (lambda (p) (let* ([a (read p)] [s (read-scripts p)]) (values a s))))])
 	(with-syntax ([as (datum->syntax #'replica entry-asset)]
 		      [ti (datum->syntax #'replica title)]
-		      [(ss ...) (datum->syntax #'replica entry-scripts)])
+		      [(ss ...) (datum->syntax #'replica (map script->frame entry-scripts))])
 	  (syntax-rules ()
 	    [(_)
 	     (let-syntax ([game-ctx (with-fullscreen ti)]
-			  [render-ctx (render-init 'as)])
+			  [render-ctx (render-init 'as)]
+			  [draw-frame (frame-drawer (car '(ss ...)))])
 	       (game-ctx
-		(render-ctx
+		(render-ctx 
 		 (fluid-let ([scene draw-location]
-			     [character draw-characters])
-		   ss ...
+			     [character draw-characters]
+			     [music play-music])
+		   (drawing-loop
+		    (WindowShouldClose)
+		    [(void)]
+		    [(draw-frame)])
 		   ))))]))))))
 
 (define-syntax karma*feed (replica "../scripts/manifest.rpcm"))

@@ -20,12 +20,15 @@
 
 (define-syntax drawing-loop
   (syntax-rules ()
-    [(_ [drawing ...])
-	(let loop ()
-	   (unless (WindowShouldClose)
-	     (BeginDrawing)
-	     (ClearBackground BLACK)
-	     drawing ...
-	     (EndDrawing)
-	     (loop)))]))
+    [(_ pred [updating ...] [drawing ...])
+     (let loop ()
+       (BeginDrawing)
+       (ClearBackground BLACK)
+       drawing ...
+       (EndDrawing)
+       (when pred
+	 updating ...)
+       (loop))]))
+
+
 

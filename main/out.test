@@ -1,0 +1,209 @@
+(let ([#{w nms2amqcxjfkg8afzkap039ex-0} (GetScreenWidth)]
+      [#{h nms2amqcxjfkg8afzkap039ex-1} (GetScreenHeight)]
+      [#{flags nms2amqcxjfkg8afzkap039ex-2} (#2%logor
+                                              FLAG_WINDOW_MAXIMIZED
+                                              FLAG_WINDOW_MINIMIZED
+                                              FLAG_WINDOW_RESIZABLE)])
+  (SetConfigFlags #{flags nms2amqcxjfkg8afzkap039ex-2})
+  (SetTargetFPS 60)
+  (InitWindow
+    #{w nms2amqcxjfkg8afzkap039ex-0}
+    #{h nms2amqcxjfkg8afzkap039ex-1}
+    "缘心饲契")
+  (InitAudioDevice)
+  (let ([#{g0 nms2amqcxjfkg8afzkap039ex-3} (GetScreenWidth)]
+        [#{g1 nms2amqcxjfkg8afzkap039ex-4} (GetScreenHeight)])
+    (let ([#{swap nms2amqcxjfkg8afzkap039ex-5} (lambda ()
+                                                 (let ([#{g2 nms2amqcxjfkg8afzkap039ex-6} *screen-width*]
+                                                       [#{g3 nms2amqcxjfkg8afzkap039ex-7} *screen-height*])
+                                                   (set! *screen-width*
+                                                     #{g0 nms2amqcxjfkg8afzkap039ex-3})
+                                                   (set! *screen-height*
+                                                     #{g1 nms2amqcxjfkg8afzkap039ex-4})
+                                                   (set! #{g0 nms2amqcxjfkg8afzkap039ex-3}
+                                                     #{g2 nms2amqcxjfkg8afzkap039ex-6})
+                                                   (set! #{g1 nms2amqcxjfkg8afzkap039ex-4}
+                                                     #{g3 nms2amqcxjfkg8afzkap039ex-7})))])
+      (#2%dynamic-wind
+        #t
+        #{swap nms2amqcxjfkg8afzkap039ex-5}
+        (lambda ()
+          (
+	  (let ([#{g9 nms2amqcxjfkg8afzkap039ex-8} #f]
+                 [#{g10 nms2amqcxjfkg8afzkap039ex-9} #f]
+                 [#{g7 nms2amqcxjfkg8afzkap039ex-10} #f]
+                 [#{g8 nms2amqcxjfkg8afzkap039ex-11} #f]
+                 [#{g5 nms2amqcxjfkg8afzkap039ex-12} #f]
+                 [#{g6 nms2amqcxjfkg8afzkap039ex-13} #f]
+                 [#{g4 nms2amqcxjfkg8afzkap039ex-14} #f])
+             (#2%dynamic-wind
+               (lambda ()
+                 (let ([#{full-paths nms2amqcxjfkg8afzkap039ex-15} (#2%map
+                                                                     (lambda (#{dir nms2amqcxjfkg8afzkap039ex-16})
+                                                                       (#2%string-append
+                                                                         #{dir nms2amqcxjfkg8afzkap039ex-16}
+                                                                         "yuwen.bedroom.morning.png"))
+                                                                     (#2%list
+                                                                       BACKGROUND-DIRECTORY
+                                                                       CHARACTERS-DIRECTORY
+                                                                       VOICE-DIRECTORY
+                                                                       MUSIC-DIRECTORY))])
+                   (let ([#{exist-path nms2amqcxjfkg8afzkap039ex-17} (#2%find
+                                                                       #2%file-exists?
+                                                                       #{full-paths nms2amqcxjfkg8afzkap039ex-15})])
+                     (set! #{g9 nms2amqcxjfkg8afzkap039ex-8}
+                       (load-resource
+                         #{exist-path nms2amqcxjfkg8afzkap039ex-17}))))
+                 (let ([#{full-paths nms2amqcxjfkg8afzkap039ex-18} (#2%map
+                                                                     (lambda (#{dir nms2amqcxjfkg8afzkap039ex-19})
+                                                                       (#2%string-append
+                                                                         #{dir nms2amqcxjfkg8afzkap039ex-19}
+                                                                         "yuwen.bedroom.night.png"))
+                                                                     (#2%list
+                                                                       BACKGROUND-DIRECTORY
+                                                                       CHARACTERS-DIRECTORY
+                                                                       VOICE-DIRECTORY
+                                                                       MUSIC-DIRECTORY))])
+                   (let ([#{exist-path nms2amqcxjfkg8afzkap039ex-20} (#2%find
+                                                                       #2%file-exists?
+                                                                       #{full-paths nms2amqcxjfkg8afzkap039ex-18})])
+                     (set! #{g10 nms2amqcxjfkg8afzkap039ex-9}
+                       (load-resource
+                         #{exist-path nms2amqcxjfkg8afzkap039ex-20}))))
+                 (let ([#{full-paths nms2amqcxjfkg8afzkap039ex-21} (#2%map
+                                                                     (lambda (#{dir nms2amqcxjfkg8afzkap039ex-22})
+                                                                       (#2%string-append
+                                                                         #{dir nms2amqcxjfkg8afzkap039ex-22}
+                                                                         "0895.png"))
+                                                                     (#2%list
+                                                                       BACKGROUND-DIRECTORY
+                                                                       CHARACTERS-DIRECTORY
+                                                                       VOICE-DIRECTORY
+                                                                       MUSIC-DIRECTORY))])
+                   (let ([#{exist-path nms2amqcxjfkg8afzkap039ex-23} (#2%find
+                                                                       #2%file-exists?
+                                                                       #{full-paths nms2amqcxjfkg8afzkap039ex-21})])
+                     (set! #{g7 nms2amqcxjfkg8afzkap039ex-10}
+                       (load-resource
+                         #{exist-path nms2amqcxjfkg8afzkap039ex-23}))))
+                 (let ([#{full-paths nms2amqcxjfkg8afzkap039ex-24} (#2%map
+                                                                     (lambda (#{dir nms2amqcxjfkg8afzkap039ex-25})
+                                                                       (#2%string-append
+                                                                         #{dir nms2amqcxjfkg8afzkap039ex-25}
+                                                                         "0898.png"))
+                                                                     (#2%list
+                                                                       BACKGROUND-DIRECTORY
+                                                                       CHARACTERS-DIRECTORY
+                                                                       VOICE-DIRECTORY
+                                                                       MUSIC-DIRECTORY))])
+                   (let ([#{exist-path nms2amqcxjfkg8afzkap039ex-26} (#2%find
+                                                                       #2%file-exists?
+                                                                       #{full-paths nms2amqcxjfkg8afzkap039ex-24})])
+                     (set! #{g8 nms2amqcxjfkg8afzkap039ex-11}
+                       (load-resource
+                         #{exist-path nms2amqcxjfkg8afzkap039ex-26}))))
+                 (let ([#{full-paths nms2amqcxjfkg8afzkap039ex-27} (#2%map
+                                                                     (lambda (#{dir nms2amqcxjfkg8afzkap039ex-28})
+                                                                       (#2%string-append
+                                                                         #{dir nms2amqcxjfkg8afzkap039ex-28}
+                                                                         "1.new.ogg"))
+                                                                     (#2%list
+                                                                       BACKGROUND-DIRECTORY
+                                                                       CHARACTERS-DIRECTORY
+                                                                       VOICE-DIRECTORY
+                                                                       MUSIC-DIRECTORY))])
+                   (let ([#{exist-path nms2amqcxjfkg8afzkap039ex-29} (#2%find
+                                                                       #2%file-exists?
+                                                                       #{full-paths nms2amqcxjfkg8afzkap039ex-27})])
+                     (set! #{g5 nms2amqcxjfkg8afzkap039ex-12}
+                       (load-resource
+                         #{exist-path nms2amqcxjfkg8afzkap039ex-29}))))
+                 (let ([#{full-paths nms2amqcxjfkg8afzkap039ex-30} (#2%map
+                                                                     (lambda (#{dir nms2amqcxjfkg8afzkap039ex-31})
+                                                                       (#2%string-append
+                                                                         #{dir nms2amqcxjfkg8afzkap039ex-31}
+                                                                         "2.new.ogg"))
+                                                                     (#2%list
+                                                                       BACKGROUND-DIRECTORY
+                                                                       CHARACTERS-DIRECTORY
+                                                                       VOICE-DIRECTORY
+                                                                       MUSIC-DIRECTORY))])
+                   (let ([#{exist-path nms2amqcxjfkg8afzkap039ex-32} (#2%find
+                                                                       #2%file-exists?
+                                                                       #{full-paths nms2amqcxjfkg8afzkap039ex-30})])
+                     (set! #{g6 nms2amqcxjfkg8afzkap039ex-13}
+                       (load-resource
+                         #{exist-path nms2amqcxjfkg8afzkap039ex-32}))))
+                 (let ([#{full-paths nms2amqcxjfkg8afzkap039ex-33} (#2%map
+                                                                     (lambda (#{dir nms2amqcxjfkg8afzkap039ex-34})
+                                                                       (#2%string-append
+                                                                         #{dir nms2amqcxjfkg8afzkap039ex-34}
+                                                                         "midnight-trip.mp3"))
+                                                                     (#2%list
+                                                                       BACKGROUND-DIRECTORY
+                                                                       CHARACTERS-DIRECTORY
+                                                                       VOICE-DIRECTORY
+                                                                       MUSIC-DIRECTORY))])
+                   (let ([#{exist-path nms2amqcxjfkg8afzkap039ex-35} (#2%find
+                                                                       #2%file-exists?
+                                                                       #{full-paths nms2amqcxjfkg8afzkap039ex-33})])
+                     (set! #{g4 nms2amqcxjfkg8afzkap039ex-14}
+                       (load-resource
+                         #{exist-path nms2amqcxjfkg8afzkap039ex-35})))))
+               (lambda ()
+                 ((let ([#{g12 nms2amqcxjfkg8afzkap039ex-36} draw-location]
+                        [#{g13 nms2amqcxjfkg8afzkap039ex-37} draw-characters]
+                        [#{g11 nms2amqcxjfkg8afzkap039ex-38} play-music])
+                    (let ([#{swap nms2amqcxjfkg8afzkap039ex-39}
+			   (lambda ()
+                                                                  (let ([#{g15 nms2amqcxjfkg8afzkap039ex-40} scene]
+                                                                        [#{g16 nms2amqcxjfkg8afzkap039ex-41} character]
+                                                                        [#{g14 nms2amqcxjfkg8afzkap039ex-42} music])
+                                                                    (set! scene
+                                                                      #{g12 nms2amqcxjfkg8afzkap039ex-36})
+                                                                    (set! character
+                                                                      #{g13 nms2amqcxjfkg8afzkap039ex-37})
+                                                                    (set! music
+                                                                      #{g11 nms2amqcxjfkg8afzkap039ex-38})
+                                                                    (set! #{g12 nms2amqcxjfkg8afzkap039ex-36}
+                                                                      #{g15 nms2amqcxjfkg8afzkap039ex-40})
+                                                                    (set! #{g13 nms2amqcxjfkg8afzkap039ex-37}
+                                                                      #{g16 nms2amqcxjfkg8afzkap039ex-41})
+                                                                    (set! #{g11 nms2amqcxjfkg8afzkap039ex-38}
+                                                                      #{g14 nms2amqcxjfkg8afzkap039ex-42})))])
+                      (#2%dynamic-wind
+                        #t
+                        #{swap nms2amqcxjfkg8afzkap039ex-39}
+                        (lambda ()
+                          ((letrec ([#{loop nms2amqcxjfkg8afzkap039ex-43} (lambda ()
+                                                                            (BeginDrawing)
+                                                                            (ClearBackground
+                                                                              BLACK)
+                                                                            (scene
+                                                                              #{g9 nms2amqcxjfkg8afzkap039ex-8})
+                                                                            (EndDrawing)
+                                                                            (if (IsMouseButtonPressed
+                                                                                  MOUSE_BUTTON_LEFT)
+                                                                                (#2%display
+                                                                                  "HAHA")
+                                                                                (#{loop nms2amqcxjfkg8afzkap039ex-43})))])
+                             #{loop nms2amqcxjfkg8afzkap039ex-43})))
+                        #{swap nms2amqcxjfkg8afzkap039ex-39})))))
+               (lambda ()
+                 (unload-resource #{g9 nms2amqcxjfkg8afzkap039ex-8})
+                 (unload-resource #{g10 nms2amqcxjfkg8afzkap039ex-9})
+                 (unload-resource #{g7 nms2amqcxjfkg8afzkap039ex-10})
+                 (unload-resource #{g8 nms2amqcxjfkg8afzkap039ex-11})
+                 (unload-resource #{g5 nms2amqcxjfkg8afzkap039ex-12})
+                 (unload-resource #{g6 nms2amqcxjfkg8afzkap039ex-13})
+                 (unload-resource #{g4 nms2amqcxjfkg8afzkap039ex-14})
+                 (set! #{g9 nms2amqcxjfkg8afzkap039ex-8} #f)
+                 (set! #{g10 nms2amqcxjfkg8afzkap039ex-9} #f)
+                 (set! #{g7 nms2amqcxjfkg8afzkap039ex-10} #f)
+                 (set! #{g8 nms2amqcxjfkg8afzkap039ex-11} #f)
+                 (set! #{g5 nms2amqcxjfkg8afzkap039ex-12} #f)
+                 (set! #{g6 nms2amqcxjfkg8afzkap039ex-13} #f)
+                 (set! #{g4 nms2amqcxjfkg8afzkap039ex-14} #f))))))
+        #{swap nms2amqcxjfkg8afzkap039ex-5})))
+  (CloseAudioDevice)
+  (CloseWindow))
