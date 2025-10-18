@@ -13,18 +13,6 @@
 	      (list->string res)
 	      (col (- i 1) (cons ch res))))))))
 
-(define :id? (lambda (id) (and (symbol? id) (char=? #\: (string-ref (symbol->string id) 0)))))
-(define parse-params
-  (lambda (params)
-    (fold-left
-     (lambda (acc next)
-       (if (:id? next)
-	   (append acc (list (list next)))
-	   (let ([last (last-pair acc)])
-	     (set-cdr! (car last) (append (cdar last) (list next)))
-	     acc)))
-     '()
-     params)))
 
 					; --- divider --- ;
 

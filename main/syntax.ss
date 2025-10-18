@@ -12,6 +12,7 @@
 	  (SetTargetFPS 60)
 	  (InitWindow w h title)
 	  (InitAudioDevice)
+	
 	  (fluid-let ([*screen-width* (GetScreenWidth)]
 		      [*screen-height* (GetScreenHeight)])
 	    rest)

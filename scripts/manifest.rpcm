@@ -1,7 +1,7 @@
 (manifest
  :title 缘心饲契
  :entry ../scripts/序章.rpl
- :background "../assets/bg/"
- :characters "../assets/character/"
- :voice "../assets/va/"
- :music "../assets/bgm/")
+ :background ../assets/bg/
+ :characters ../assets/character/
+ :voice ../assets/va/
+ :music ../assets/bgm/)
