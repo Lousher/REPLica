@@ -1,6 +1,7 @@
 (load-shared-object "libraylib.5.5.0.dylib")
 (load "raylib.ffi.ss")
 (load "raylib.constant.ss")
+(import (chezscheme csv7))
 
 (define *MANIFEST* #f)
 (define *SCREEN-HEIGHT* #f)
@@ -12,9 +13,21 @@
   (fields
    (mutable music)
    (mutable scene)))
+    
 (define-record-type manifest
   (fields title directories entry))
-
+(define frame-combine
+  (lambda (prev next)
+      (let ([frame-fields (record-type-field-names (record-type-descriptor prev))])
+      (let* ([frame-rtd (record-type-descriptor prev)]
+	     [frame-field-accessor (lambda (key) (record-field-accessor frame-rtd key))]
+	     [frame-field-accessors (map frame-field-accessor frame-fields)])
+	(let ([prev-vals (map (lambda (acc) (acc prev)) frame-field-accessors)]
+	      [next-vals (map (lambda (acc) (acc next)) frame-field-accessors)])
+	  (let ([combined-vals (map (lambda (prev-val next-val)
+				      (if next-val next-val prev-val))
+				    prev-vals next-vals)])
+	    (apply make-frame combined-vals)))))))
 (define :id? (lambda (id) (and (symbol? id) (char=? #\: (string-ref (symbol->string id) 0)))))
 (define parse-params
   (lambda (params)
@@ -96,22 +109,29 @@
 	(lambda ()
 	  (foreign-free progress-ptr)
 	  (TraceLog LOG_INFO "Shading Transition Over"))))))
+(define update-music
+  (lambda (music)
+    (when music
+      (if (IsMusicStreamPlaying music)
+	  (UpdateMusicStream music)
+	  (PlayMusicStream music)))))
+
 (define drawing
   (lambda (frames)
     (let* ([fade (LoadShader #f "../assets/glsl/fade.fs")]
-	   [index 0] [frame (vector-ref frames index)]
+	   [index 0]
+	   [frame (vector-ref frames 0)]
 	   [scene (frame-scene frame)]
 	   [music (frame-music frame)])
-      (when music
-	(PlayMusicStream music))
       (let loop ()
 	(when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
 	  (fluid-let ([*PREVIOUS-SCREEN* frame])
 	    (set! index (1+ index))
-	    (set! frame (vector-ref frames index))
+	    (set! frame (frame-combine frame (vector-ref frames index)))
 	    (set! scene (frame-scene frame))
+	    (set! music (frame-music frame))
 	    (shading fade frame)))
-	(UpdateMusicStream music)
+	(update-music music)
 	(BeginDrawing)
 	(ClearBackground BLACK)
 	(DrawTexture scene 0 0 WHITE)
@@ -135,7 +155,7 @@
 (define read-scripts
   (lambda (port)
     (let col ([scripts '()] [script (read-script port)])
-      (if (null? script) (reverse scripts)
+      (if (null? script) (list->vector (reverse scripts))
 	  (col (cons script scripts) (read-script port))))))
 (define read-chapter
   (lambda (chapter-file)
@@ -180,6 +200,12 @@
 (define assets-ref
   (lambda (key)
     (hashtable-ref *ASSETS* key (lambda () (error 'assets-ref "No such key in assets" key)))))
+(define symbol-concat
+  (lambda syms
+    (let ([all-str (apply format
+	    (apply string-append (make-list (length syms) "~a-"))
+	    syms)])
+      (string->symbol (substring all-str 0 (1- (string-length all-str)))))))
 (define unload-resource
   (lambda (resource)
     (case (ftype-pointer->ftype-symbol resource)
@@ -212,7 +238,18 @@
      (lambda ()
        (let ([keys (map car asset-alist)])
 	 (for-each assets-delete keys))))))
-    
+(define script->frame
+  (lambda (script)
+    (let ([scene-part (assv 'scene script)]
+	  [music-part (assv 'music script)]
+	  [resource-ref (lambda (part)
+			  (if part
+			      (assets-ref (apply symbol-concat (cadr part)))
+			      #f))])
+      (let ([music-resource (resource-ref music-part)]
+	    [scene-resource (resource-ref scene-part)])
+	(make-frame music-resource scene-resource)))))
+       
 (define replica
   (lambda (manifest-file)
     (fluid-let ([*MANIFEST* (read-manifest manifest-file)])
@@ -223,12 +260,7 @@
 	   (dynamic-wind
 	     (lambda () (load-assets))
 	     (lambda ()
-	       (let ([bg1 (load-background "../assets/bg/yuwen.bedroom.morning.png")]
-		     [bg2 (load-background "../assets/bg/yuwen.bedroom.afternoon.png")]
-		     [bg3 (load-background "../assets/bg/yuwen.bedroom.night.png")]
-		     [bg4 (load-background "../assets/bg/yuwen.bedroom.night.light.png")]
-		     [bgm (LoadMusicStream "../assets/bgm/midnight-trip.mp3")])
-		 (let ([frames (vector-map (lambda (bg) (make-frame bgm bg)) (vector bg1 bg2 bg3 bg4))])
-		   (drawing frames))))
+	       (let ([frames (vector-map script->frame scripts)])
+		   (drawing frames)))
 	     (lambda () (unload-assets))
 	     )))))))

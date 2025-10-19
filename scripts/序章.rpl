@@ -11,12 +11,14 @@
 	  (second "2.new.ogg"))
  (bgm (midnight "midnight-trip.mp3")))
 
-(music (bgm midnight))
+
 (scene (bedroom morning))
+
 
 (wait click)
 
 (scene (bedroom afternoon))
+(music (bgm midnight))
 
 (wait click)
 
