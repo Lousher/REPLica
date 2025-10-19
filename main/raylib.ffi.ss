@@ -221,6 +221,9 @@
 (define-ffi TextSubtext (string int int) string)
 (define-ffi GetCodepointCount (string) int)
 
+;; Logging
+(define-ffi TraceLog (int string) void)
+
 ;; Custome Extension
 (define RenderTexture-texture
   (lambda params

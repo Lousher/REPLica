@@ -1,0 +1,10 @@
+(manifest
+ :title "缘心饲契"
+ :directories
+ [:chapters "../scripts/"
+  :background "../assets/bg/"
+  :characters "../assets/character/"
+  :voice "../assets/va/"
+  :music "../assets/bgm/"]
+ :entry "menu.rpl"
+ )
