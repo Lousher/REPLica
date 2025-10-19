@@ -2,7 +2,8 @@
  (bedroom
   (morning "yuwen.bedroom.morning.png")
   (afternoon "yuwen.bedroom.afternoon.png")
-  (night "yuwen.bedroom.night.png"))
+  (night "yuwen.bedroom.night.png")
+  (night-with-light "yuwen.bedroom.night.light.png"))
  (yuki (smile "0895.png")
        (happy "0898.png")
        (star-eye "0911.png"))
@@ -12,14 +13,14 @@
 
 (music (bgm midnight))
 (scene (bedroom morning))
-(character (yuki smile) 1 4)
 
 (wait click)
 
 (scene (bedroom afternoon))
-(character (yuki happy) 2 4)
 
 (wait click)
 
 (scene (bedroom night))
-(character (yuki star-eye) 3 4)
+
+(wait click)
+(scene (bedroom night-with-light))
