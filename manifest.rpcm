@@ -5,6 +5,7 @@
   :background "../assets/bg/"
   :characters "../assets/character/"
   :voice "../assets/va/"
-  :music "../assets/bgm/"]
+  :music "../assets/bgm/"
+  :sound "../assets/sound/"]
  :entry "../scripts/序章.rpl"
  )

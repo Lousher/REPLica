@@ -9,26 +9,14 @@
        (star-eye "0911.png"))
  (yuki-va (first "1.new.ogg")
 	  (second "2.new.ogg"))
- (bgm (midnight "midnight-trip.mp3")))
+ (bgm (midnight "midnight-trip.mp3"))
+ (ring (rightone "rightone.mp3")))
 
 (scene (bedroom morning))
-(character (yuki smile) 1 5)
-(music (bgm midnight))
-(text "yuki" "it's really a pleasure")
-(voice (yuki-va first))
+(sound (ring rightone))
 
 (wait click)
-
-(scene (bedroom morning))
-(character (yuki happy) 2 5)
-(text "yuki" "that you could rely on me")
-(voice (yuki-va second))
+(text "苏喻文" "...喂？")
 
 (wait click)
-
-(scene (bedroom night))
-(character (yuki star-eye) 3 5)
-(text "yuki" "it's been a long time since we graguated!")
-
-(wait click)
-(scene (bedroom night-with-light))
+(text "Mom" "你还在睡觉吗？都早上十点了！")

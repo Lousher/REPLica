@@ -199,6 +199,7 @@
 (define-ffi StopSound ((& Sound)) void)
 (define-ffi PauseSound ((& Sound)) void)
 (define-ffi ResumeSound ((& Sound)) void)
+(define-ffi IsSoundPlaying ((& Sound)) boolean)
 
 ;; Music
 (define-ffi LoadMusicStream (string) (& Music))
@@ -210,10 +211,12 @@
 (define-ffi IsMusicStreamPlaying ((& Music)) boolean)
 
 					; Text
+(define-ffi DrawTextCodepoints ((& Font) (* int) int (& Vector2) float float (& Color)) void)
 (define-ffi DrawText (string int int int (& Color)) void)
 (define-ffi LoadFileText (string) (* char))
-(define-ffi LoadCodepoints ((* char) (* int)) (* int))
+(define-ffi LoadCodepoints (string (* int)) (* int))
 (define-ffi LoadFontEx (string int (* int) int) (& Font))
+(define-ffi LoadFont (string) (& Font))
 (define-ffi UnloadFileText ((* char)) void)
 (define-ffi UnloadCodepoints ((* int)) void)
 (define-ffi UnloadFont ((& Font)) void)

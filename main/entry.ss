@@ -11,9 +11,11 @@
 (define *PREVIOUS-SCREEN* #f)
 (define *ASSETS* (make-hashtable symbol-hash symbol=?))
 (define *EXIT* #f)
+(define *FONT* #f)
+
 
 (define-record-type frame
-  (fields music scene character text voice))
+  (fields music scene character text voice sound))
 
 (define-record-type manifest
   (fields title directories entry))
@@ -28,7 +30,9 @@
 	      [next-vals (frame-vals next)])
 	  (let ([combined-vals (map (lambda (prev-val next-val) (if next-val next-val prev-val))
 				    prev-vals next-vals)])
-	    (apply make-frame combined-vals)))))))
+	    (apply make-frame
+		   (append (list-head combined-vals 4)
+			   (list-tail next-vals 4)))))))))
 (define :id? (lambda (id) (and (symbol? id) (char=? #\: (string-ref (symbol->string id) 0)))))
 (define parse-params
   (lambda (params)
@@ -68,7 +72,8 @@
     (let ([title (manifest-title *MANIFEST*)])
       (dynamic-wind
 	(lambda () (fullscreen-init title))
-	(lambda () (fluid-let ([*SCREEN-WIDTH* (GetScreenWidth)] [*SCREEN-HEIGHT* (GetScreenHeight)])
+	(lambda () (fluid-let ([*SCREEN-WIDTH* (GetScreenWidth)] [*SCREEN-HEIGHT* (GetScreenHeight)]
+			       [*FONT* (LoadFont "../assets/font/Xiaolai-Regular.ttf")])
 		     (start
 		      (manifest-entry *MANIFEST*))))
 	(lambda () (fullscreen-deinit))))))
@@ -128,7 +133,7 @@
     (eqv? 'wait (car script))))
 (define normal-script?
   (lambda (script)
-    (memv (car script) '(scene music text character voice))))
+    (memv (car script) '(scene music text character voice sound))))
 (define read-script
   (lambda (port)
     (let ([content (read port)])
@@ -179,7 +184,7 @@
 	    (case (car existed-dir)
 	      [(:background) (hashtable-set! *ASSETS* key (load-background fullpath))]
 	      [(:characters) (hashtable-set! *ASSETS* key (LoadTexture fullpath))]
-	      [(:voice) (hashtable-set! *ASSETS* key (LoadSound fullpath))]
+	      [(:voice :sound) (hashtable-set! *ASSETS* key (LoadSound fullpath))]
 	      [(:music) (hashtable-set! *ASSETS* key (LoadMusicStream fullpath))]
 	      [else (error 'assets-cache "No such file in manifest defined directories" filename)])))))))
 (define assets-ref
@@ -230,18 +235,21 @@
 	  [character-part (assv 'character script)]
 	  [text-part (assv 'text script)]
 	  [voice-part (assv 'voice script)]
+	  [sound-part (assv 'sound script)]
 	  [resource-ref (lambda (part)
 			  (if part (assets-ref (apply symbol-concat (cadr part))) #f))])
       (let ([music-resource (resource-ref music-part)]
 	    [scene-resource (resource-ref scene-part)]
 	    [character-resource (resource-ref character-part)]
-	    [voice-resource (resource-ref voice-part)])
+	    [voice-resource (resource-ref voice-part)]
+	    [sound-resource (resource-ref sound-part)])
 	(make-frame
 	 music-resource
 	 scene-resource
 	 character-resource
 	 (if text-part (cdr text-part) #f)
 	 voice-resource
+	 sound-resource
 	 )))))
 
 (define drawing
@@ -250,27 +258,47 @@
 	  [sc (frame-scene fr)]
 	  [ch (frame-character fr)]
 	  [va (frame-voice fr)]
-	  [te (cadr (frame-text fr))]
-	  [te-w (round (/ *SCREEN-WIDTH* 5))]
-	  [te-h (round (* *SCREEN-HEIGHT* 2/3))])
-      (TraceLog LOG_INFO "Enter frame")
-      (let ([drawer (lambda ()
+	  [so (frame-sound fr)]
+	  [te-w (/ *SCREEN-WIDTH* 5.0)]
+	  [te-h (* 2.0 (/ *SCREEN-HEIGHT* 3.0))])
+      (let* ([te (if (frame-text fr) (cadr (frame-text fr)) "")]
+	     [pos (make-Vector2 te-w te-h)]
+	     [ct-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int)))]
+	     [cts (LoadCodepoints te ct-count)]
+	     [font (LoadFontEx "../assets/font/Xiaolai-Regular.ttf" 50 cts (ftype-ref int () ct-count))])
+	(TraceLog LOG_INFO "Enter frame")
+	(let ([drawer (lambda (passed)
 		      (update-music mu)
 		      (DrawTexture sc 0 0 WHITE)
 		      (draw-character ch 3 5)
-		      (DrawText te te-w te-h 50 WHITE))])
+		      (DrawTextEx
+		       font (TextSubtext te 0 (* 3 (floor (/ passed 3))))
+		       pos 50.0 0.0 WHITE))])
 	(when va (PlaySound va))
-	(let loop ()
+	(when so (PlaySound so))
+	(let loop ([passed 0])
 	  (when (WindowShouldClose)
 	    (*EXIT*))
 	  (BeginDrawing)
 	  (ClearBackground BLACK)
-	  (drawer)
+	  (drawer passed)
 	  (EndDrawing)
 	  (unless (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-	    (loop))))
-      (TraceLog LOG_INFO "Exit frame")
-      fr)))
+	    (loop (+ passed 1)))))
+	(TraceLog LOG_INFO "Exit frame")
+	(foreign-free (ftype-pointer-address ct-count))
+	(UnloadCodepoints cts)
+	(UnloadFont font)
+      fr))))
+
+(define completing
+  (lambda (fr)
+    (let ([so (frame-sound fr)]
+	  [va (frame-voice fr)])
+      (when (and so (IsSoundPlaying so))
+	(StopSound so))
+      (when (and va (IsSoundPlaying va))
+	(StopSound va)))))
 
 (define replica
   (lambda (manifest-file)
@@ -290,9 +318,10 @@
 		      (fold-left
 		       (lambda (prev next)
 			 (let ([updated (frame-succeed prev next)])
+			   (completing prev)
 			   (unless (equal? (frame-scene prev) (frame-scene updated))
 			     (shading fade prev updated))
 			   (drawing updated)))
-		       (make-frame #f #f #f #f #f)
+		       (make-frame #f #f #f #f #f #f)
 		       frames)))
 		  (lambda () (unload-assets))))))))))))
