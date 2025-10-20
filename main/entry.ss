@@ -1,6 +1,8 @@
 (load-shared-object "libraylib.5.5.0.dylib")
+(load-shared-object "raylib.ffi.so")
 (load "raylib.ffi.ss")
 (load "raylib.constant.ss")
+
 (import (chezscheme csv7))
 
 (define *MANIFEST* #f)
@@ -8,24 +10,23 @@
 (define *SCREEN-WIDTH* #f)
 (define *PREVIOUS-SCREEN* #f)
 (define *ASSETS* (make-hashtable symbol-hash symbol=?))
+(define *EXIT* #f)
 
 (define-record-type frame
-  (fields
-   (mutable music)
-   (mutable scene)))
-    
+  (fields music scene character text voice))
+
 (define-record-type manifest
   (fields title directories entry))
-(define frame-combine
+(define frame-succeed
   (lambda (prev next)
-      (let ([frame-fields (record-type-field-names (record-type-descriptor prev))])
+    (let ([frame-fields (record-type-field-names (record-type-descriptor prev))])
       (let* ([frame-rtd (record-type-descriptor prev)]
 	     [frame-field-accessor (lambda (key) (record-field-accessor frame-rtd key))]
-	     [frame-field-accessors (map frame-field-accessor frame-fields)])
-	(let ([prev-vals (map (lambda (acc) (acc prev)) frame-field-accessors)]
-	      [next-vals (map (lambda (acc) (acc next)) frame-field-accessors)])
-	  (let ([combined-vals (map (lambda (prev-val next-val)
-				      (if next-val next-val prev-val))
+	     [frame-field-accessors (map frame-field-accessor frame-fields)]
+	     [frame-vals (lambda (f) (map (lambda (acc) (acc f)) frame-field-accessors))])
+	(let ([prev-vals (frame-vals prev)]
+	      [next-vals (frame-vals next)])
+	  (let ([combined-vals (map (lambda (prev-val next-val) (if next-val next-val prev-val))
 				    prev-vals next-vals)])
 	    (apply make-frame combined-vals)))))))
 (define :id? (lambda (id) (and (symbol? id) (char=? #\: (string-ref (symbol->string id) 0)))))
@@ -54,15 +55,14 @@
   (lambda (title)
     (let ([w (GetScreenWidth)]
 	  [h (GetScreenHeight)]
-	  [flags (logor FLAG_WINDOW_MAXIMIZED
-			FLAG_WINDOW_MINIMIZED
-			FLAG_WINDOW_RESIZABLE)])
+	  [flags (logor FLAG_WINDOW_MAXIMIZED FLAG_WINDOW_MINIMIZED)])
       (SetConfigFlags flags)
       (SetTargetFPS 60)
       (InitWindow w h title)
-      (InitAudioDevice))))
+      (InitAudioDevice)
+      (TraceLog LOG_INFO "Fullscreen Inited"))))
 (define fullscreen-deinit
-  (lambda () (CloseAudioDevice) (CloseWindow)))
+  (lambda () (CloseAudioDevice) (CloseWindow) (TraceLog LOG_INFO "Fullscreen Deinited")))
 (define with-fullscreen
   (lambda (start)
     (let ([title (manifest-title *MANIFEST*)])
@@ -80,7 +80,7 @@
 	(UnloadImage img)
 	tex))))
 (define shading
-  (lambda (sh next)
+  (lambda (sh prev next)
     (let ([progress-ptr #f])
       (dynamic-wind
 	(lambda ()
@@ -90,15 +90,15 @@
 	  (let ([prev-tex-loc (GetShaderLocation sh "texture1")]
 		[progress-loc (GetShaderLocation sh "progress")]
 		[progress-fptr (make-ftype-pointer float progress-ptr)]
-		[total 1.5] [new-scene (frame-scene next)] [prev-scene (frame-scene *PREVIOUS-SCREEN*)]
-		[music (frame-music next)])
+		[total 1.5] [prev-scene (frame-scene prev)]
+		[new-scene (frame-scene next)])
 	    (let loop ([passed 0.0])
 	      (ftype-set! float () progress-fptr (/ passed total))
 	      (BeginDrawing)
-	      (UpdateMusicStream music)
 	      (ClearBackground BLACK)
 	      (BeginShaderMode sh)
-	      (SetShaderValueTexture sh prev-tex-loc prev-scene)
+	      (when prev-scene
+	      (SetShaderValueTexture sh prev-tex-loc prev-scene))
 	      (SetShaderValue sh progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
 	      (DrawTexture new-scene 0 0 WHITE)
 	      (EndShaderMode)
@@ -115,35 +115,20 @@
       (if (IsMusicStreamPlaying music)
 	  (UpdateMusicStream music)
 	  (PlayMusicStream music)))))
+(define draw-character
+  (lambda (tex loc total)
+    (when tex
+      (let* ([w-seg (/ *SCREEN-WIDTH* total)]
+	     [xpos (- (+ (/ w-seg 2.0) (* (1- loc) w-seg)) (/ (Texture-width tex) 2.0))]
+	     [ypos (- (* *SCREEN-HEIGHT* 1.0) (Texture-height tex))])
+	(DrawTextureV tex (make-Vector2 xpos ypos) WHITE)))))
 
-(define drawing
-  (lambda (frames)
-    (let* ([fade (LoadShader #f "../assets/glsl/fade.fs")]
-	   [index 0]
-	   [frame (vector-ref frames 0)]
-	   [scene (frame-scene frame)]
-	   [music (frame-music frame)])
-      (let loop ()
-	(when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-	  (fluid-let ([*PREVIOUS-SCREEN* frame])
-	    (set! index (1+ index))
-	    (set! frame (frame-combine frame (vector-ref frames index)))
-	    (set! scene (frame-scene frame))
-	    (set! music (frame-music frame))
-	    (shading fade frame)))
-	(update-music music)
-	(BeginDrawing)
-	(ClearBackground BLACK)
-	(DrawTexture scene 0 0 WHITE)
-	(EndDrawing)
-	(unless (WindowShouldClose)
-	  (loop))))))
 (define wait-script?
   (lambda (script)
     (eqv? 'wait (car script))))
 (define normal-script?
   (lambda (script)
-    (memv (car script) '(scene music text character))))
+    (memv (car script) '(scene music text character voice))))
 (define read-script
   (lambda (port)
     (let ([content (read port)])
@@ -155,7 +140,7 @@
 (define read-scripts
   (lambda (port)
     (let col ([scripts '()] [script (read-script port)])
-      (if (null? script) (list->vector (reverse scripts))
+      (if (null? script) (reverse scripts)
 	  (col (cons script scripts) (read-script port))))))
 (define read-chapter
   (lambda (chapter-file)
@@ -203,8 +188,8 @@
 (define symbol-concat
   (lambda syms
     (let ([all-str (apply format
-	    (apply string-append (make-list (length syms) "~a-"))
-	    syms)])
+			  (apply string-append (make-list (length syms) "~a-"))
+			  syms)])
       (string->symbol (substring all-str 0 (1- (string-length all-str)))))))
 (define unload-resource
   (lambda (resource)
@@ -242,25 +227,72 @@
   (lambda (script)
     (let ([scene-part (assv 'scene script)]
 	  [music-part (assv 'music script)]
+	  [character-part (assv 'character script)]
+	  [text-part (assv 'text script)]
+	  [voice-part (assv 'voice script)]
 	  [resource-ref (lambda (part)
-			  (if part
-			      (assets-ref (apply symbol-concat (cadr part)))
-			      #f))])
+			  (if part (assets-ref (apply symbol-concat (cadr part))) #f))])
       (let ([music-resource (resource-ref music-part)]
-	    [scene-resource (resource-ref scene-part)])
-	(make-frame music-resource scene-resource)))))
-       
+	    [scene-resource (resource-ref scene-part)]
+	    [character-resource (resource-ref character-part)]
+	    [voice-resource (resource-ref voice-part)])
+	(make-frame
+	 music-resource
+	 scene-resource
+	 character-resource
+	 (if text-part (cdr text-part) #f)
+	 voice-resource
+	 )))))
+
+(define drawing
+  (lambda (fr)
+    (let ([mu (frame-music fr)]
+	  [sc (frame-scene fr)]
+	  [ch (frame-character fr)]
+	  [va (frame-voice fr)]
+	  [te (cadr (frame-text fr))]
+	  [te-w (round (/ *SCREEN-WIDTH* 5))]
+	  [te-h (round (* *SCREEN-HEIGHT* 2/3))])
+      (TraceLog LOG_INFO "Enter frame")
+      (let ([drawer (lambda ()
+		      (update-music mu)
+		      (DrawTexture sc 0 0 WHITE)
+		      (draw-character ch 3 5)
+		      (DrawText te te-w te-h 50 WHITE))])
+	(when va (PlaySound va))
+	(let loop ()
+	  (when (WindowShouldClose)
+	    (*EXIT*))
+	  (BeginDrawing)
+	  (ClearBackground BLACK)
+	  (drawer)
+	  (EndDrawing)
+	  (unless (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+	    (loop))))
+      (TraceLog LOG_INFO "Exit frame")
+      fr)))
+
 (define replica
   (lambda (manifest-file)
     (fluid-let ([*MANIFEST* (read-manifest manifest-file)])
-      (with-fullscreen
-       (lambda (chapter-file)
-	 (let*-values ([(assets scripts) (read-chapter chapter-file)]
-		       [(load-assets unload-assets) (assets-lifecycle (assets-flatten assets))])
-	   (dynamic-wind
-	     (lambda () (load-assets))
-	     (lambda ()
-	       (let ([frames (vector-map script->frame scripts)])
-		   (drawing frames)))
-	     (lambda () (unload-assets))
-	     )))))))
+      (call/cc
+       (lambda (exit)
+	 (fluid-let ([*EXIT* exit])
+	   (with-fullscreen
+	    (lambda (chapter-file)
+	      (let*-values ([(assets scripts) (read-chapter chapter-file)]
+			    [(load-assets unload-assets) (assets-lifecycle (assets-flatten assets))])
+		(dynamic-wind
+		  (lambda () (load-assets))
+		  (lambda ()
+		    (let ([frames (map script->frame scripts)]
+			  [fade (LoadShader #f "../assets/glsl/fade.fs")])
+		      (fold-left
+		       (lambda (prev next)
+			 (let ([updated (frame-succeed prev next)])
+			   (unless (equal? (frame-scene prev) (frame-scene updated))
+			     (shading fade prev updated))
+			   (drawing updated)))
+		       (make-frame #f #f #f #f #f)
+		       frames)))
+		  (lambda () (unload-assets))))))))))))

@@ -11,18 +11,24 @@
 	  (second "2.new.ogg"))
  (bgm (midnight "midnight-trip.mp3")))
 
-
 (scene (bedroom morning))
-
+(character (yuki smile) 1 5)
+(music (bgm midnight))
+(text "yuki" "it's really a pleasure")
+(voice (yuki-va first))
 
 (wait click)
 
-(scene (bedroom afternoon))
-(music (bgm midnight))
+(scene (bedroom morning))
+(character (yuki happy) 2 5)
+(text "yuki" "that you could rely on me")
+(voice (yuki-va second))
 
 (wait click)
 
 (scene (bedroom night))
+(character (yuki star-eye) 3 5)
+(text "yuki" "it's been a long time since we graguated!")
 
 (wait click)
 (scene (bedroom night-with-light))
