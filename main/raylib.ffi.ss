@@ -119,6 +119,30 @@
     [recs void*]
     [glyphs void*]))
 
+(define-ftype Camera2D
+  (struct
+    [offset Vector2]
+    [target Vector2]
+    [rotation float]
+    [zoom float]))
+
+(define make-Camera2D
+  (lambda (o t r z)
+    (camera-2d->Camera2D (make-camera-2d o t r z))))
+   
+(define camera-2d->Camera2D
+  (lambda (camera)
+    (let* ([size (ftype-sizeof Camera2D)]
+	   [addr (foreign-alloc size)]
+	   [fptr (make-ftype-pointer Camera2D addr)])
+      (ftype-set! Camera2D (offset x) fptr (car (camera-2d-offset camera)))
+      (ftype-set! Camera2D (offset y) fptr (cdr (camera-2d-offset camera)))
+      (ftype-set! Camera2D (target x) fptr (car (camera-2d-target camera)))
+      (ftype-set! Camera2D (target y) fptr (cdr (camera-2d-target camera)))
+      (ftype-set! Camera2D (rotation) fptr (camera-2d-rotation camera))
+      (ftype-set! Camera2D (zoom) fptr (camera-2d-zoom camera))
+      fptr)))
+
 					; Init related
 (define-ffi GetMonitorWidth (int) int)
 (define-ffi GetMonitorHeight (int) int)
@@ -223,7 +247,9 @@
 (define-ffi DrawTextEx ((& Font) string (& Vector2) float float (& Color)) void)
 (define-ffi TextSubtext (string int int) string)
 (define-ffi GetCodepointCount (string) int)
-
+;;Camera
+(define-ffi BeginMode2D ((& Camera2D)) void)
+(define-ffi EndMode2D () void)
 ;; Logging
 (define-ffi TraceLog (int string) void)
 

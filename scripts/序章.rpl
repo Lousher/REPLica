@@ -16,6 +16,23 @@
 (sound (ring rightone))
 
 (wait click)
+(camera (let ([passed 0.0])
+	  (lambda (x)
+	    (set! passed (+ passed 0.05))
+	      (make-Camera2D
+	       `(0.0 . ,(* *SCREEN-HEIGHT* 1.0))
+	       `(,passed . ,(* *SCREEN-HEIGHT* 1.0))
+	       0.0 2.0))))
+(effect (let* ([mask (LoadShader #f "../assets/glsl/mask.fs")]
+			     [progress-ptr (foreign-alloc (ftype-sizeof float))]
+			     [progress-loc (GetShaderLocation mask "progress")]
+			     [progress-fptr (make-ftype-pointer float progress-ptr)])
+	  (let ([passed 0.0])
+	    (lambda (x)
+	      (set! passed (+ passed 0.02))
+	      (ftype-set! float () progress-fptr (min passed 1.0))
+	      (SetShaderValue mask progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
+	      mask))))
 (text "苏喻文" "...喂？")
 
 (wait click)

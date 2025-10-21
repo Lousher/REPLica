@@ -289,7 +289,8 @@
 			(draw-character ch 3 5)
 			(DrawTextEx
 			 font (TextSubtext te 0 (* 3 (floor (/ passed 3))))
-			 pos 50.0 0.0 WHITE))])
+			 pos 50.0 0.0 WHITE)
+			)])
 	(when va (PlaySound va))
 	(when so (PlaySound so))
 	(let loop ([passed 0])
