@@ -12,33 +12,11 @@
  (bgm (midnight "midnight-trip.mp3"))
  (ring (rightone "rightone.mp3")))
 
-(scene (bedroom morning))
+
 (sound (ring rightone))
-
-(wait click)
-(camera (let ([passed 0.0])
-	  (lambda (x)
-	    (when (<= passed 200)
-	      (set! passed (+ passed 0.5)))
-	      (make-Camera2D
-	       `(0.0 . ,(* *SCREEN-HEIGHT* 1.0))
-	       `(,passed . ,(* *SCREEN-HEIGHT* 1.0))
-	       0.0 2.0))))
-(effect (let* ([mask (LoadShader #f "../assets/glsl/mask.fs")]
-			     [progress-ptr (foreign-alloc (ftype-sizeof float))]
-			     [progress-loc (GetShaderLocation mask "progress")]
-			     [progress-fptr (make-ftype-pointer float progress-ptr)])
-	  (let ([passed 0.0])
-	    (lambda (x)
-	      (set! passed (+ passed 0.02))
-	      (ftype-set! float () progress-fptr (min passed 1.0))
-	      (SetShaderValue mask progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
-	      mask))))
 (text "苏喻文" "...喂？")
+(character (yuki star-eye))
+(voice (yuki-va first))
 
 (wait click)
 
-(scene (bedroom afternoon))
-(text "Mom" "你还在睡觉吗？都早上十点了！")
-
-(next "../scripts/序章.rpl")

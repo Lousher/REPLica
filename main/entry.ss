@@ -2,7 +2,6 @@
 (load-shared-object "raylib.ffi.so")
 (load "raylib.ffi.ss")
 (load "raylib.constant.ss")
-
 (import (chezscheme csv7))
 
 (define *MANIFEST* #f)
@@ -12,27 +11,38 @@
 (define *EXIT* #f)
 (define *SCREEN-TEXTURE* #f)
 (define state #f)
-					; 1 ~ 5 fields are able to succeed
+
+(define-record-type frame-persistent
+  (fields
+   (mutable music)
+   (mutable scene)
+   (mutable camera)
+   (mutable effect))
+  (protocol
+   (lambda (make)
+     (case-lambda
+       [() (make #f #f #f #f)]
+       [(m s c e) (make m s c e)]))))
+(define-record-type frame-temporary
+  (fields character text voice sound)
+  (protocol
+   (lambda (make)
+     (case-lambda
+       [() (make #f #f #f #f)]
+       [(c t v s) (make c t v s)]))))
 (define-record-type frame
-  (fields music scene camera effect character text voice sound))
+  (fields persistent-part temporary-part)
+  (protocol
+   (lambda (make)
+     (case-lambda
+       [() (make (make-frame-persistent) (make-frame-temporary))]
+       [(per tem) (make per tem)]))))
+
 (define-record-type camera-2d
   (fields offset target rotation zoom))
 (define-record-type manifest
   (fields title directories entry state))
-(define frame-succeed
-  (lambda (prev next)
-    (let ([frame-fields (record-type-field-names (record-type-descriptor prev))])
-      (let* ([frame-rtd (record-type-descriptor prev)]
-	     [frame-field-accessor (lambda (key) (record-field-accessor frame-rtd key))]
-	     [frame-field-accessors (map frame-field-accessor frame-fields)]
-	     [frame-vals (lambda (f) (map (lambda (acc) (acc f)) frame-field-accessors))])
-	(let ([prev-vals (frame-vals prev)]
-	      [next-vals (frame-vals next)])
-	  (let ([combined-vals (map (lambda (prev-val next-val) (if next-val next-val prev-val))
-				    prev-vals next-vals)])
-	    (apply make-frame
-		   (append (list-head combined-vals 6)
-			   (list-tail next-vals 6)))))))))
+
 (define :id? (lambda (id) (and (symbol? id) (char=? #\: (string-ref (symbol->string id) 0)))))
 (define parse-params
   (lambda (params)
@@ -97,8 +107,8 @@
 	  (let ([prev-tex-loc (GetShaderLocation sh "texture1")]
 		[progress-loc (GetShaderLocation sh "progress")]
 		[progress-fptr (make-ftype-pointer float progress-ptr)]
-		[total 1.5] [prev-scene (frame-scene prev)]
-		[new-scene (frame-scene next)])
+		[total 1.5] [prev-scene (frame-persistent-scene (frame-persistent-part prev))]
+		[new-scene (frame-persistent-scene (frame-persistent-part next))])
 	    (let loop ([passed 0.0])
 	      (ftype-set! float () progress-fptr (/ passed total))
 	      (BeginDrawing)
@@ -233,66 +243,73 @@
      (lambda ()
        (let ([keys (map car asset-alist)])
 	 (for-each assets-delete keys))))))
+
+(define asset-expression?
+  (lambda (x)
+    (and (list? x)
+	 (= 2 (length x))
+	 (for-all symbol?  x))))
 (define script->frame
   (lambda (script)
-    (let ([scene-part (assv 'scene script)]
-	  [music-part (assv 'music script)]
-	  [character-part (assv 'character script)]
-	  [text-part (assv 'text script)]
-	  [camera-part (assv 'camera script)]
-	  [voice-part (assv 'voice script)]
-	  [sound-part (assv 'sound script)]
-	  [effect-part (assv 'effect script)]
-	  [resource-ref (lambda (part)
-			  (if part (assets-ref (apply symbol-concat (cadr part))) #f))])
-      (let ([music-resource (resource-ref music-part)]
-	    [scene-resource (resource-ref scene-part)]
-	    [character-resource (resource-ref character-part)]
-	    [voice-resource (resource-ref voice-part)]
-	    [sound-resource (resource-ref sound-part)])
-	(make-frame
-	 music-resource
-	 scene-resource
-	 (if camera-part (eval (cadr camera-part)) #f)
-	 (if effect-part (eval (cadr effect-part)) #f)
-	 character-resource
-	 (if text-part (cdr text-part) #f)
-	 voice-resource
-	 sound-resource
-	 )))))
+    (let* ([frame-persistent-rtd (record-type-descriptor (make-frame-persistent))]
+	   [frame-temporary-rtd (record-type-descriptor (make-frame-temporary))]
+	   [frame-persistent-fields (record-type-field-names frame-persistent-rtd)]
+	   [frame-temporary-fields (record-type-field-names frame-temporary-rtd)])
+      (let ([script-persistent-part (map (lambda (per-f)
+					   (let ([exist (assv per-f script)])
+					     (if (and exist (not (null? (cdr exist))))
+						 (cdr exist) #f)))
+					 frame-persistent-fields)]
+	    [script-tempory-part (map (lambda (tem-f)
+					(let ([exist (assv tem-f script)])
+					  (if (and exist (not (null? (cdr exist))))
+					      (cdr exist) #f)))
+				      frame-temporary-fields)])
+	(let ([script->arguments (lambda (sc)
+				   (if sc (map (lambda (item)
+						 (if (asset-expression? item)
+						     (assets-ref (apply symbol-concat item))
+						     item)) sc)
+				       #f))])
+	  (make-frame
+	   (apply make-frame-persistent (map script->arguments script-persistent-part))
+	   (apply make-frame-temporary (map script->arguments script-tempory-part))))))))
+   	 
 (define drawing
   (lambda (fr)
-    (let ([mu (frame-music fr)]
-	  [sc (frame-scene fr)]
-	  [ch (frame-character fr)]
-	  [va (frame-voice fr)]
-	  [so (frame-sound fr)]
-	  [te-w (/ *SCREEN-WIDTH* 5.0)]
-	  [te-h (* 2.0 (/ *SCREEN-HEIGHT* 3.0))]
-	  [ca (frame-camera fr)]
-	  [ve (frame-effect fr)])
-      (let* ([te (if (frame-text fr) (cadr (frame-text fr)) "")]
+    (let ([temp (frame-temporary-part fr)]
+	  [pers (frame-persistent-part fr)])
+      (let ([mu (frame-persistent-music pers)]
+	    [sc (frame-persistent-scene pers)]
+	    [ch (frame-temporary-character temp)]
+	    [va (frame-temporary-voice temp)]
+	    [so (frame-temporary-sound temp)]
+	    [te-w (/ *SCREEN-WIDTH* 5.0)]
+	    [te-h (* 2.0 (/ *SCREEN-HEIGHT* 3.0))]
+	    [ca (frame-persistent-camera pers)]
+	    [ve (frame-persistent-effect pers)])
+      (let* ([te (if (frame-temporary-text temp) (car (frame-temporary-text temp)) "")]
 	     [pos (make-Vector2 te-w te-h)]
 	     [ct-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int)))]
 	     [cts (LoadCodepoints te ct-count)]
 	     [font (LoadFontEx "../assets/font/Xiaolai-Regular.ttf" 50 cts (ftype-ref int () ct-count))])
 	(TraceLog LOG_INFO "Enter frame")
 	(let ([drawer (lambda (passed)
-			(update-music mu)
+			(apply update-music mu)
 			(BeginTextureMode *SCREEN-TEXTURE*)
 			(when ca
-			  (BeginMode2D (ca passed)))
-			(DrawTexture sc 0 0 WHITE)
+			  (BeginMode2D ((eval (car ca)) passed)))
+			(DrawTexture (car sc) 0 0 WHITE)
 			(EndMode2D)
 			(EndTextureMode)
 			(when ve
-			  (BeginShaderMode (ve passed)))
+			  (BeginShaderMode ((eval (car ve)) passed)))
 			(DrawTextureRec (RenderTexture-texture *SCREEN-TEXTURE*)
 					(make-Rectangle 0.0 0.0 (* *SCREEN-WIDTH* 1.0) (* *SCREEN-HEIGHT* -1.0))
 					(make-Vector2 0.0 0.0)
 					WHITE)
 			(EndShaderMode)
-			(draw-character ch 3 5)
+			(draw-character (car ch) 3 5)
 			(DrawTextEx
 			 font (TextSubtext te 0 (* 3 (floor (/ passed 3))))
 			 pos 50.0 0.0 WHITE))])
@@ -311,41 +328,35 @@
 	(foreign-free (ftype-pointer-address ct-count))
 	(UnloadCodepoints cts)
 	(UnloadFont font)
-      fr))))
+      fr)))))
 (define completing
   (lambda (fr)
-    (let ([so (frame-sound fr)]
-	  [va (frame-voice fr)])
+    (let ([fr-temp (frame-temporary-part fr)])
+      (let ([so (frame-temporary-sound fr-temp)]
+	    [va (frame-temporary-voice fr-temp)])
       (when (and so (IsSoundPlaying so))
 	(StopSound so))
       (when (and va (IsSoundPlaying va))
-	(StopSound va)))))
-(define replica-bak
-  (lambda (manifest-file)
-    (fluid-let ([*MANIFEST* (read-manifest manifest-file)])
-      (call/cc
-       (lambda (exit)
-	 (fluid-let ([*EXIT* exit])
-	   (with-fullscreen
-	    (lambda (chapter-file)
-	      (let*-values ([(assets scripts) (read-chapter chapter-file)]
-			    [(load-assets unload-assets) (assets-lifecycle (assets-flatten assets))])
-		(dynamic-wind
-		  (lambda () (load-assets))
-		  (lambda ()
-		    (let ([frames (map script->frame scripts)]
-			  [fade (LoadShader #f "../assets/glsl/fade.fs")])
-		      (fold-left
-		       (lambda (prev next)
-			 (let ([updated (frame-succeed prev next)])
-			   (completing prev)
-			   (unless (equal? (frame-scene prev) (frame-scene updated))
-			     (shading fade prev updated))
-			   (drawing updated)))
-		       (make-frame #f #f #f #f #f #f #f #f)
-		       frames)))
-		  (lambda () (unload-assets)))))))
-	 )))))
+	(StopSound va))))))
+	
+(define storying
+  (lambda (chapter-file)
+    (let*-values ([(assets scripts) (read-chapter chapter-file)]
+		  [(load-assets unload-assets) (assets-lifecycle (assets-flatten assets))])
+      (dynamic-wind
+	(lambda () (load-assets))
+	(lambda ()
+	  (let ([frames (map script->frame scripts)]
+		[fade (LoadShader #f "../assets/glsl/fade.fs")])
+	    (fold-left
+	     (lambda (prev next)
+					;(drawing next)
+	       (display next)
+	       (newline)
+	       )
+	     (make-frame)
+	     frames)))
+	(lambda () (unload-assets))))))
 
 (define replica
   (lambda (manifest-file)
@@ -356,25 +367,4 @@
 	(lambda (exit)
 	  (fluid-let ([*EXIT* exit])
 	    (lambda ()
-	      (let next ([chapter (manifest-entry *MANIFEST*)])
-		(let*-values ([(assets scripts) (read-chapter chapter)]
-			      [(load-assets unload-assets) (assets-lifecycle (assets-flatten assets))])
-		  (dynamic-wind
-		    (lambda () (load-assets))
-		    (lambda ()
-		      (let ([frames (map script->frame scripts)]
-			    [fade (LoadShader #f "../assets/glsl/fade.fs")])
-			(fold-left
-			 (lambda (prev next)
-			   (let ([updated (frame-succeed prev next)])
-			     (completing prev)
-			     (unless (equal? (frame-scene prev) (frame-scene updated))
-			       (shading fade prev updated))
-			     (drawing updated)))
-			 (make-frame #f #f #f #f #f #f #f #f)
-			 frames)))
-		    (lambda () (unload-assets)))
-		  (let* ([last-script (car (last-pair scripts))]
-			 [last-cmd (car (last-pair last-script))])
-		    (when (next-script? last-cmd)
-		      (next (cadr last-cmd))))))))))))))
+	      (storying (manifest-entry *MANIFEST*))))))))))
