@@ -10,7 +10,12 @@
 (define *ASSETS* (make-hashtable symbol-hash symbol=?))
 (define *EXIT* #f)
 (define *SCREEN-TEXTURE* #f)
+(define *SCREEN-TEXTURE-DRAWER* #f)
 (define state #f)
+
+;; global shader
+(define mask-on #f)
+(define mask-off #f)
 
 (define-record-type frame-persistent
   (fields
@@ -31,7 +36,8 @@
        [() (make #f #f #f #f)]
        [(c t v s) (make c t v s)]))))
 (define-record-type frame
-  (fields persistent-part temporary-part)
+  (fields persistent-part
+	  (mutable temporary-part))
   (protocol
    (lambda (make)
      (case-lambda
@@ -80,13 +86,41 @@
       (TraceLog LOG_INFO "Fullscreen Inited"))))
 (define fullscreen-deinit
   (lambda () (CloseAudioDevice) (CloseWindow) (TraceLog LOG_INFO "Fullscreen Deinited")))
+(define init-shaders
+  (lambda ()
+    (let* ([progress 0.0]
+	   [mask (LoadShader #f "../assets/glsl/mask.fs")]
+	   [progress-ptr (foreign-alloc (ftype-sizeof float))]
+	   [progress-loc (GetShaderLocation mask "progress")]
+	   [progress-fptr (make-ftype-pointer float progress-ptr)])
+      (set! mask-on
+	    (lambda (x)
+	      (when (<= progress 1.0)
+		(set! progress (+ progress 0.02)))
+	      (ftype-set! float () progress-fptr (min progress 1.0))
+	      (SetShaderValue mask progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
+	      mask))
+      (set! mask-off
+	    (lambda (x)
+	      (when (>= progress 0.0)
+		(set! progress (- progress 0.02)))
+	      (ftype-set! float () progress-fptr (min progress 1.0))
+	      (SetShaderValue mask progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
+	      mask)))))
+
 (define with-fullscreen
   (lambda (start)
     (let ([title (manifest-title *MANIFEST*)])
       (dynamic-wind
-	(lambda () (fullscreen-init title))
+	(lambda ()
+	  (fullscreen-init title) (init-shaders))
 	(lambda () (fluid-let ([*SCREEN-WIDTH* (GetScreenWidth)] [*SCREEN-HEIGHT* (GetScreenHeight)]
-			       [*SCREEN-TEXTURE* (LoadRenderTexture (GetScreenWidth) (GetScreenHeight))])
+			       [*SCREEN-TEXTURE* (LoadRenderTexture (GetScreenWidth) (GetScreenHeight))]
+			       [*SCREEN-TEXTURE-DRAWER* (let ([src-rec (make-Rectangle 0.0 0.0 (* (GetScreenWidth) 1.0) (* (GetScreenHeight) -1.0))]
+							      [ori-vec (make-Vector2 0.0 0.0)])
+							  (lambda () (DrawTextureRec
+								      (RenderTexture-texture *SCREEN-TEXTURE*)
+								      src-rec ori-vec WHITE)))])
 		     (start)))
 	(lambda () (fullscreen-deinit))))))
 (define load-background
@@ -257,8 +291,10 @@
 	   [frame-temporary-fields (record-type-field-names frame-temporary-rtd)])
       (let ([script-persistent-part (map (lambda (per-f)
 					   (let ([exist (assv per-f script)])
-					     (if (and exist (not (null? (cdr exist))))
-						 (cdr exist) #f)))
+					     (cond
+					      [(and exist (not (null? (cdr exist))))
+					       (cdr exist)]
+					      [else #f])))
 					 frame-persistent-fields)]
 	    [script-tempory-part (map (lambda (tem-f)
 					(let ([exist (assv tem-f script)])
@@ -275,61 +311,57 @@
 	   (apply make-frame-persistent (map script->arguments script-persistent-part))
 	   (apply make-frame-temporary (map script->arguments script-tempory-part))))))))
 
-(define drawing
+(define make-frame-render
   (lambda (fr)
-    (let ([temp (frame-temporary-part fr)]
-	  [pers (frame-persistent-part fr)])
-      (let ([mu (frame-persistent-music pers)]
-	    [sc (frame-persistent-scene pers)]
-	    [ch (frame-temporary-character temp)]
-	    [va (frame-temporary-voice temp)]
-	    [so (frame-temporary-sound temp)]
-	    [te-w (/ *SCREEN-WIDTH* 5.0)]
-	    [te-h (* 2.0 (/ *SCREEN-HEIGHT* 3.0))]
-	    [ca (frame-persistent-camera pers)]
-	    [ve (frame-persistent-effect pers)])
-      (let* ([te (if (frame-temporary-text temp) (cadr (frame-temporary-text temp)) "")]
-	     [pos (make-Vector2 te-w te-h)]
-	     [ct-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int)))]
-	     [cts (LoadCodepoints te ct-count)]
-	     [font (LoadFontEx "../assets/font/Xiaolai-Regular.ttf" 50 cts (ftype-ref int () ct-count))])
-	(TraceLog LOG_INFO "Enter frame")
-	(let ([drawer (lambda (passed)
-;			(update-music (if mu (car mu) #f))
-;			(BeginTextureMode *SCREEN-TEXTURE*)
-;			(when ca
-;			  (BeginMode2D ((eval (car ca)) passed)))
-			(DrawTexture (car sc) 0 0 WHITE)
-;			(EndMode2D)
-;			(EndTextureMode)
-;			(when ve
-;			  (BeginShaderMode ((eval (car ve)) passed)))
-;			(DrawTextureRec (RenderTexture-texture *SCREEN-TEXTURE*)
-;					(make-Rectangle 0.0 0.0 (* *SCREEN-WIDTH* 1.0) (* *SCREEN-HEIGHT* -1.0))
-;					(make-Vector2 0.0 0.0)
-;					WHITE)
-;			(EndShaderMode)
-;			(draw-character (car ch) 3 5)
-;			(DrawTextEx
-;			 font (TextSubtext te 0 (* 3 (floor (/ passed 3))))
-					;			 pos 50.0 0.0 WHITE))])
-			)])
-;	(when va (PlaySound va))
-;	(when so (PlaySound so))
-	(let loop ([passed 0])
-	  (when (WindowShouldClose)
-	    (*EXIT*))
-	  (BeginDrawing)
-	  (ClearBackground BLACK)
-	  (drawer passed)
-	  (EndDrawing)
-	  (unless (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-	    (loop (+ passed 1)))))
-	(TraceLog LOG_INFO "Exit frame")
-	(foreign-free (ftype-pointer-address ct-count))
-	(UnloadCodepoints cts)
-	(UnloadFont font)
-      fr)))))
+    (assert (frame? fr))
+    (let ([per-part (frame-persistent-part fr)]
+	  [tmp-part (frame-temporary-part fr)])
+      (let ([scene-args (frame-persistent-scene per-part)]
+	    [music-args (frame-persistent-music per-part)]
+	    [camera-args (frame-persistent-camera per-part)]
+	    [effect-args (frame-persistent-effect per-part)]
+	    [character-args (frame-temporary-character tmp-part)]
+	    [text-args (frame-temporary-text tmp-part)]
+	    [voice-args (frame-temporary-voice tmp-part)]
+	    [sound-args (frame-temporary-sound tmp-part)])
+	(let ([camera-fn (if camera-args (eval (car camera-args)) #f)]
+	      [effect-fn (if effect-args (eval (car effect-args)) #f)])
+	(values
+	 (lambda (passed)
+	   (BeginTextureMode *SCREEN-TEXTURE*)
+	   (when camera-args
+	     (BeginMode2D (camera-fn passed)))
+	   (when scene-args
+	     (DrawTexture (car scene-args) 0 0 WHITE))
+	   (EndMode2D)
+	   (EndTextureMode)
+
+	   (when effect-args
+	     (BeginShaderMode (effect-fn passed)))
+	   (*SCREEN-TEXTURE-DRAWER*)
+	   (EndShaderMode)
+	   )
+	 (lambda ()
+	   (when sound-args
+	     (PlaySound (car sound-args))))))))))
+	    
+(define rendering
+  (lambda (fr)
+    (TraceLog LOG_INFO "Enter frame")
+    (let-values ([(renderer sounder) (make-frame-render fr)])
+      (sounder)
+      (let loop ([passed 0])
+	(when (WindowShouldClose)
+	  (*EXIT*))
+	(BeginDrawing)
+	(ClearBackground BLACK)
+	(renderer passed)
+	(EndDrawing)
+	(unless (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+	  (loop (+ passed 1)))))
+    (TraceLog LOG_INFO "Exit frame")
+    fr))
+
 (define completing
   (lambda (fr)
     (let ([fr-temp (frame-temporary-part fr)])
@@ -339,7 +371,25 @@
 	(StopSound so))
       (when (and va (IsSoundPlaying va))
 	(StopSound va))))))
-	
+
+(define frame-succeed
+  (lambda (prev next)
+    (let* ([frame-persistent-rtd (record-type-descriptor (make-frame-persistent))]
+	   [frame-persistent-fields (record-type-field-names frame-persistent-rtd)]
+	   [frame-persistent-accessors (map (lambda (field) (record-field-accessor frame-persistent-rtd field)) frame-persistent-fields)]
+	   [frame-persistent-mutators (map (lambda (field) (record-field-mutator frame-persistent-rtd field)) frame-persistent-fields)])
+      (let ([next-persistent-part (frame-persistent-part next)]
+	    [prev-persistent-part (frame-persistent-part prev)])
+	(for-each (lambda (accessor mutator)
+		    (let ([next-val (accessor next-persistent-part)])
+		      (cond
+		       [(and next-val (eqv? 'reset (car next-val)))
+			(mutator prev-persistent-part #f)]
+		       [next-val (mutator prev-persistent-part next-val)])
+		      ))
+		  frame-persistent-accessors frame-persistent-mutators)
+	(frame-temporary-part-set! prev (frame-temporary-part next))
+	prev))))
 (define storying
   (lambda (chapter-file)
     (let*-values ([(assets scripts) (read-chapter chapter-file)]
@@ -351,7 +401,8 @@
 		[fade (LoadShader #f "../assets/glsl/fade.fs")])
 	    (fold-left
 	     (lambda (prev next)
-	       (drawing next))
+	       (let ([succeed (frame-succeed prev next)])
+		 (rendering succeed)))
 	     (make-frame)
 	     frames)))
 	(lambda () (unload-assets))))))

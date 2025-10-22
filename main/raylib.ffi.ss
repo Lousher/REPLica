@@ -129,6 +129,28 @@
 (define make-Camera2D
   (lambda (o t r z)
     (camera-2d->Camera2D (make-camera-2d o t r z))))
+
+(define init-Camera2D
+  (lambda ()
+    (make-Camera2D
+     '(0.0 . 0.0) '(0.0 . 0.0) 0.0 1.0)))
+(define Camera2D-offset-set!
+  (lambda (camera2d vec)
+    (ftype-set! Camera2D (offset x) camera2d (car vec))
+    (ftype-set! Camera2D (offset y) camera2d (cdr vec))))
+
+(define Camera2D-target-set!
+  (lambda (camera2d vec)
+    (ftype-set! Camera2D (target x) camera2d (car vec))
+    (ftype-set! Camera2D (target y) camera2d (cdr vec))))
+
+(define Camera2D-rotation-set!
+  (lambda (camera2d r)
+    (ftype-set! Camera2D (rotation) camera2d r)))
+
+(define Camera2D-zoom-set!
+  (lambda (camera2d z)
+    (ftype-set! Camera2D (zoom) camera2d z)))
    
 (define camera-2d->Camera2D
   (lambda (camera)
