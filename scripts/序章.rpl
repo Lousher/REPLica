@@ -13,10 +13,8 @@
  (ring (rightone "rightone.mp3")))
 
 
-(sound (ring rightone))
-(text "苏喻文" "...喂？")
-(character (yuki star-eye))
-(voice (yuki-va first))
+(scene (bedroom morning))
 
 (wait click)
 
+(scene (bedroom afternoon))

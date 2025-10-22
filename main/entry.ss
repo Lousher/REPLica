@@ -274,7 +274,7 @@
 	  (make-frame
 	   (apply make-frame-persistent (map script->arguments script-persistent-part))
 	   (apply make-frame-temporary (map script->arguments script-tempory-part))))))))
-   	 
+
 (define drawing
   (lambda (fr)
     (let ([temp (frame-temporary-part fr)]
@@ -288,33 +288,34 @@
 	    [te-h (* 2.0 (/ *SCREEN-HEIGHT* 3.0))]
 	    [ca (frame-persistent-camera pers)]
 	    [ve (frame-persistent-effect pers)])
-      (let* ([te (if (frame-temporary-text temp) (car (frame-temporary-text temp)) "")]
+      (let* ([te (if (frame-temporary-text temp) (cadr (frame-temporary-text temp)) "")]
 	     [pos (make-Vector2 te-w te-h)]
 	     [ct-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int)))]
 	     [cts (LoadCodepoints te ct-count)]
 	     [font (LoadFontEx "../assets/font/Xiaolai-Regular.ttf" 50 cts (ftype-ref int () ct-count))])
 	(TraceLog LOG_INFO "Enter frame")
 	(let ([drawer (lambda (passed)
-			(apply update-music mu)
-			(BeginTextureMode *SCREEN-TEXTURE*)
-			(when ca
-			  (BeginMode2D ((eval (car ca)) passed)))
+;			(update-music (if mu (car mu) #f))
+;			(BeginTextureMode *SCREEN-TEXTURE*)
+;			(when ca
+;			  (BeginMode2D ((eval (car ca)) passed)))
 			(DrawTexture (car sc) 0 0 WHITE)
-			(EndMode2D)
-			(EndTextureMode)
-			(when ve
-			  (BeginShaderMode ((eval (car ve)) passed)))
-			(DrawTextureRec (RenderTexture-texture *SCREEN-TEXTURE*)
-					(make-Rectangle 0.0 0.0 (* *SCREEN-WIDTH* 1.0) (* *SCREEN-HEIGHT* -1.0))
-					(make-Vector2 0.0 0.0)
-					WHITE)
-			(EndShaderMode)
-			(draw-character (car ch) 3 5)
-			(DrawTextEx
-			 font (TextSubtext te 0 (* 3 (floor (/ passed 3))))
-			 pos 50.0 0.0 WHITE))])
-	(when va (PlaySound va))
-	(when so (PlaySound so))
+;			(EndMode2D)
+;			(EndTextureMode)
+;			(when ve
+;			  (BeginShaderMode ((eval (car ve)) passed)))
+;			(DrawTextureRec (RenderTexture-texture *SCREEN-TEXTURE*)
+;					(make-Rectangle 0.0 0.0 (* *SCREEN-WIDTH* 1.0) (* *SCREEN-HEIGHT* -1.0))
+;					(make-Vector2 0.0 0.0)
+;					WHITE)
+;			(EndShaderMode)
+;			(draw-character (car ch) 3 5)
+;			(DrawTextEx
+;			 font (TextSubtext te 0 (* 3 (floor (/ passed 3))))
+					;			 pos 50.0 0.0 WHITE))])
+			)])
+;	(when va (PlaySound va))
+;	(when so (PlaySound so))
 	(let loop ([passed 0])
 	  (when (WindowShouldClose)
 	    (*EXIT*))
@@ -350,10 +351,7 @@
 		[fade (LoadShader #f "../assets/glsl/fade.fs")])
 	    (fold-left
 	     (lambda (prev next)
-					;(drawing next)
-	       (display next)
-	       (newline)
-	       )
+	       (drawing next))
 	     (make-frame)
 	     frames)))
 	(lambda () (unload-assets))))))
