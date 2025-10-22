@@ -18,7 +18,8 @@
 (wait click)
 (camera (let ([passed 0.0])
 	  (lambda (x)
-	    (set! passed (+ passed 0.05))
+	    (when (<= passed 200)
+	      (set! passed (+ passed 0.5)))
 	      (make-Camera2D
 	       `(0.0 . ,(* *SCREEN-HEIGHT* 1.0))
 	       `(,passed . ,(* *SCREEN-HEIGHT* 1.0))
@@ -36,4 +37,8 @@
 (text "苏喻文" "...喂？")
 
 (wait click)
+
+(scene (bedroom afternoon))
 (text "Mom" "你还在睡觉吗？都早上十点了！")
+
+(next "../scripts/序章.rpl")

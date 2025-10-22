@@ -11,14 +11,14 @@
 (define *ASSETS* (make-hashtable symbol-hash symbol=?))
 (define *EXIT* #f)
 (define *SCREEN-TEXTURE* #f)
-
-; 1 ~ 5 fields are able to succeed
+(define state #f)
+					; 1 ~ 5 fields are able to succeed
 (define-record-type frame
   (fields music scene camera effect character text voice sound))
 (define-record-type camera-2d
   (fields offset target rotation zoom))
 (define-record-type manifest
-  (fields title directories entry))
+  (fields title directories entry state))
 (define frame-succeed
   (lambda (prev next)
     (let ([frame-fields (record-type-field-names (record-type-descriptor prev))])
@@ -50,11 +50,14 @@
     (let* ([content (call-with-input-file file read)]
 	   [configs (parse-params (cdr content))]
 	   [configs-ref (lambda (key) (let ([res-pair (assv key configs)])
-					(if res-pair (cadr res-pair) (error 'read-manifest "No such key in manifest" key))))])
+					(if res-pair (cadr res-pair) (error 'read-manifest "No such key in manifest" key))))]
+	   [state-list (configs-ref ':state)])
+      (set! state (make-record-type "state" state-list))
       (make-manifest
        (configs-ref ':title)
        (configs-ref ':directories)
-       (configs-ref ':entry)))))
+       (configs-ref ':entry)
+       (apply (record-constructor state) (make-list (length state-list) #f))))))
 (define fullscreen-init
   (lambda (title)
     (let ([w (GetScreenWidth)]
@@ -74,8 +77,7 @@
 	(lambda () (fullscreen-init title))
 	(lambda () (fluid-let ([*SCREEN-WIDTH* (GetScreenWidth)] [*SCREEN-HEIGHT* (GetScreenHeight)]
 			       [*SCREEN-TEXTURE* (LoadRenderTexture (GetScreenWidth) (GetScreenHeight))])
-		     (start
-		      (manifest-entry *MANIFEST*))))
+		     (start)))
 	(lambda () (fullscreen-deinit))))))
 (define load-background
   (lambda (bg-path)
@@ -129,7 +131,10 @@
 	(DrawTextureV tex (make-Vector2 xpos ypos) WHITE)))))
 (define wait-script?
   (lambda (script)
-    (eqv? 'wait (car script))))
+    (memv (car script) '(wait))))
+(define next-script?
+  (lambda (script)
+    (memv (car script) '(next))))
 (define normal-script?
   (lambda (script)
     (memv (car script) '(scene music text character voice sound camera effect))))
@@ -139,6 +144,7 @@
       (cond
        [(eof-object? content) '()]
        [(wait-script? content) (list content)]
+       [(next-script? content) (list content)]
        [(normal-script? content) (cons content (read-script port))]
        [else (error 'read-script "Not a valid script" content)]))))
 (define read-scripts
@@ -314,7 +320,7 @@
 	(StopSound so))
       (when (and va (IsSoundPlaying va))
 	(StopSound va)))))
-(define replica
+(define replica-bak
   (lambda (manifest-file)
     (fluid-let ([*MANIFEST* (read-manifest manifest-file)])
       (call/cc
@@ -338,4 +344,37 @@
 			   (drawing updated)))
 		       (make-frame #f #f #f #f #f #f #f #f)
 		       frames)))
-		  (lambda () (unload-assets))))))))))))
+		  (lambda () (unload-assets)))))))
+	 )))))
+
+(define replica
+  (lambda (manifest-file)
+    (assert (file-exists? manifest-file))
+    (fluid-let ([*MANIFEST* (read-manifest manifest-file)])
+      (with-fullscreen
+       (call/cc
+	(lambda (exit)
+	  (fluid-let ([*EXIT* exit])
+	    (lambda ()
+	      (let next ([chapter (manifest-entry *MANIFEST*)])
+		(let*-values ([(assets scripts) (read-chapter chapter)]
+			      [(load-assets unload-assets) (assets-lifecycle (assets-flatten assets))])
+		  (dynamic-wind
+		    (lambda () (load-assets))
+		    (lambda ()
+		      (let ([frames (map script->frame scripts)]
+			    [fade (LoadShader #f "../assets/glsl/fade.fs")])
+			(fold-left
+			 (lambda (prev next)
+			   (let ([updated (frame-succeed prev next)])
+			     (completing prev)
+			     (unless (equal? (frame-scene prev) (frame-scene updated))
+			       (shading fade prev updated))
+			     (drawing updated)))
+			 (make-frame #f #f #f #f #f #f #f #f)
+			 frames)))
+		    (lambda () (unload-assets)))
+		  (let* ([last-script (car (last-pair scripts))]
+			 [last-cmd (car (last-pair last-script))])
+		    (when (next-script? last-cmd)
+		      (next (cadr last-cmd))))))))))))))
