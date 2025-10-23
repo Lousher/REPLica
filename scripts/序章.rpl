@@ -11,39 +11,33 @@
 	  (second "2.new.ogg"))
  (bgm (midnight "midnight-trip.mp3"))
  (se (rightone "rightone.mp3")
-     (searching "searching.mp3")))
+     (searching "searching.mp3")
+     (thud "thud.mp3")
+     (pickup "pickup-phone.mp3")))
 
 (sound (se rightone))
 (wait click)
 
-(effect wakeup)
+(effect (wakeup))
 (scene (bedroom morning))
 
 (wait click)
-(text "苏喻文" "……嗯……?")
+(text "苏喻文" "……嗯……")
 
 (wait click)
 
+(text "苏喻文" "……在哪儿……啊")
 (sound (se searching))
-(text "苏喻文" "……在哪儿……啊！")
 (wait click)
 
-
-(camera (let ([passed 0.0]
-	      [camera (init-Camera2D)]
-	      [left-bottom `(0.0 . ,(* *SCREEN-HEIGHT* 1.0))])
-	  (Camera2D-offset-set! camera left-bottom)
-	  (Camera2D-zoom-set! camera 2.0)
-	  (lambda (x)
-	    (when (<= passed 250.0)
-	      (set! passed (+ passed 0.5)))
-	    (Camera2D-target-set! camera (cons passed (exact->inexact *SCREEN-HEIGHT*)))
-	    camera)))
-(effect mask-on)
+(camera (bedroom-zoom))
+(effect (mask-on))
+(sound (se pickup))
+(text "苏喻文" "喂")
 
 (wait click)
-(effect mask-off)
-(camera reset)
+(text "电话" "终于接电话了，你不会还在睡吧")
 
 (wait click)
-(scene (bedroom afternoon))
+
+(effect (mask-off))

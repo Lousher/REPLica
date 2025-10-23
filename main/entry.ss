@@ -23,6 +23,20 @@
 (define blur-off #f)
 (define wakeup #f)
 
+;; global camera
+(define bedroom-zoom
+  (lambda ()
+    (let ([passed 0.0]
+	  [camera (init-Camera2D)]
+	  [left-bottom `(0.0 . ,(* *SCREEN-HEIGHT* 1.0))])
+	(Camera2D-offset-set! camera left-bottom)
+	(Camera2D-zoom-set! camera 2.0)
+	(lambda (x)
+	  (when (<= passed 250.0)
+	    (set! passed (+ passed 0.5)))
+	  (Camera2D-target-set! camera (cons passed (exact->inexact *SCREEN-HEIGHT*)))
+	  camera))))
+
 (define-record-type frame-persistent
   (fields
    (mutable music)
@@ -100,50 +114,34 @@
 	   [progress-loc (GetShaderLocation mask "progress")]
 	   [progress-fptr (make-ftype-pointer float progress-ptr)])
       (set! mask-on
-	    (lambda (x)
+	    (lambda ()
+	      (lambda (x)
 	      (when (<= progress 1.0)
 		(set! progress (+ progress 0.02)))
-	      (ftype-set! float () progress-fptr (min progress 1.0))
-	      (SetShaderValue mask progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
-	      mask))
-      (set! mask-off
-	    (lambda (x)
-	      (when (>= progress 0.0)
-		(set! progress (- progress 0.02)))
 	      (ftype-set! float () progress-fptr (min progress 1.0))
 	      (SetShaderValue mask progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
 	      mask)))
-    (let* ([progress 0.0]
-	   [blur (LoadShader #f "../assets/glsl/blur.fs")]
-	   [progress-ptr (foreign-alloc (ftype-sizeof float))]
-	   [progress-loc (GetShaderLocation blur "progress")]
-	   [progress-fptr (make-ftype-pointer float progress-ptr)])
-      (set! blur-on
-	    (lambda (x)
-	      (when (<= progress 1.0)
-		(set! progress (+ progress 0.02)))
-	      (ftype-set! float () progress-fptr (min progress 1.0))
-	      (SetShaderValue blur progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
-	      blur))
-      (set! blur-off
-	    (lambda (x)
-	      (when (>= progress 0.0)
-		(set! progress (- progress 0.02)))
-	      (ftype-set! float () progress-fptr (min progress 1.0))
-	      (SetShaderValue blur progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
-	      blur)))
+      (set! mask-off
+	    (lambda ()
+	      (lambda (x)
+		(when (>= progress 0.0)
+		  (set! progress (- progress 0.02)))
+		(ftype-set! float () progress-fptr (min progress 1.0))
+		(SetShaderValue mask progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
+		mask))))
     (let* ([progress 0.0]
 	   [wake (LoadShader #f "../assets/glsl/wakeup.fs")]
 	   [progress-ptr (foreign-alloc (ftype-sizeof float))]
 	   [progress-loc (GetShaderLocation wake "progress")]
 	   [progress-fptr (make-ftype-pointer float progress-ptr)])
       (set! wakeup
+	    (lambda ()
 	    (lambda (x)
 	      (when (<= progress 1.0)
 		(set! progress (+ progress 0.01)))
 	      (ftype-set! float () progress-fptr (min progress 1.0))
 	      (SetShaderValue wake progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
-	      wake))
+	      wake)))
       )))
 
 (define with-fullscreen
@@ -344,9 +342,11 @@
 				      frame-temporary-fields)])
 	(let ([script->arguments (lambda (sc)
 				   (if sc (map (lambda (item)
-						 (if (asset-expression? item)
-						     (assets-ref (apply symbol-concat item))
-						     item)) sc)
+						 (cond
+						  [(asset-expression? item)
+						   (assets-ref (apply symbol-concat item))]
+						  [(list? item) (eval item)]
+						  [else item])) sc)
 				       #f))])
 	  (make-frame
 	   (apply make-frame-persistent (map script->arguments script-persistent-part))
@@ -365,10 +365,10 @@
 	    [text-args (frame-temporary-text tmp-part)]
 	    [voice-args (frame-temporary-voice tmp-part)]
 	    [sound-args (frame-temporary-sound tmp-part)])
-	(let ([camera-fn (if camera-args (eval (car camera-args)) #f)]
-	      [effect-fn (if effect-args (eval (car effect-args)) #f)])
-	  (let* ([text (if text-args (cadr text-args) "")]
-		 [codepoints (LoadCodepoints text *CODEPOINTS-COUNT*)]
+	(let ([camera-fn (if camera-args (car camera-args) #f)]
+	      [effect-fn (if effect-args (car effect-args) #f)])
+	  (let* ([texts (if text-args (cdr text-args) '(""))]
+		 [codepoints (LoadCodepoints (apply string-append texts) *CODEPOINTS-COUNT*)]
 		 [font (LoadFontFromMemory
 			".ttf" *FONT-DATA* (ftype-ref int () *FONT-SIZE*)
 			32 codepoints (ftype-ref int () *CODEPOINTS-COUNT*))]
@@ -391,7 +391,7 @@
 
 	       (DrawTextEx
 		font
-		(TextSubtext text 0 (* 3 (floor (/ passed 5))))
+		(TextSubtext (car texts) 0 (* 3 (floor (/ passed 5))))
 		text-vec 50.0 0.0 WHITE))
 	     (lambda ()
 	       (when sound-args
