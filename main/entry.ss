@@ -2,6 +2,8 @@
 (load-shared-object "raylib.ffi.so")
 (load "raylib.ffi.ss")
 (load "raylib.constant.ss")
+(load "shader.ss")
+(load "camera.ss")
 (import (chezscheme csv7))
 
 (define *MANIFEST* #f)
@@ -15,27 +17,6 @@
 (define *FONT-SIZE* (make-ftype-pointer int (foreign-alloc (ftype-sizeof int))))
 (define *CODEPOINTS-COUNT* (make-ftype-pointer int (foreign-alloc (ftype-sizeof int))))
 (define state #f)
-
-;; global shader
-(define mask-on #f)
-(define mask-off #f)
-(define blur-on #f)
-(define blur-off #f)
-(define wakeup #f)
-
-;; global camera
-(define bedroom-zoom
-  (lambda ()
-    (let ([passed 0.0]
-	  [camera (init-Camera2D)]
-	  [left-bottom `(0.0 . ,(* *SCREEN-HEIGHT* 1.0))])
-	(Camera2D-offset-set! camera left-bottom)
-	(Camera2D-zoom-set! camera 2.0)
-	(lambda (x)
-	  (when (<= passed 250.0)
-	    (set! passed (+ passed 0.5)))
-	  (Camera2D-target-set! camera (cons passed (exact->inexact *SCREEN-HEIGHT*)))
-	  camera))))
 
 (define-record-type frame-persistent
   (fields
@@ -106,44 +87,6 @@
       (TraceLog LOG_INFO "Fullscreen Inited"))))
 (define fullscreen-deinit
   (lambda () (CloseAudioDevice) (CloseWindow) (TraceLog LOG_INFO "Fullscreen Deinited")))
-(define init-shaders
-  (lambda ()
-    (let* ([progress 0.0]
-	   [mask (LoadShader #f "../assets/glsl/mask.fs")]
-	   [progress-ptr (foreign-alloc (ftype-sizeof float))]
-	   [progress-loc (GetShaderLocation mask "progress")]
-	   [progress-fptr (make-ftype-pointer float progress-ptr)])
-      (set! mask-on
-	    (lambda ()
-	      (lambda (x)
-	      (when (<= progress 1.0)
-		(set! progress (+ progress 0.02)))
-	      (ftype-set! float () progress-fptr (min progress 1.0))
-	      (SetShaderValue mask progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
-	      mask)))
-      (set! mask-off
-	    (lambda ()
-	      (lambda (x)
-		(when (>= progress 0.0)
-		  (set! progress (- progress 0.02)))
-		(ftype-set! float () progress-fptr (min progress 1.0))
-		(SetShaderValue mask progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
-		mask))))
-    (let* ([progress 0.0]
-	   [wake (LoadShader #f "../assets/glsl/wakeup.fs")]
-	   [progress-ptr (foreign-alloc (ftype-sizeof float))]
-	   [progress-loc (GetShaderLocation wake "progress")]
-	   [progress-fptr (make-ftype-pointer float progress-ptr)])
-      (set! wakeup
-	    (lambda ()
-	    (lambda (x)
-	      (when (<= progress 1.0)
-		(set! progress (+ progress 0.01)))
-	      (ftype-set! float () progress-fptr (min progress 1.0))
-	      (SetShaderValue wake progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
-	      wake)))
-      )))
-
 (define with-fullscreen
   (lambda (start)
     (let ([title (manifest-title *MANIFEST*)])

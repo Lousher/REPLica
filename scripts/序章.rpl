@@ -18,7 +18,7 @@
 (sound (se rightone))
 (wait click)
 
-(effect (wakeup))
+(effect (wakeup 1))
 (scene (bedroom morning))
 
 (wait click)
@@ -31,7 +31,7 @@
 (wait click)
 
 (camera (bedroom-zoom))
-(effect (mask-on))
+(effect (mask 1))
 (sound (se pickup))
 (text "苏喻文" "喂")
 
@@ -39,5 +39,5 @@
 (text "电话" "终于接电话了，你不会还在睡吧")
 
 (wait click)
+(effect (mask 0))
 
-(effect (mask-off))
