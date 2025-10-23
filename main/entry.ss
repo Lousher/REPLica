@@ -11,11 +11,17 @@
 (define *EXIT* #f)
 (define *SCREEN-TEXTURE* #f)
 (define *SCREEN-TEXTURE-DRAWER* #f)
+(define *FONT-DATA* #f)
+(define *FONT-SIZE* (make-ftype-pointer int (foreign-alloc (ftype-sizeof int))))
+(define *CODEPOINTS-COUNT* (make-ftype-pointer int (foreign-alloc (ftype-sizeof int))))
 (define state #f)
 
 ;; global shader
 (define mask-on #f)
 (define mask-off #f)
+(define blur-on #f)
+(define blur-off #f)
+(define wakeup #f)
 
 (define-record-type frame-persistent
   (fields
@@ -106,7 +112,39 @@
 		(set! progress (- progress 0.02)))
 	      (ftype-set! float () progress-fptr (min progress 1.0))
 	      (SetShaderValue mask progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
-	      mask)))))
+	      mask)))
+    (let* ([progress 0.0]
+	   [blur (LoadShader #f "../assets/glsl/blur.fs")]
+	   [progress-ptr (foreign-alloc (ftype-sizeof float))]
+	   [progress-loc (GetShaderLocation blur "progress")]
+	   [progress-fptr (make-ftype-pointer float progress-ptr)])
+      (set! blur-on
+	    (lambda (x)
+	      (when (<= progress 1.0)
+		(set! progress (+ progress 0.02)))
+	      (ftype-set! float () progress-fptr (min progress 1.0))
+	      (SetShaderValue blur progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
+	      blur))
+      (set! blur-off
+	    (lambda (x)
+	      (when (>= progress 0.0)
+		(set! progress (- progress 0.02)))
+	      (ftype-set! float () progress-fptr (min progress 1.0))
+	      (SetShaderValue blur progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
+	      blur)))
+    (let* ([progress 0.0]
+	   [wake (LoadShader #f "../assets/glsl/wakeup.fs")]
+	   [progress-ptr (foreign-alloc (ftype-sizeof float))]
+	   [progress-loc (GetShaderLocation wake "progress")]
+	   [progress-fptr (make-ftype-pointer float progress-ptr)])
+      (set! wakeup
+	    (lambda (x)
+	      (when (<= progress 1.0)
+		(set! progress (+ progress 0.01)))
+	      (ftype-set! float () progress-fptr (min progress 1.0))
+	      (SetShaderValue wake progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
+	      wake))
+      )))
 
 (define with-fullscreen
   (lambda (start)
@@ -114,15 +152,18 @@
       (dynamic-wind
 	(lambda ()
 	  (fullscreen-init title) (init-shaders))
-	(lambda () (fluid-let ([*SCREEN-WIDTH* (GetScreenWidth)] [*SCREEN-HEIGHT* (GetScreenHeight)]
-			       [*SCREEN-TEXTURE* (LoadRenderTexture (GetScreenWidth) (GetScreenHeight))]
-			       [*SCREEN-TEXTURE-DRAWER* (let ([src-rec (make-Rectangle 0.0 0.0 (* (GetScreenWidth) 1.0) (* (GetScreenHeight) -1.0))]
+	(lambda ()
+	  (fluid-let ([*SCREEN-WIDTH* (GetScreenWidth)] [*SCREEN-HEIGHT* (GetScreenHeight)]
+		      [*SCREEN-TEXTURE* (LoadRenderTexture (GetScreenWidth) (GetScreenHeight))]
+		      [*SCREEN-TEXTURE-DRAWER* (let ([src-rec (make-Rectangle 0.0 0.0 (* (GetScreenWidth) 1.0) (* (GetScreenHeight) -1.0))]
 							      [ori-vec (make-Vector2 0.0 0.0)])
 							  (lambda () (DrawTextureRec
 								      (RenderTexture-texture *SCREEN-TEXTURE*)
-								      src-rec ori-vec WHITE)))])
-		     (start)))
-	(lambda () (fullscreen-deinit))))))
+								      src-rec ori-vec WHITE)))]
+		      [*FONT-DATA* (LoadFileData "../assets/font/Xiaolai-Regular.ttf" *FONT-SIZE*)])
+	    (start)))
+	(lambda ()
+	  (fullscreen-deinit))))))
 (define load-background
   (lambda (bg-path)
     (let ([img (LoadImage bg-path)])
@@ -326,25 +367,36 @@
 	    [sound-args (frame-temporary-sound tmp-part)])
 	(let ([camera-fn (if camera-args (eval (car camera-args)) #f)]
 	      [effect-fn (if effect-args (eval (car effect-args)) #f)])
-	(values
-	 (lambda (passed)
-	   (BeginTextureMode *SCREEN-TEXTURE*)
-	   (when camera-args
-	     (BeginMode2D (camera-fn passed)))
-	   (when scene-args
-	     (DrawTexture (car scene-args) 0 0 WHITE))
-	   (EndMode2D)
-	   (EndTextureMode)
+	  (let* ([text (if text-args (cadr text-args) "")]
+		 [codepoints (LoadCodepoints text *CODEPOINTS-COUNT*)]
+		 [font (LoadFontFromMemory
+			".ttf" *FONT-DATA* (ftype-ref int () *FONT-SIZE*)
+			32 codepoints (ftype-ref int () *CODEPOINTS-COUNT*))]
+		 [text-vec (make-Vector2 (* *SCREEN-WIDTH* 0.2) (* *SCREEN-HEIGHT* 0.7))])
+	    (UnloadCodepoints codepoints)
+	    (values
+	     (lambda (passed)
+	       (BeginTextureMode *SCREEN-TEXTURE*)
+	       (when camera-args
+		 (BeginMode2D (camera-fn passed)))
+	       (when scene-args
+		 (DrawTexture (car scene-args) 0 0 WHITE))
+	       (EndMode2D)
+	       (EndTextureMode)
 
-	   (when effect-args
-	     (BeginShaderMode (effect-fn passed)))
-	   (*SCREEN-TEXTURE-DRAWER*)
-	   (EndShaderMode)
-	   )
-	 (lambda ()
-	   (when sound-args
-	     (PlaySound (car sound-args))))))))))
-	    
+	       (when effect-args
+		 (BeginShaderMode (effect-fn passed)))
+	       (*SCREEN-TEXTURE-DRAWER*)
+	       (EndShaderMode)
+
+	       (DrawTextEx
+		font
+		(TextSubtext text 0 (* 3 (floor (/ passed 5))))
+		text-vec 50.0 0.0 WHITE))
+	     (lambda ()
+	       (when sound-args
+		 (PlaySound (car sound-args)))))))))))
+
 (define rendering
   (lambda (fr)
     (TraceLog LOG_INFO "Enter frame")

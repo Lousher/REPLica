@@ -207,6 +207,10 @@
 (define-ffi SetShaderValue ((& Shader) int void* int) void)
 (define-ffi SetShaderValueTexture ((& Shader) int (& Texture2D)) void)
 
+;; File data
+(define-ffi LoadFileData (string (* int)) (* char))
+(define-ffi UnloadFileData ((* char)) void)
+
 					; Predicate
 (define-ffi IsWindowReady () boolean)
 
@@ -262,6 +266,7 @@
 (define-ffi LoadFileText (string) (* char))
 (define-ffi LoadCodepoints (string (* int)) (* int))
 (define-ffi LoadFontEx (string int (* int) int) (& Font))
+(define-ffi LoadFontFromMemory (string (* char) int int (* int) int) (& Font))
 (define-ffi LoadFont (string) (& Font))
 (define-ffi UnloadFileText ((* char)) void)
 (define-ffi UnloadCodepoints ((* int)) void)

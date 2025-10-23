@@ -10,12 +10,24 @@
  (yuki-va (first "1.new.ogg")
 	  (second "2.new.ogg"))
  (bgm (midnight "midnight-trip.mp3"))
- (ring (rightone "rightone.mp3")))
+ (se (rightone "rightone.mp3")
+     (searching "searching.mp3")))
 
+(sound (se rightone))
+(wait click)
+
+(effect wakeup)
 (scene (bedroom morning))
-(sound (ring rightone))
 
 (wait click)
+(text "苏喻文" "……嗯……?")
+
+(wait click)
+
+(sound (se searching))
+(text "苏喻文" "……在哪儿……啊！")
+(wait click)
+
 
 (camera (let ([passed 0.0]
 	      [camera (init-Camera2D)]
@@ -27,11 +39,11 @@
 	      (set! passed (+ passed 0.5)))
 	    (Camera2D-target-set! camera (cons passed (exact->inexact *SCREEN-HEIGHT*)))
 	    camera)))
-
 (effect mask-on)
 
 (wait click)
+(effect mask-off)
 (camera reset)
 
 (wait click)
-(effect mask-off)
+(scene (bedroom afternoon))
