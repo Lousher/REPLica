@@ -46,8 +46,7 @@
        [() (make (make-frame-persistent) (make-frame-temporary))]
        [(per tem) (make per tem)]))))
 
-(define-record-type camera-2d
-  (fields offset target rotation zoom))
+
 (define-record-type manifest
   (fields title directories entry state))
 

@@ -3,6 +3,7 @@
 (load "raylib.ffi.ss")
 (load "raylib.constant.ss")
 (load "parser.ss")
+(load "camera.ss")
 
 (define *layers* (make-hashtable symbol-hash symbol=?))
 
@@ -75,8 +76,13 @@
 	     ((layer-renderer layer) resource))))
        f)
       (EndTextureMode)
-      (let ([screen (RenderTexture-texture rt)])
-	(lambda () (DrawTextureRec screen src origin WHITE))))))
+      (let ([screen (RenderTexture-texture rt)]
+	    [camera (zoom-bedroom)])
+	(lambda ()
+	  (BeginMode2D (camera 1.0))
+	  (DrawTextureRec screen src origin WHITE)
+	  (EndMode2D)
+	  )))))
 
 (define script->layer
   (lambda (s)

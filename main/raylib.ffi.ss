@@ -130,6 +130,9 @@
   (lambda (o t r z)
     (camera-2d->Camera2D (make-camera-2d o t r z))))
 
+(define-record-type camera-2d
+  (fields offset target rotation zoom))
+
 (define init-Camera2D
   (lambda ()
     (make-Camera2D
