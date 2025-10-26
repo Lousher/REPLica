@@ -1,4 +1,7 @@
 (scene "../assets/bg/yuwen.bedroom.morning.png")
+(character "../assets/character/0896.png")
+(camera zoom-bedroom)
+(effect mask)
 
 (wait click)
 

@@ -3,35 +3,67 @@
 (load "raylib.ffi.ss")
 (load "raylib.constant.ss")
 (load "parser.ss")
+(load "shader.ss")
 (load "camera.ss")
 
-(define *layers* (make-hashtable symbol-hash symbol=?))
-
-(define make-character-layer
-  (lambda (s)
-    (make-layer 100 #t
-		(lambda () (LoadTexture (cadr s)))
-		(lambda (t) (DrawTexture t 0 0 WHITE)))))
-		
-(define make-scene-layer
-  (lambda (s)
-    (make-layer 0 #t
-		(lambda () (load-background (cadr s)))
-		(lambda (t) (DrawTexture t 0 0 WHITE)))))
-
-(define make-wait-layer
-  (lambda (s)
-    (make-layer -1 #f #f #f)))
-
-(hashtable-set! *layers* 'scene make-scene-layer)
-(hashtable-set! *layers* 'wait make-wait-layer)
-(hashtable-set! *layers* 'character make-character-layer)
-
+(define *shader-progress* (make-ftype-pointer float (foreign-alloc (ftype-sizeof float))) )
 (define-record-type layer
   (fields index
 	  (mutable shown?)
 	  (mutable loader)
 	  (mutable renderer)))
+(define *layers* (make-hashtable symbol-hash symbol=?))
+(define make-character-layer
+  (lambda (s)
+    (make-layer 100 #t
+		(lambda () (LoadTexture (cadr s)))
+		(lambda (t) (DrawTexture t 0 0 WHITE)))))
+(define make-scene-layer
+  (lambda (s)
+    (make-layer 0 #t
+		(lambda () (load-background (cadr s)))
+		(lambda (t) (DrawTexture t 0 0 WHITE)))))
+(define make-wait-layer
+  (lambda (s)
+    (make-layer -1 #f #f #f)))
+(define make-camera-layer
+  (lambda (s)
+    (make-layer 1001 #t #f (lambda (render)
+			     (let ([camera ((eval (cadr s)))])
+			       (lambda ()
+				 (BeginMode2D (camera))
+				 (render)
+				 (EndMode2D)))))))
+(define make-effect-layer
+  (lambda (s)
+    (make-layer 2001 #t #f (lambda (render)
+			     (let ([shader ((eval (cadr s)))])
+			       (lambda ()
+				 (BeginShaderMode (shader))
+				 (render)
+				 (EndShaderMode)))))))
+(define layer-basical?
+  (lambda (layer)
+    (and (layer? layer)
+	 (< (layer-index layer) 1000))))
+(define layer-transformer
+  (lambda (l)
+    (and (layer? l)
+	 (> (layer-index l) 1000)
+	 (< (layer-index l) 2000))))
+(define layer-topping
+  (lambda (l)
+    (and (layer? l)
+	 (> (layer-index l) 3000))))
+(define layer-above?
+  (lambda (a b)
+    (and (layer? a) (layer? b)
+	 (< (layer-index a) (layer-index b)))))
+(hashtable-set! *layers* 'scene make-scene-layer)
+(hashtable-set! *layers* 'wait make-wait-layer)
+(hashtable-set! *layers* 'character make-character-layer)
+(hashtable-set! *layers* 'camera make-camera-layer)
+(hashtable-set! *layers* 'effect make-effect-layer)
 
 (define frame?
   (lambda (f)
@@ -57,7 +89,7 @@
 	(InitWindow (GetScreenWidth) (GetScreenHeight) "Test")
 	(InitAudioDevice))
       (lambda () (thunk))
-      (lambda () (CloseAudioDevice) (CloseWindow))
+      (lambda () (CloseAudioDevice) (CloseWindow) (foreign-free (ftype-pointer-address *shader-progress*)))
       )))
 
 (define frame->renderer
@@ -67,22 +99,39 @@
 	   [rt (LoadRenderTexture w h)]
 	   [src (make-Rectangle 0.0 0.0 (exact->inexact w) (exact->inexact (- h)))]
 	   [origin (make-Vector2 0.0 0.0)])
-      (BeginTextureMode rt)
-      (for-each
-       (lambda (layer)
-	 (assert (layer? layer))
-	 (when (layer-shown? layer)
-	   (let ([resource ((layer-loader layer))])
-	     ((layer-renderer layer) resource))))
-       f)
-      (EndTextureMode)
-      (let ([screen (RenderTexture-texture rt)]
-	    [camera (zoom-bedroom)])
-	(lambda ()
-	  (BeginMode2D (camera 1.0))
-	  (DrawTextureRec screen src origin WHITE)
-	  (EndMode2D)
-	  )))))
+      (let*-values ([(basics specials) (partition layer-basical? f)]
+		    [(transformers toppings) (partition layer-transformer specials)])
+	(BeginTextureMode rt)
+	(for-each
+	 (lambda (layer)
+	   (assert (layer? layer))
+	   (when (layer-shown? layer)
+	     (let ([resource ((layer-loader layer))])
+	       ((layer-renderer layer) resource))))
+	 (sort layer-above? basics))
+	(EndTextureMode)
+	(let ([screen (RenderTexture-texture rt)])
+	  (let ([transformed-renderer (fold-left
+			   (lambda (prev next)
+			     (if (layer-shown? next)
+				 ((layer-renderer next) prev)
+				 prev))
+			   (lambda () (DrawTextureRec screen src origin WHITE))
+			   (sort layer-above? transformers))])
+	    (let* ([final-rt (LoadRenderTexture w h)]
+		   [final-screen (RenderTexture-texture final-rt)]
+		   [final-renderer (fold-left
+				       (lambda (prev next)
+					 (if (layer-shown? next)
+					     ((layer-renderer next) prev)
+					     prev))
+				       (lambda () (DrawTextureRec final-screen src origin WHITE))
+				       (sort layer-above? toppings))])
+	      (lambda ()
+		(BeginTextureMode final-rt)
+		(transformed-renderer)
+		(EndTextureMode)
+		(final-renderer)))))))))
 
 (define script->layer
   (lambda (s)
