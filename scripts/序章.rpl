@@ -28,6 +28,7 @@
 
 (text "苏喻文" "……在哪儿……啊")
 (sound (se searching))
+
 (wait click)
 
 (camera (bedroom-zoom))
@@ -40,4 +41,3 @@
 
 (wait click)
 (effect (mask 0))
-

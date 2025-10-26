@@ -33,8 +33,7 @@
     (lambda (start)
       (if (zero? start)
 	  (load-negative-shader file)
-	  (load-postive-shader file)
-	  ))))
+	  (load-postive-shader file)))))
 
 (define init-shaders
   (lambda ()

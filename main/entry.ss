@@ -4,6 +4,7 @@
 (load "raylib.constant.ss")
 (load "shader.ss")
 (load "camera.ss")
+(load "parser.ss")
 (import (chezscheme csv7))
 
 (define *MANIFEST* #f)
@@ -385,6 +386,7 @@
 		  frame-persistent-accessors frame-persistent-mutators)
 	(frame-temporary-part-set! prev (frame-temporary-part next))
 	prev))))
+
 (define storying
   (lambda (chapter-file)
     (let*-values ([(assets scripts) (read-chapter chapter-file)]
