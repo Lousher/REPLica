@@ -31,3 +31,4 @@ To not lose interest in this project, the first thing is to build a whole loop. 
 * Tech Notes
 1. Raylib does not support Chinese Char originally, Need Pre-Process
 2. Raylib only support specific .ogg file, using 'ffmpeg -i xx.ogg -c:a libvorbis -qscale:a 5 xx.ogg' to covert
+3. Raylib Fullscreen mode is not suitable in macos?
