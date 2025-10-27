@@ -112,27 +112,6 @@
 	(foreign-free (ftype-pointer-address *shader-progress*)))
       )))
 
-
-
-(define script->layer
-  (lambda (s)
-    (if (hashtable-contains? *layers* (car s))
-	((hashtable-ref *layers* (car s) 'NULL) s)
-	(error 'script->layer "Not a valid script"))))
-
-(define directive->frame
-  (lambda (directive)
-    (assert (for-all script? directive))
-    (map script->layer directive)))
-
-(define resources-lifecycle
-  (lambda (frames)
-    (assert (for-all frame? frames))
-    (let ([fields (lambda (ref) (apply append (map (lambda (f) (map ref f)) frames)))])
-      (values
-       (lambda () (for-each (lambda (x) (when x (x))) (fields layer-loader)))
-       (lambda () (for-each (lambda (x) (when x (x))) (fields layer-unloader)))))))
-
 (define frame->renderer
   (lambda (f)
     (assert (frame? f))
@@ -172,13 +151,31 @@
 		 (BeginTextureMode final-rt)
 		 (transformed-renderer)
 		 (EndTextureMode)
-		 (final-renderer)
-		 final-screen)
+		 (final-renderer))
 	       (lambda ()
-		   (UnloadRenderTexture rt)
-		   (UnloadRenderTexture final-rt)
-		   (foreign-free (ftype-pointer-address src))
-		   (foreign-free (ftype-pointer-address origin)))))))))))
+		 (UnloadRenderTexture rt)
+		 (UnloadRenderTexture final-rt)
+		 (foreign-free (ftype-pointer-address src))
+		 (foreign-free (ftype-pointer-address origin)))))))))))
+
+(define script->layer
+  (lambda (s)
+    (if (hashtable-contains? *layers* (car s))
+	((hashtable-ref *layers* (car s) 'NULL) s)
+	(error 'script->layer "Not a valid script"))))
+
+(define directive->frame
+  (lambda (directive)
+    (assert (for-all script? directive))
+    (map script->layer directive)))
+
+(define resources-lifecycle
+  (lambda (frames)
+    (assert (for-all frame? frames))
+    (let ([fields (lambda (ref) (apply append (map (lambda (f) (map ref f)) frames)))])
+      (values
+       (lambda () (for-each (lambda (x) (when x (x))) (fields layer-loader)))
+       (lambda () (for-each (lambda (x) (when x (x))) (fields layer-unloader)))))))
 
 (define replica
   (lambda (rpl-file)
@@ -193,31 +190,24 @@
 	       (set! fade (LoadShader #f "../assets/glsl/fade.fs"))
 	       (set! prev-tex-loc (GetShaderLocation fade "texture1"))
 	       (set! progress-loc (GetShaderLocation fade "progress"))
-	       (set! prev-tex (load-background "../assets/bg/yuwen.bedroom.morning.png"))
-	       (set! new-tex (load-background "../assets/bg/yuwen.bedroom.afternoon.png")))
+	       )
 	     (lambda ()
-	       (let interacting ([rest frames]
-				 [previous (make-ftype-pointer Texture2D (foreign-alloc (ftype-sizeof Texture2D)))])
+	       (let interacting ([rest frames] [previous #f])
 		 (let-values ([(renderer cleanup) (frame->renderer (car rest))])
-		   (let transisting ([progress 0.0] [next (let ([img (LoadImageFromTexture (renderer))])
-							    (ImageFlipVertical img)
-							    (let ([tex (LoadTextureFromImage img)])
-							      (UnloadImage img)
-							      tex))])
+		   (ftype-set! float () *shader-progress* 0.0)
+		   (SetShaderValueTexture fade prev-tex-loc (LoadTexture "../assets/bg/yuwen.bedroom.night.light.png"))
+		   (let transisting ([progress 0.0])
 		     (ftype-set! float () *shader-progress* progress)
 		     (BeginDrawing)
-		     (ClearBackground BLACK)
 		     (BeginShaderMode fade)
-		     (SetShaderValueTexture fade prev-tex-loc previous)
 		     (SetShaderValue fade progress-loc (ftype-pointer-address *shader-progress*) SHADER_UNIFORM_FLOAT)
-		     (DrawTexture next 0 0 WHITE)
+		     (renderer)
 		     (EndShaderMode)
 		     (EndDrawing)
 		     (unless (> progress 1.0)
-		       (transisting (+ progress 0.01) next)))
+		       (transisting (+ progress 0.01))))
 		   (let rendering ()
 		     (BeginDrawing)
-		     (ClearBackground BLACK)
 		     (renderer)
 		     (EndDrawing)
 		     (cond
@@ -225,10 +215,7 @@
 		      [(IsMouseButtonPressed MOUSE_BUTTON_LEFT)
 		       (begin
 			 (cleanup)
-			 (interacting (cdr rest) (let* ([img (LoadImageFromScreen)]
-							[tex (LoadTextureFromImage img)])
-						   (UnloadImage img)
-						   tex)))]
+			 (interacting (cdr rest) renderer))]
 		      [else (rendering)])))))
 	     (lambda () (unload-resources))
 	     )))))))

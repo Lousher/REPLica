@@ -223,6 +223,10 @@
 
 					; Image
 (define-ffi LoadImage (string) (& Image))
+(define-ffi LoadImageFromTexture ((& Texture2D)) (& Image))
+(define-ffi ImageFlipVertical ((* Image)) void)
+(define-ffi ImageFlipHorizontal ((* Image)) void)
+(define-ffi LoadImageFromScreen () (& Image))
 (define-ffi LoadTextureFromImage ((& Image)) (& Texture2D))
 (define-ffi LoadTexture (string) (& Texture2D))
 
