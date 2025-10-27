@@ -6,7 +6,7 @@
     (memv (car script) '(wait))))
 (define normal-script?
   (lambda (script)
-    (memv (car script) '(scene music text character voice sound camera effect))))
+    (memv (car script) '(scene music text character voice sound camera effect transition))))
 (define read-script
   (lambda (port)
     (let ([content (read port)])

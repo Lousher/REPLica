@@ -1,13 +1,14 @@
+(scene "../assets/bg/black.png")
+(sound "../assets/sound/rightone.mp3")
+
+(wait click)
+
+(transition "../assets/glsl/wakeup.transition.fs")
 (scene "../assets/bg/yuwen.bedroom.morning.png")
 
+(wait click)
+
+(scene "../assets/bg/yuwen.bedroom.morning.png")
 (camera zoom-bedroom)
 (effect mask)
-
-(wait click)
-
-(scene "../assets/bg/yuwen.bedroom.afternoon.png")
-
-(wait click)
-
-(scene "../assets/bg/yuwen.bedroom.night.light.png")
 

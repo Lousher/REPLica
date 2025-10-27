@@ -2,7 +2,7 @@
   (lambda ()
     (ftype-set! float () *shader-progress* 0.0)
     (let* ([progress 0.0]
-	   [shader (LoadShader #f "../assets/glsl/mask.fs")]
+	   [shader (LoadShader #f "../assets/glsl/mask.effect.fs")]
 	   [progress-ptr (ftype-pointer-address *shader-progress*)]
 	   [progress-loc (GetShaderLocation shader "progress")])
       (lambda ()
@@ -11,4 +11,3 @@
 	(ftype-set! float () *shader-progress* (min progress 1.0))
 	(SetShaderValue shader progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
 	shader))))
-
