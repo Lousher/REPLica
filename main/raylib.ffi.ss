@@ -154,6 +154,13 @@
 (define Camera2D-zoom-set!
   (lambda (camera2d z)
     (ftype-set! Camera2D (zoom) camera2d z)))
+
+(define reset-Camera2D
+  (lambda (camera)
+    (Camera2D-offset-set! camera '(0.0 . 0.0))
+    (Camera2D-target-set! camera '(0.0 . 0.0))
+    (Camera2D-rotation-set! camera 0.0)
+    (Camera2D-zoom-set! camera 0.0)))
    
 (define camera-2d->Camera2D
   (lambda (camera)

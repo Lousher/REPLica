@@ -10,5 +10,6 @@
 
 (scene "../assets/bg/yuwen.bedroom.morning.png")
 (camera zoom-bedroom)
+(text "苏喻文" "(哈欠)")
 (effect mask)
 

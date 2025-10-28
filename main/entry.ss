@@ -7,7 +7,24 @@
 (load "camera.ss")
 (load "transition.ss")
 
-(define *shader-progress* (make-ftype-pointer float (foreign-alloc (ftype-sizeof float))) )
+(define *RECT_FOR_RT* #f)
+(define *VEC_ORIGIN* #f)
+(define *CAMERA* #f)
+(define *PROGRESS-FPTR* #f)
+(define init-global-variables
+  (lambda ()
+    (set! *RECT_FOR_RT* (make-Rectangle 0.0 0.0 (exact->inexact (GetScreenWidth))
+					(exact->inexact (- (GetScreenHeight)))))
+    (set! *VEC_ORIGIN* (make-Vector2 0.0 0.0))
+    (set! *CAMERA* (init-Camera2D))
+    (set! *PROGRESS-FPTR* (make-ftype-pointer float (foreign-alloc (ftype-sizeof float))))))
+(define deinit-glogal-variables
+  (lambda ()
+    (foreign-free (ftype-pointer-address *RECT_FOR_RT*))
+    (foreign-free (ftype-pointer-address *VEC_ORIGIN*))
+    (foreign-free (ftype-pointer-address *CAMERA*))
+    (foreign-free (ftype-pointer-address *PROGRESS-FPTR*))))
+  
 (define *resources* (make-hashtable string-hash string=?))
 (define *layers* (make-hashtable symbol-hash symbol=?))
 (define layer-basical?
@@ -34,7 +51,6 @@
     (and (layer? l)
 	 (> (layer-index l) 4000)
 	 (< (layer-index l) 5000))))
-
 (define layer-above?
   (lambda (a b)
     (and (layer? a) (layer? b)
@@ -44,6 +60,15 @@
 			(hashtable-set! *resources* name res)))
 (define ref-resource (lambda (name)
 		       (hashtable-ref *resources* name (lambda () (error 'ref-resource "No such resource loaded" name)))))
+(define load-background
+  (lambda (path)
+    (assert (file-exists? path))
+    (let ([img (LoadImage path)])
+      (ImageResize img (GetScreenWidth) (GetScreenHeight))
+      (let ([tex (LoadTextureFromImage img)])
+	(UnloadImage img)
+	tex))))
+
 (define-record-type layer
   (fields index
 	  (mutable shown?)
@@ -51,7 +76,6 @@
 	  (mutable unloader)
 	  (mutable renderer)
 	  others))
-
 (define make-character-layer
   (lambda (s)
     (make-layer 100 #t 
@@ -99,7 +123,12 @@
 				    (BeginShaderMode (shader))
 				    (render)
 				    (EndShaderMode)))) #f)))
-
+(define make-text-layer
+  (lambda (s)
+    (make-layer 2002 #t #f #f (lambda (render)
+				(lambda ()
+				  (render)
+				  (DrawText "This is a test" 300 400 50 WHITE))) #f)))
 (define make-transition-layer
   (lambda (s)
     (make-layer 4001 #f #f #f #f s)))
@@ -111,20 +140,12 @@
 (hashtable-set! *layers* 'effect make-effect-layer)
 (hashtable-set! *layers* 'sound make-sound-layer)
 (hashtable-set! *layers* 'transition make-transition-layer)
+(hashtable-set! *layers* 'text make-text-layer)
 
 (define frame?
   (lambda (f)
     (and (list? f)
 	 (for-all layer? f))))
-
-(define load-background
-  (lambda (path)
-    (assert (file-exists? path))
-    (let ([img (LoadImage path)])
-      (ImageResize img (GetScreenWidth) (GetScreenHeight))
-      (let ([tex (LoadTextureFromImage img)])
-	(UnloadImage img)
-	tex))))
 
 (define with-window
   (lambda (thunk)
@@ -134,13 +155,13 @@
 			       FLAG_WINDOW_MINIMIZED))
 	(SetTargetFPS 60)
 	(InitWindow (GetScreenWidth) (GetScreenHeight) "Test")
-	(InitAudioDevice))
+	(InitAudioDevice)
+	(init-global-variables))
       (lambda () (thunk))
       (lambda ()
 	(CloseAudioDevice)
 	(CloseWindow)
-	(foreign-free (ftype-pointer-address *shader-progress*)))
-      )))
+	(deinit-glogal-variables)))))
 
 (define script->layer
   (lambda (s)
@@ -165,9 +186,7 @@
   (lambda (f)
     (assert (frame? f))
     (let* ([w (GetScreenWidth)] [h (GetScreenHeight)]
-	   [rt (LoadRenderTexture w h)]
-	   [src (make-Rectangle 0.0 0.0 (exact->inexact w) (exact->inexact (- h)))]
-	   [origin (make-Vector2 0.0 0.0)])
+	   [rt (LoadRenderTexture w h)])
       (let*-values ([(basics other-than-basics) (partition layer-basical? f)]
 		    [(transformers other-than-transformers) (partition layer-transformer other-than-basics)]
 		    [(toppings other-than-toppings) (partition layer-topping other-than-transformers)]
@@ -186,7 +205,7 @@
 					 (if (layer-shown? next)
 					     ((layer-renderer next) prev)
 					     prev))
-				       (lambda () (DrawTextureRec screen src origin WHITE))
+				       (lambda () (DrawTextureRec screen *RECT_FOR_RT* *VEC_ORIGIN* WHITE))
 				       (sort layer-above? transformers))])
 	    (let* ([final-rt (LoadRenderTexture w h)]
 		   [final-screen (RenderTexture-texture final-rt)]
@@ -195,7 +214,7 @@
 				      (if (layer-shown? next)
 					  ((layer-renderer next) prev)
 					  prev))
-				    (lambda () (DrawTextureRec final-screen src origin WHITE))
+				    (lambda () (DrawTextureRec final-screen *RECT_FOR_RT* *VEC_ORIGIN* WHITE))
 				    (sort layer-above? toppings))])
 	      (values
 	       (lambda ()
@@ -211,9 +230,7 @@
 			   (sort layer-above? audios)))
 	       (lambda ()
 		   (UnloadRenderTexture rt)
-		   (UnloadRenderTexture final-rt)
-		   (foreign-free (ftype-pointer-address src))
-		   (foreign-free (ftype-pointer-address origin)))
+		   (UnloadRenderTexture final-rt))
 	       (lambda ()
 		 (sort layer-above? others))))))))))
 
