@@ -1,20 +1,9 @@
-(scene "../assets/bg/black.png")
-(sound "../assets/sound/rightone.mp3")
-
-(wait click)
-
-(transition "../assets/glsl/wakeup.transition.fs")
-(scene "../assets/bg/yuwen.bedroom.morning.png")
-
-(wait click)
-
 (scene "../assets/bg/yuwen.bedroom.morning.png")
 (camera bedroom-zoom-move)
-(text "苏喻文" "(哈欠)")
 (effect mask-on)
+(character "../assets/character/0896.png")
 
 (wait click)
 
-(scene "../assets/bg/yuwen.bedroom.morning.png")
-(text "苏喻文" "(翻找)")
-
+(scene "../assets/bg/yuwen.bedroom.afternoon.png")
+(sound "../assets/sound/rightone.mp3")

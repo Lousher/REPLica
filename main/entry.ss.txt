@@ -78,6 +78,7 @@
 (define ref-resource (lambda (key)
 		       (let ([name (if (symbol? key) (symbol->string key) key)])
 			 (hashtable-ref *resources* name (lambda () (error 'ref-resource "No such resource loaded" name))))))
+
 (define load-background
   (lambda (path)
     (assert (file-exists? path))
@@ -86,6 +87,7 @@
       (let ([tex (LoadTextureFromImage img)])
 	(UnloadImage img)
 	tex))))
+
 (define-record-type layer
   (fields index
 	  shown?
@@ -136,26 +138,24 @@
 			       (load-resource name ((eval name)))))
 		#f
 			       (lambda (render)
-				 (let ([camera (ref-resource (cadr s))])
-				   (lambda ()
-				     (BeginMode2D (camera))
-				     (render)
-				     (EndMode2D)))) #f)))
+				   (let ([camera (ref-resource (cadr s))])
+				     (lambda ()
+				       (BeginMode2D (camera))
+				       (render)
+				       (EndMode2D)))) #f)))
 (define make-effect-layer
   (lambda (s)
-    (make-layer 2001 #t #t (let ([name (cadr s)])
-			     (lambda ()
-			       (load-resource name ((eval name)))))
-		#f
-		(lambda (render)
-		  (let ([shader (ref-resource (cadr s))])
-		    (lambda ()
-		      (BeginShaderMode (shader))
-		      (render)
-		      (EndShaderMode)))) #f)))
+    (make-layer 2001 #t #t #f #f (lambda (render)
+				(let ([shader ((eval (cadr s)))])
+				  (lambda ()
+				    (BeginShaderMode (shader))
+				    (render)
+				    (EndShaderMode)))) #f)))
+
 (define char->utf8
   (lambda (ch)
     (string->utf8 (string ch))))
+
 (define subtexter
   (lambda (str)
     (let ([passed 0.0] [index 0] [len (string-length str)])
@@ -169,6 +169,7 @@
 		    (set! passed 0.0))
 		  (set! passed (+ passed (GetFrameTime))))
 	      (substring str 0 index)))))))
+	    
 (define make-text-layer
   (lambda (s)
     (make-layer 2002 #t #f #f #f (lambda (render)
@@ -182,6 +183,7 @@
 				  (lambda ()
 				    (render)
 				    (DrawTextEx *FONT* (subtext) *VEC_TEXT* 50.0 0.0 WHITE)))) #f)))
+
 (define make-transition-layer
   (lambda (s)
     (make-layer 4001 #f #f #f #f #f s)))
@@ -199,6 +201,7 @@
   (lambda (f)
     (and (list? f)
 	 (for-all layer? f))))
+
 (define with-window
   (lambda (thunk)
     (dynamic-wind
@@ -214,15 +217,18 @@
 	(CloseAudioDevice)
 	(CloseWindow)
 	(deinit-glogal-variables)))))
+
 (define script->layer
   (lambda (s)
     (if (hashtable-contains? *layers* (car s))
 	((hashtable-ref *layers* (car s) 'NULL) s)
 	(error 'script->layer "Not a valid script"))))
+
 (define directive->frame
   (lambda (directive)
     (assert (for-all script? directive))
     (map script->layer directive)))
+
 (define resources-lifecycle
   (lambda (frames)
     (assert (for-all frame? frames))
@@ -231,16 +237,9 @@
        (lambda () (for-each (lambda (x) (when x (x))) (fields layer-loader)))
        (lambda () (for-each (lambda (x) (when x (x))) (fields layer-unloader)))))))
 
-(define frame-succeed
-  (lambda (f s)
-    (let ([indexes (map layer-index f)])
-      (let ([succeed (filter (lambda (l) (not (memv (layer-index l) indexes))) s)])
-	(append f succeed)))))
-
 (define frame-lifecycle
-  (lambda (origin s)
-    (let* ([f (frame-succeed origin s)]
-	   [w (GetScreenWidth)] [h (GetScreenHeight)]
+  (lambda (f)
+    (let* ([w (GetScreenWidth)] [h (GetScreenHeight)]
 	   [rt (LoadRenderTexture w h)])
       (let*-values ([(basics other-than-basics) (partition layer-basical? f)]
 		    [(transformers other-than-transformers) (partition layer-transformer other-than-basics)]
@@ -276,7 +275,7 @@
 		 (transformed-renderer)
 		 (EndTextureMode)
 		 (final-renderer)
-		  final-screen)
+		 final-screen)
 	       (lambda ()
 		 (for-each (lambda (l)
 			     (when (layer-shown? l)
@@ -289,7 +288,21 @@
 		 (sort layer-above? others))
 	       (lambda ()
 		 (filter layer-succeedable? f))))))))))
-      
+
+(define load-texture-from-screeen
+  (lambda ()
+    (let* ([img (LoadImageFromScreen)]
+	   [tex (LoadTextureFromImage img)])
+      (UnloadImage img)
+      tex)))
+(define load-texture-from-render-texture-texture
+  (lambda (texture)
+    (let ([img (LoadImageFromTexture texture)])
+      (ImageFlipVertical img)
+      (let ([tex (LoadTextureFromImage img)])
+	(UnloadImage img)
+	tex))))
+
 (define replica
   (lambda (rpl-file)
     (let* ([directives (call-with-input-file rpl-file read-directives)]
@@ -301,8 +314,16 @@
 	     (lambda ()
 	       (preload-resources))
 	     (lambda ()
-	       (let interacting ([current (car frames)] [rest (cdr frames)] [successor '()])
-		 (let-values ([(renderer sounder cleanup others succeers) (frame-lifecycle current successor)])
+	       (let interacting ([current (car frames)] [rest (cdr frames)] [previous (make-ftype-pointer Texture2D (foreign-alloc (ftype-sizeof Texture2D)))])
+		 (let-values ([(renderer sounder cleanup others succeers) (frame-lifecycle current)])
+		   (let ([next (load-texture-from-render-texture-texture (renderer))])
+		     (let ([trans (find (lambda (l) (and (layer-others l)
+						(eqv? 'transition (car (layer-others l))))) (others))])
+		       (if trans
+			 (transition (cadr (layer-others trans)) previous next)
+			 (transition "../assets/glsl/fade.transition.fs" previous next))
+		       (UnloadTexture next)
+		       (UnloadTexture previous)))
 		   (sounder)
 		   (let rendering ()
 		     (BeginDrawing)
@@ -314,6 +335,7 @@
 		      [(IsMouseButtonPressed MOUSE_BUTTON_LEFT)
 		       (begin
 			 (cleanup)
-			 (interacting (car rest) (cdr rest) (succeers)))]
+			 (interacting (append (car rest) (succeers)) (cdr rest) (load-texture-from-screeen)))]
 		      [else (rendering)])))))
-	     (lambda () (unload-resources)))))))))
+	     (lambda () (unload-resources))
+	     )))))))
