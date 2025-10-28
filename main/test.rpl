@@ -9,7 +9,12 @@
 (wait click)
 
 (scene "../assets/bg/yuwen.bedroom.morning.png")
-(camera zoom-bedroom)
+(camera bedroom-zoom-move)
 (text "苏喻文" "(哈欠)")
-(effect mask)
+(effect mask-on)
+
+(wait click)
+
+(scene "../assets/bg/yuwen.bedroom.morning.png")
+(text "苏喻文" "(翻找)")
 

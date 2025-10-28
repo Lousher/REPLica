@@ -11,7 +11,7 @@ out vec4 finalColor;
 void main() {
     vec4 originColor = texture(texture0, fragTexCoord);
     vec4 black = vec4(0.0, 0.0, 0.0, 1.0);
-    float maxBottomMask = progress / 7;
+    float maxBottomMask = progress / 6;
     float maxTopMask = 1.0 - maxBottomMask;
     
     if (fragTexCoord.y < maxTopMask && fragTexCoord.y > maxBottomMask) {

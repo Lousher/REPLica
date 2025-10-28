@@ -11,19 +11,35 @@
 (define *VEC_ORIGIN* #f)
 (define *CAMERA* #f)
 (define *PROGRESS-FPTR* #f)
+(define *FONT-IN-MEMORY* #f)
+(define *FONT-SIZE* #f)
+(define *FONT* #f)
+(define *CODEPOINTS-COUNT #f)
+(define *VEC_TEXT* #f)
+
 (define init-global-variables
   (lambda ()
     (set! *RECT_FOR_RT* (make-Rectangle 0.0 0.0 (exact->inexact (GetScreenWidth))
 					(exact->inexact (- (GetScreenHeight)))))
     (set! *VEC_ORIGIN* (make-Vector2 0.0 0.0))
     (set! *CAMERA* (init-Camera2D))
-    (set! *PROGRESS-FPTR* (make-ftype-pointer float (foreign-alloc (ftype-sizeof float))))))
+    (set! *PROGRESS-FPTR* (make-ftype-pointer float (foreign-alloc (ftype-sizeof float))))
+    (set! *CODEPOINTS-COUNT* (make-ftype-pointer int (foreign-alloc (ftype-sizeof int))))
+    (set! *FONT-SIZE* (make-ftype-pointer int (foreign-alloc (ftype-sizeof int))))
+    (set! *FONT-IN-MEMORY* (LoadFileData "../assets/font/Xiaolai-Regular.ttf" *FONT-SIZE*))
+    (set! *FONT* (make-ftype-pointer Font (foreign-alloc (ftype-sizeof Font))))
+    (set! *VEC_TEXT* (make-Vector2 (* (GetScreenWidth) 0.2) (* (GetScreenHeight) 0.75)))))
 (define deinit-glogal-variables
   (lambda ()
     (foreign-free (ftype-pointer-address *RECT_FOR_RT*))
     (foreign-free (ftype-pointer-address *VEC_ORIGIN*))
     (foreign-free (ftype-pointer-address *CAMERA*))
-    (foreign-free (ftype-pointer-address *PROGRESS-FPTR*))))
+    (foreign-free (ftype-pointer-address *PROGRESS-FPTR*))
+    (foreign-free (ftype-pointer-address *FONT-SIZE*))
+    (foreign-free (ftype-pointer-address *CODEPOINTS-COUNT*))
+    (foreign-free (ftype-pointer-address *FONT*))
+    (foreign-free (ftype-pointer-address *VEC_TEXT*))
+    (UnloadFileData *FONT-IN-MEMORY*)))
   
 (define *resources* (make-hashtable string-hash string=?))
 (define *layers* (make-hashtable symbol-hash symbol=?))
@@ -82,8 +98,10 @@
 		(let ([name (cadr s)])
 		  (lambda () (load-resource name (LoadTexture name))))
 		(lambda ()
-		  (UnloadTexture (ref-resource (cadr s)))
-		  (hashtable-delete! *resources* (cadr s)))
+		  (let ([name (cadr s)])
+		    (UnloadTexture (ref-resource name))
+		    (hashtable-delete! *resources* name)
+		    (TraceLog LOG_INFO (format "Unload character resource ~a" name))))
 		(lambda () (DrawTexture (ref-resource (cadr s)) 0 0 WHITE)) #f)))
 (define make-scene-layer
   (lambda (s)
@@ -92,8 +110,10 @@
 		  (lambda ()
 		    (load-resource name (load-background name))))
 		(lambda ()
-		  (UnloadTexture (ref-resource (cadr s)))
-		  (hashtable-delete! *resources* (cadr s)))
+		  (let ([name (cadr s)])
+		    (UnloadTexture (ref-resource name))
+		    (hashtable-delete! *resources* name)
+		    (TraceLog LOG_INFO (format "Unload scene resource ~a" name))))
 		(lambda () (DrawTexture (ref-resource (cadr s)) 0 0 WHITE)) #f)))
 (define make-sound-layer
   (lambda (s)
@@ -123,12 +143,39 @@
 				    (BeginShaderMode (shader))
 				    (render)
 				    (EndShaderMode)))) #f)))
+
+(define char->utf8
+  (lambda (ch)
+    (string->utf8 (string ch))))
+
+(define subtexter
+  (lambda (str)
+    (let ([passed 0.0] [index 0] [len (string-length str)])
+      (lambda ()
+	(if (>= index len)
+	    str
+	    (begin
+	      (if (> passed 0.1)
+		  (begin
+		    (set! index (+ index 1))
+		    (set! passed 0.0))
+		  (set! passed (+ passed (GetFrameTime))))
+	      (substring str 0 index)))))))
+	    
 (define make-text-layer
   (lambda (s)
     (make-layer 2002 #t #f #f (lambda (render)
-				(lambda ()
-				  (render)
-				  (DrawText "This is a test" 300 400 50 WHITE))) #f)))
+				(let* ([texts (apply string-append (cdr s))]
+				       [codepoints (LoadCodepoints texts *CODEPOINTS-COUNT*)]
+				       [subtext (subtexter (caddr s))])
+				  (UnloadFont *FONT*)
+				  (set! *FONT* (LoadFontFromMemory ".ttf" *FONT-IN-MEMORY* (ftype-ref int () *FONT-SIZE*)
+								 32 codepoints (ftype-ref int () *CODEPOINTS-COUNT*)))
+				  (UnloadCodepoints codepoints)
+				  (lambda ()
+				    (render)
+				    (DrawTextEx *FONT* (subtext) *VEC_TEXT* 50.0 0.0 WHITE)))) #f)))
+
 (define make-transition-layer
   (lambda (s)
     (make-layer 4001 #f #f #f #f s)))
@@ -229,8 +276,8 @@
 			       ((layer-renderer l))))
 			   (sort layer-above? audios)))
 	       (lambda ()
-		   (UnloadRenderTexture rt)
-		   (UnloadRenderTexture final-rt))
+		 (UnloadRenderTexture rt)
+		 (UnloadRenderTexture final-rt))
 	       (lambda ()
 		 (sort layer-above? others))))))))))
 
@@ -259,14 +306,16 @@
 	     (lambda ()
 	       (preload-resources))
 	     (lambda ()
-	       (let interacting ([rest frames] [previous #f])
+	       (let interacting ([rest frames] [previous (make-ftype-pointer Texture2D (foreign-alloc (ftype-sizeof Texture2D)))])
 		 (let-values ([(renderer sounder cleanup others) (frame-lifecycle (car rest))])
 		   (let ([next (load-texture-from-render-texture-texture (renderer))])
 		     (let ([trans (find (lambda (l) (and (layer-others l)
 						(eqv? 'transition (car (layer-others l))))) (others))])
 		       (if trans
 			 (transition (cadr (layer-others trans)) previous next)
-			 (transition "../assets/glsl/fade.transition.fs" previous next))))
+			 (transition "../assets/glsl/fade.transition.fs" previous next))
+		       (UnloadTexture next)
+		       (UnloadTexture previous)))
 		   (sounder)
 		   (let rendering ()
 		     (BeginDrawing)
