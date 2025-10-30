@@ -16,7 +16,7 @@
 		      (exact->inexact w)
 		      (exact->inexact h)))))
 
-(define make-picture
+(define make-picture-from-texture
   (lambda (texture)
     (let ([tex-w (* 1.0 (Texture-width texture))]
 	  [tex-h (* 1.0 (Texture-height texture))])
@@ -31,6 +31,27 @@
 	  (lambda ()
 	    (DrawTexturePro texture src-rect dest-rect center 0.0 WHITE)))))))
 
+(define make-pictures-from-text
+  (lambda (text fz)
+    (let* ([codepoints (LoadCodepoints text codepoints-count)]
+	   [font (LoadFontFromMemory ".ttf" font-data (ftype-ref int () font-size) fz codepoints (ftype-ref int () codepoints-count))]
+	   [fz-float (exact->inexact fz)])
+      (UnloadCodepoints codepoints)
+      (let* ([len (string-length text)] [subtext-indexs (iota (1+ len))])
+	(map
+	 (lambda (subtext-index)
+	   (let* ([subtext (substring text 0 subtext-index)]
+		  [measured-vec (MeasureTextEx font subtext fz-float 0.0)])
+	   (lambda (reg)
+	     (let* ([x (region-x reg)] [y (region-y reg)] [w (region-width reg)] [h (region-height reg)]
+		    [text-x (+ x (/ (- w (Vector2-x measured-vec)) 2.0))]
+		    [vec-for-tex (make-Vector2 text-x (exact->inexact y))])
+	       (lambda ()
+		 (DrawTextEx font subtext vec-for-tex fz-float 0.0 WHITE))))))
+	 subtext-indexs))
+      )))
+
+; picture
 (define flat-vertical
   (lambda pics
     (let ([count (length pics)])
@@ -40,22 +61,83 @@
 	    (for-each
 	     (lambda (pic index)
 	       (let ([x (* index w-seg)] [y 0] [w w-seg] [h (region-height reg)])
-		 ((pic (make-region x y w h)))))
+		 (let ([rect-index (make-region x y w h)])
+		   ((pic rect-index)))))
 	     pics
 	     (iota count))))))))
-(define overlay
-  (lambda (backend frontend)
+
+(define overlay-picture
+  (lambda pics
     (lambda (reg)
-      (lambda ()
-	((backend reg))
-	((frontend reg))))))
+      (let ([rens (map (lambda (pic) (pic reg)) pics)])
+	(lambda ()
+	  (for-each (lambda (ren) (ren)) rens))))))
+
+(define move
+  (lambda (pic offset)
+    (lambda (reg)
+      (let ([x-offset (car offset)] [y-offset (cdr offset)]
+	    [x (region-x reg)] [y (region-y reg)]
+	    [w (region-width reg)] [h (region-height reg)])
+	(let ([rect-moved (make-region (+ x x-offset) (+ y y-offset) w h)])
+	  (lambda ()
+	    ((pic rect-moved))))))))
+
+(define dialogue-locate
+  (lambda (pic)
+    (lambda (reg)
+      (let* ([x (region-x reg)] [y (region-y reg)] [w (region-width reg)] [h (region-height reg)]
+	     [dialogue-x (* w 0.2)] [dialogue-y (* h 0.7)] [dialogue-w (* w 0.6)] [dialogue-h (* h 0.2)]
+	     [dialogue-reg (make-region dialogue-x dialogue-y dialogue-w dialogue-h)])
+	(lambda ()
+	  ((pic dialogue-reg)))))))
 
 (define test-init
   (lambda ()
     (set! texture1 (LoadTexture "../assets/bg/yuwen.bedroom.morning.png"))
     (set! texture2 (LoadTexture "../assets/character/0896.png"))
-    (set! picture-1 (make-picture texture1))
-    (set! picture-2 (make-picture texture2))))
+    (set! bg-pic (make-picture-from-texture texture1))
+    (set! char-pic (make-picture-from-texture texture2))
+    (set! font-size (make-ftype-pointer Font (foreign-alloc (ftype-sizeof Font))))
+    (set! font-data (LoadFileData "../assets/font/Xiaolai-Regular.ttf" font-size))
+    (set! codepoints-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int))))
+    (set! text-pics (make-pictures-from-text "这是一个测试，测试能否在中间显示" 50))
+    ))
+
+(define make-animation
+  (lambda (animator)
+    (lambda (reg)
+      (let animating ([progress 0.0])
+	(BeginDrawing)
+	(ClearBackground BLACK)
+	(((animator progress) reg))
+	(EndDrawing)
+	(unless (WindowShouldClose)
+	  (animating (+ progress 0.1)))))))
+
+(define walk-animator
+  (lambda (pic)
+    (lambda (progress)
+      (lambda (reg)
+	(lambda ()
+	  (((move pic `(,progress . ,(* 5 (sin (* progress 0.1))))) reg)))))))
+
+(define sequence-animator
+  (lambda pics
+    (let ([len (length pics)])
+      (lambda (progress)
+	(list-ref pics (min (1- len) (exact (floor (/ progress 10)))))))))
+
+(define static-animator
+  (lambda (pic)
+    (lambda (progress)
+      pic)))
+
+(define overlay-animator
+  (lambda anis
+    (lambda (progress)
+      (apply overlay-picture
+	     (map (lambda (ani) (ani progress)) anis)))))
 
 (define main
   (lambda ()
@@ -63,12 +145,11 @@
     (test-init)
     (let* ([whole-region (make-region 0.0 0.0 (* (GetScreenWidth) 1.0)
 				      (* (GetScreenHeight) 1.0))]
-	   [renderer ((overlay picture-1 (flat-vertical picture-2 picture-2 picture-2 picture-2)) whole-region)])
-      (let drawing ()
-	(BeginDrawing)
-	(ClearBackground BLACK)
-	(renderer)
-	(EndDrawing)
-	(unless (WindowShouldClose)
-	  (drawing))))
-    (CloseWindow)))
+	   [ani (make-animation
+		 (overlay-animator
+		  (static-animator bg-pic)
+		  (walk-animator char-pic)
+		  (apply sequence-animator (map dialogue-locate text-pics)))
+		 )])
+      (ani whole-region)
+      (CloseWindow))))

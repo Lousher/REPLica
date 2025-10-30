@@ -290,6 +290,7 @@
 (define-ffi DrawTextEx ((& Font) string (& Vector2) float float (& Color)) void)
 (define-ffi TextSubtext (string int int) string)
 (define-ffi GetCodepointCount (string) int)
+(define-ffi MeasureTextEx ((& Font) string float float) (& Vector2))
 ;;Camera
 (define-ffi BeginMode2D ((& Camera2D)) void)
 (define-ffi EndMode2D () void)
