@@ -2,318 +2,119 @@
 (load-shared-object "raylib.ffi.so")
 (load "raylib.ffi.ss")
 (load "raylib.constant.ss")
-(load "parser.ss")
-(load "shader.ss")
-(load "camera.ss")
-(load "transition.ss")
 
-(define *RECT_FOR_RT* #f)
-(define *VEC_ORIGIN* #f)
-(define *CAMERA* #f)
-(define *PROGRESS-FPTR* #f)
-(define *FONT-IN-MEMORY* #f)
-(define *FONT-SIZE* #f)
-(define *FONT* #f)
-(define *CODEPOINTS-COUNT #f)
-(define *VEC_TEXT* #f)
+					; primitive: regin renderer
+(define-record-type region
+  (fields
+   x
+   y
+   width
+   height))
 
-(define init-global-variables
+(define region->Rectangle
+  (lambda (reg)
+    (let ([x (region-x reg)] [y (region-y reg)]
+	  [w (region-width reg)] [h (region-height reg)])
+      (make-Rectangle (exact->inexact x)
+		      (exact->inexact y)
+		      (exact->inexact w)
+		      (exact->inexact h)))))
+
+(define make-picture
+  (lambda (texture)
+    (let ([tex-w (* 1.0 (Texture-width texture))]
+	  [tex-h (* 1.0 (Texture-height texture))])
+      (lambda (dest-reg)
+	(let* ([dest-w (region-width dest-reg)] [dest-h (region-height dest-reg)]
+	       [dest-x (region-x dest-reg)] [dest-y (region-y dest-reg)]
+	       [scale (max (/ dest-w tex-w) (/ dest-h tex-h))]
+	       [scaled-w (* tex-w scale)] [scaled-h (* tex-h scale)]
+	       [src-rect (make-Rectangle 0.0 0.0 tex-w tex-h)]
+	       [dest-rect (make-Rectangle (+ dest-x (/ dest-w 2.0)) (+ dest-y (/ dest-h 2.0)) scaled-w scaled-h)]
+	       [center (make-Vector2 (/ scaled-w 2.0) (/ scaled-h 2.0))])
+	  (lambda ()
+	    (DrawTexturePro texture src-rect dest-rect center 0.0 WHITE)))))))
+
+; picture
+(define flat-vertical
+  (lambda pics
+    (let ([count (length pics)])
+      (lambda (reg)
+	(let ([w-seg (* (/ (region-width reg) count) 1.0)])
+	  (lambda ()
+	    (for-each
+	     (lambda (pic index)
+	       (let ([x (* index w-seg)] [y 0] [w w-seg] [h (region-height reg)])
+		 (let ([rect-index (make-region x y w h)])
+		   ((pic rect-index)))))
+	     pics
+	     (iota count))))))))
+(define overlay-picture
+  (lambda (backend-pic frontend-pic)
+    (lambda (reg)
+      (lambda ()
+	((backend-pic reg))
+	((frontend-pic reg))))))
+(define move
+  (lambda (pic offset)
+    (lambda (reg)
+      (let ([x-offset (car offset)] [y-offset (cdr offset)]
+	    [x (region-x reg)] [y (region-y reg)]
+	    [w (region-width reg)] [h (region-height reg)])
+	(let ([rect-moved (make-region (+ x x-offset) (+ y y-offset) w h)])
+	  (lambda ()
+	    ((pic rect-moved))))))))
+
+
+(define test-init
   (lambda ()
-    (set! *RECT_FOR_RT* (make-Rectangle 0.0 0.0 (exact->inexact (GetScreenWidth))
-					(exact->inexact (- (GetScreenHeight)))))
-    (set! *VEC_ORIGIN* (make-Vector2 0.0 0.0))
-    (set! *CAMERA* (init-Camera2D))
-    (set! *PROGRESS-FPTR* (make-ftype-pointer float (foreign-alloc (ftype-sizeof float))))
-    (set! *CODEPOINTS-COUNT* (make-ftype-pointer int (foreign-alloc (ftype-sizeof int))))
-    (set! *FONT-SIZE* (make-ftype-pointer int (foreign-alloc (ftype-sizeof int))))
-    (set! *FONT-IN-MEMORY* (LoadFileData "../assets/font/Xiaolai-Regular.ttf" *FONT-SIZE*))
-    (set! *FONT* (make-ftype-pointer Font (foreign-alloc (ftype-sizeof Font))))
-    (set! *VEC_TEXT* (make-Vector2 (* (GetScreenWidth) 0.2) (* (GetScreenHeight) 0.75)))))
-(define deinit-glogal-variables
+    (set! texture1 (LoadTexture "../assets/bg/yuwen.bedroom.morning.png"))
+    (set! texture2 (LoadTexture "../assets/character/0896.png"))
+    (set! bg-pic (make-picture texture1))
+    (set! char-pic (make-picture texture2))
+    ))
+
+(define make-animation
+  (lambda (animator)
+    (lambda (reg)
+      (let animating ([progress 0.0])
+	(BeginDrawing)
+	(ClearBackground BLACK)
+	(((animator progress) reg))
+	(EndDrawing)
+	(unless (WindowShouldClose)
+	  (animating (+ progress 0.1)))))))
+
+(define walk-animator
+  (lambda (pic)
+    (lambda (progress)
+      (lambda (reg)
+	(lambda ()
+	  (((move pic `(,(+ -800 progress) . ,(* 5 (sin (* progress 0.05))))) reg)))))))
+
+(define static-animator
+  (lambda (pic)
+    (lambda (progress)
+      pic)))
+
+(define overlay-animator
+  (lambda (ani-back ani-front)
+    (lambda (progress)
+      (overlay-picture
+      (ani-back progress)
+      (ani-front progress)))))
+
+(define main
   (lambda ()
-    (foreign-free (ftype-pointer-address *RECT_FOR_RT*))
-    (foreign-free (ftype-pointer-address *VEC_ORIGIN*))
-    (foreign-free (ftype-pointer-address *CAMERA*))
-    (foreign-free (ftype-pointer-address *PROGRESS-FPTR*))
-    (foreign-free (ftype-pointer-address *FONT-SIZE*))
-    (foreign-free (ftype-pointer-address *CODEPOINTS-COUNT*))
-    (foreign-free (ftype-pointer-address *FONT*))
-    (foreign-free (ftype-pointer-address *VEC_TEXT*))
-    (UnloadFileData *FONT-IN-MEMORY*)))
-  
-(define *resources* (make-hashtable string-hash string=?))
-(define *layers* (make-hashtable symbol-hash symbol=?))
-(define layer-basical?
-  (lambda (layer)
-    (and (layer? layer)
-	 (< (layer-index layer) 1000))))
-(define layer-transformer
-  (lambda (l)
-    (and (layer? l)
-	 (> (layer-index l) 1000)
-	 (< (layer-index l) 2000))))
-(define layer-topping
-  (lambda (l)
-    (and (layer? l)
-	 (> (layer-index l) 2000)
-	 (< (layer-index l) 3000))))
-(define layer-audio
-  (lambda (l)
-    (and (layer? l)
-	 (> (layer-index l) 3000)
-	 (< (layer-index l) 4000))))
-(define layer-others
-  (lambda (l)
-    (and (layer? l)
-	 (> (layer-index l) 4000)
-	 (< (layer-index l) 5000))))
-(define layer-above?
-  (lambda (a b)
-    (and (layer? a) (layer? b)
-	 (< (layer-index a) (layer-index b)))))
+    (InitWindow (GetScreenWidth) (GetScreenHeight) "TEST")
+    (test-init)
+    (let* ([whole-region (make-region 0.0 0.0 (* (GetScreenWidth) 1.0)
+				      (* (GetScreenHeight) 1.0))]
+	   [ani (make-animation
+		 (overlay-animator
+		  (static-animator bg-pic)
+		  (walk-animator char-pic)))])
+      (ani whole-region)
+      (CloseWindow))))
 
-(define load-resource (lambda (key res)
-			(let ([name (if (symbol? key) (symbol->string key) key)])
-			  (hashtable-set! *resources* name res))))
-(define ref-resource (lambda (key)
-		       (let ([name (if (symbol? key) (symbol->string key) key)])
-			 (hashtable-ref *resources* name (lambda () (error 'ref-resource "No such resource loaded" name))))))
-(define load-background
-  (lambda (path)
-    (assert (file-exists? path))
-    (let ([img (LoadImage path)])
-      (ImageResize img (GetScreenWidth) (GetScreenHeight))
-      (let ([tex (LoadTextureFromImage img)])
-	(UnloadImage img)
-	tex))))
-(define-record-type layer
-  (fields index
-	  shown?
-	  (mutable succeedable?)
-	  loader
-	  unloader
-	  renderer
-	  others))
-(define make-character-layer
-  (lambda (s)
-    (make-layer 100 #t #t
-		(let ([name (cadr s)])
-		  (lambda () (load-resource name (LoadTexture name))))
-		(lambda ()
-		  (let ([name (cadr s)])
-		    (UnloadTexture (ref-resource name))
-		    (hashtable-delete! *resources* name)
-		    (TraceLog LOG_INFO (format "Unload character resource ~a" name))))
-		(lambda () (DrawTexture (ref-resource (cadr s)) 0 0 WHITE)) #f)))
-(define make-scene-layer
-  (lambda (s)
-    (make-layer 0 #t #t
-		(let ([name (cadr s)])
-		  (lambda ()
-		    (load-resource name (load-background name))))
-		(lambda ()
-		  (let ([name (cadr s)])
-		    (UnloadTexture (ref-resource name))
-		    (hashtable-delete! *resources* name)
-		    (TraceLog LOG_INFO (format "Unload scene resource ~a" name))))
-		(lambda () (DrawTexture (ref-resource (cadr s)) 0 0 WHITE)) #f)))
-(define make-sound-layer
-  (lambda (s)
-    (make-layer 3001 #t #f
-		(let ([name (cadr s)])
-		  (lambda () (load-resource name (LoadSound name))))
-		(lambda ()
-		  (UnloadSound (ref-resource (cadr s)))
-		  (hashtable-delete! *resources* (cadr s)))
-		(lambda () (PlaySound (ref-resource (cadr s)))) #f)))
-(define make-wait-layer
-  (lambda (s)
-    (make-layer -1 #f #f #f #f #f #f)))
-(define make-camera-layer
-  (lambda (s)
-    (make-layer 1001 #t #t (let ([name (cadr s)])
-			     (lambda ()
-			       (load-resource name ((eval name)))))
-		#f
-			       (lambda (render)
-				 (let ([camera (ref-resource (cadr s))])
-				   (lambda ()
-				     (BeginMode2D (camera))
-				     (render)
-				     (EndMode2D)))) #f)))
-(define make-effect-layer
-  (lambda (s)
-    (make-layer 2001 #t #t (let ([name (cadr s)])
-			     (lambda ()
-			       (load-resource name ((eval name)))))
-		#f
-		(lambda (render)
-		  (let ([shader (ref-resource (cadr s))])
-		    (lambda ()
-		      (BeginShaderMode (shader))
-		      (render)
-		      (EndShaderMode)))) #f)))
-(define char->utf8
-  (lambda (ch)
-    (string->utf8 (string ch))))
-(define subtexter
-  (lambda (str)
-    (let ([passed 0.0] [index 0] [len (string-length str)])
-      (lambda ()
-	(if (>= index len)
-	    str
-	    (begin
-	      (if (> passed 0.1)
-		  (begin
-		    (set! index (+ index 1))
-		    (set! passed 0.0))
-		  (set! passed (+ passed (GetFrameTime))))
-	      (substring str 0 index)))))))
-(define make-text-layer
-  (lambda (s)
-    (make-layer 2002 #t #f #f #f (lambda (render)
-				(let* ([texts (apply string-append (cdr s))]
-				       [codepoints (LoadCodepoints texts *CODEPOINTS-COUNT*)]
-				       [subtext (subtexter (caddr s))])
-				  (UnloadFont *FONT*)
-				  (set! *FONT* (LoadFontFromMemory ".ttf" *FONT-IN-MEMORY* (ftype-ref int () *FONT-SIZE*)
-								 32 codepoints (ftype-ref int () *CODEPOINTS-COUNT*)))
-				  (UnloadCodepoints codepoints)
-				  (lambda ()
-				    (render)
-				    (DrawTextEx *FONT* (subtext) *VEC_TEXT* 50.0 0.0 WHITE)))) #f)))
-(define make-transition-layer
-  (lambda (s)
-    (make-layer 4001 #f #f #f #f #f s)))
 
-(hashtable-set! *layers* 'scene make-scene-layer)
-(hashtable-set! *layers* 'wait make-wait-layer)
-(hashtable-set! *layers* 'character make-character-layer)
-(hashtable-set! *layers* 'camera make-camera-layer)
-(hashtable-set! *layers* 'effect make-effect-layer)
-(hashtable-set! *layers* 'sound make-sound-layer)
-(hashtable-set! *layers* 'transition make-transition-layer)
-(hashtable-set! *layers* 'text make-text-layer)
-
-(define frame?
-  (lambda (f)
-    (and (list? f)
-	 (for-all layer? f))))
-(define with-window
-  (lambda (thunk)
-    (dynamic-wind
-      (lambda ()
-	(SetConfigFlags (logor FLAG_WINDOW_MAXIMIZED
-			       FLAG_WINDOW_MINIMIZED))
-	(SetTargetFPS 60)
-	(InitWindow (GetScreenWidth) (GetScreenHeight) "Test")
-	(InitAudioDevice)
-	(init-global-variables))
-      (lambda () (thunk))
-      (lambda ()
-	(CloseAudioDevice)
-	(CloseWindow)
-	(deinit-glogal-variables)))))
-(define script->layer
-  (lambda (s)
-    (if (hashtable-contains? *layers* (car s))
-	((hashtable-ref *layers* (car s) 'NULL) s)
-	(error 'script->layer "Not a valid script"))))
-(define directive->frame
-  (lambda (directive)
-    (assert (for-all script? directive))
-    (map script->layer directive)))
-(define resources-lifecycle
-  (lambda (frames)
-    (assert (for-all frame? frames))
-    (let ([fields (lambda (ref) (apply append (map (lambda (f) (map ref f)) frames)))])
-      (values
-       (lambda () (for-each (lambda (x) (when x (x))) (fields layer-loader)))
-       (lambda () (for-each (lambda (x) (when x (x))) (fields layer-unloader)))))))
-
-(define frame-succeed
-  (lambda (f s)
-    (let ([indexes (map layer-index f)])
-      (let ([succeed (filter (lambda (l) (not (memv (layer-index l) indexes))) s)])
-	(append f succeed)))))
-
-(define frame-lifecycle
-  (lambda (origin s)
-    (let* ([f (frame-succeed origin s)]
-	   [w (GetScreenWidth)] [h (GetScreenHeight)]
-	   [rt (LoadRenderTexture w h)])
-      (let*-values ([(basics other-than-basics) (partition layer-basical? f)]
-		    [(transformers other-than-transformers) (partition layer-transformer other-than-basics)]
-		    [(toppings other-than-toppings) (partition layer-topping other-than-transformers)]
-		    [(audios others) (partition layer-audio other-than-toppings)])
-	(BeginTextureMode rt)
-	(for-each
-	 (lambda (layer)
-	   (when (layer-shown? layer)
-	     ((layer-renderer layer))))
-	 (sort layer-above? basics))
-	(EndTextureMode)
-	(let ([screen (RenderTexture-texture rt)])
-	  (let ([transformed-renderer (fold-left
-				       (lambda (prev next)
-					 (if (layer-shown? next)
-					     ((layer-renderer next) prev)
-					     prev))
-				       (lambda () (DrawTextureRec screen *RECT_FOR_RT* *VEC_ORIGIN* WHITE))
-				       (sort layer-above? transformers))])
-	    (let* ([final-rt (LoadRenderTexture w h)]
-		   [final-screen (RenderTexture-texture final-rt)]
-		   [final-renderer (fold-left
-				    (lambda (prev next)
-				      (if (layer-shown? next)
-					  ((layer-renderer next) prev)
-					  prev))
-				    (lambda () (DrawTextureRec final-screen *RECT_FOR_RT* *VEC_ORIGIN* WHITE))
-				    (sort layer-above? toppings))])
-	      (values
-	       (lambda ()
-		 (BeginTextureMode final-rt)
-		 (transformed-renderer)
-		 (EndTextureMode)
-		 (final-renderer)
-		  final-screen)
-	       (lambda ()
-		 (for-each (lambda (l)
-			     (when (layer-shown? l)
-			       ((layer-renderer l))))
-			   (sort layer-above? audios)))
-	       (lambda ()
-		 (UnloadRenderTexture rt)
-		 (UnloadRenderTexture final-rt))
-	       (lambda ()
-		 (sort layer-above? others))
-	       (lambda ()
-		 (filter layer-succeedable? f))))))))))
-      
-(define replica
-  (lambda (rpl-file)
-    (let* ([directives (call-with-input-file rpl-file read-directives)]
-	   [frames (map directive->frame directives)])
-      (let-values ([(preload-resources unload-resources) (resources-lifecycle frames)])
-	(with-window
-	 (lambda ()
-	   (dynamic-wind
-	     (lambda ()
-	       (preload-resources))
-	     (lambda ()
-	       (let interacting ([current (car frames)] [rest (cdr frames)] [successor '()])
-		 (let-values ([(renderer sounder cleanup others succeers) (frame-lifecycle current successor)])
-		   (sounder)
-		   (let rendering ()
-		     (BeginDrawing)
-		     (ClearBackground BLACK)
-		     (renderer)
-		     (EndDrawing)
-		     (cond
-		      [(WindowShouldClose) (void)]
-		      [(IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-		       (begin
-			 (cleanup)
-			 (interacting (car rest) (cdr rest) (succeers)))]
-		      [else (rendering)])))))
-	     (lambda () (unload-resources)))))))))
