@@ -3,7 +3,6 @@
 (load "raylib.ffi.ss")
 (load "raylib.constant.ss")
 
-					; primitive: regin renderer
 (define-record-type region
   (fields x y width height))
 
@@ -16,7 +15,13 @@
 		      (exact->inexact w)
 		      (exact->inexact h)))))
 
-(define make-fragment-from-texture
+(define fragment<-music
+  (lambda (music)
+    (PlayMusicStream music)
+    (lambda (dest-reg)
+      (lambda () (UpdateMusicStream music)))))
+
+(define fragment<-texture
   (lambda (texture)
     (let ([tex-w (* 1.0 (Texture-width texture))]
 	  [tex-h (* 1.0 (Texture-height texture))])
@@ -31,7 +36,7 @@
 	  (lambda ()
 	    (DrawTexturePro texture src-rect dest-rect center 0.0 WHITE)))))))
 
-(define make-fragments-from-text
+(define fragments<-text
   (lambda (text fz)
     (let* ([codepoints (LoadCodepoints text codepoints-count)]
 	   [font (LoadFontFromMemory ".ttf" font-data (ftype-ref int () font-size) fz codepoints (ftype-ref int () codepoints-count))]
@@ -51,22 +56,7 @@
 		   (DrawTextEx font subtext vec-for-tex fz-float 0.0 WHITE))))))
 	 subtext-indexs)))))
 
-
-(define flat-vertical
-  (lambda frags
-    (let ([count (length pics)])
-      (lambda (reg)
-	(let ([w-seg (* (/ (region-width reg) count) 1.0)])
-	  (lambda ()
-	    (for-each
-	     (lambda (frag index)
-	       (let ([x (* index w-seg)] [y 0] [w w-seg] [h (region-height reg)])
-		 (let ([rect-index (make-region x y w h)])
-		   ((frag rect-index)))))
-	     frags
-	     (iota count))))))))
-
-(define overlay-fragment
+(define overlay
   (lambda frags
     (lambda (reg)
       (let ([rens (map (lambda (frag) (frag reg)) frags)])
@@ -83,7 +73,7 @@
 	  (lambda ()
 	    ((frag rect-moved))))))))
 
-(define dialogue-locate
+(define locate-dialogue
   (lambda (frag)
     (lambda (reg)
       (let* ([x (region-x reg)] [y (region-y reg)] [w (region-width reg)] [h (region-height reg)]
@@ -92,64 +82,144 @@
 	(lambda ()
 	  ((frag dialogue-reg)))))))
 
-(define test-init
-  (lambda ()
-    (set! texture1 (LoadTexture "../assets/bg/yuwen.bedroom.morning.png"))
-    (set! texture2 (LoadTexture "../assets/character/0896.png"))
-    (set! bg-pic (make-fragment-from-texture texture1))
-    (set! char-pic (make-fragment-from-texture texture2))
-    (set! font-size (make-ftype-pointer Font (foreign-alloc (ftype-sizeof Font))))
-    (set! font-data (LoadFileData "../assets/font/Xiaolai-Regular.ttf" font-size))
-    (set! codepoints-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int))))
-    (set! text-pics (make-fragments-from-text "你好呀，好久不见啦？" 50))
-    ))
+; --- --- --- 
 
 (define make-animation
-  (lambda (animator)
+  (lambda (animator end?)
     (lambda (reg)
-      (let animating ([progress 0.0])
+      (let animating ([passed 0.0])
 	(BeginDrawing)
 	(ClearBackground BLACK)
-	(((animator progress) reg))
+	(((animator passed) reg))
 	(EndDrawing)
-	(unless (WindowShouldClose)
-	  (animating (+ progress 0.1)))))))
+	(unless (or (end? passed) (WindowShouldClose))
+	  (animating (+ passed (GetFrameTime))))))))
 
-(define walk-animator
-  (lambda (frag)
-    (lambda (progress)
-      (lambda (reg)
-	(lambda ()
-	  (((move frag `(,progress . ,(* 5 (sin (* progress 0.1))))) reg)))))))
+(define animator<-shader
+  (lambda (vs fs time)
+    (let* ([shader (LoadShader vs fs)]
+	   [ptr (foreign-alloc (ftype-sizeof float))]
+	   [fptr (make-ftype-pointer float ptr)]
+	   [loc (GetShaderLocation shader "progress")])
+    (lambda (frag)
+	(lambda (passed)
+	  (ftype-set! float () fptr (min (/ passed time) 1.0))
+	  (SetShaderValue shader loc ptr SHADER_UNIFORM_FLOAT)
+	  (lambda (reg)
+	    (lambda ()
+	      (BeginShaderMode shader)
+	      ((frag reg))
+	      (EndShaderMode))))))))
 
-(define sequence-animator
-  (lambda frags
-    (let ([len (length frags)])
-      (lambda (progress)
-	(list-ref frags (min (1- len) (exact (floor (/ progress 10)))))))))
-
-(define static-animator
+(define static
   (lambda (frag)
     (lambda (progress)
       frag)))
 
-(define overlay-animator
+(define overlap
   (lambda anis
-    (lambda (progress)
-      (apply overlay-fragment
-	     (map (lambda (ani) (ani progress)) anis)))))
+    (lambda (passed)
+      (apply overlay
+	     (map (lambda (ani) (ani passed)) anis)))))
+
+(define sounder
+  (lambda (sound)
+    (let ([played #f])
+      (lambda (passed)
+	(lambda (reg)
+	  (lambda ()
+	    (unless played
+	      (set! played #t)
+	      (PlaySound sound))))))))
+
+(define typewriter
+  (lambda (text fz speed)
+    (let* ([text-len (string-length text)]
+	   [codepoints (LoadCodepoints text codepoints-count)]
+	   [font (LoadFontFromMemory ".ttf" font-data (ftype-ref int () font-size) fz codepoints (ftype-ref int () codepoints-count))]
+	   [fz-float (exact->inexact fz)])
+      (lambda (passed)
+	(let* ([subtext-index (min text-len (inexact->exact (floor (/ passed speed))))]
+	       [subtext (substring text 0 subtext-index)]
+	       [measured-vec (MeasureTextEx font subtext fz-float 0.0)])
+	(lambda (reg)
+	  (let* ([x (region-x reg)] [y (region-y reg)] [w (region-width reg)] [h (region-height reg)]
+		 [text-x (+ x (/ (- w (Vector2-x measured-vec)) 2.0))]
+		 [vec-for-tex (make-Vector2 text-x (exact->inexact y))])
+		 (lambda ()
+		   (DrawTextEx font subtext vec-for-tex fz-float 0.0 WHITE)))))))))
+ 
+(define partition-by-index
+  (lambda (li)
+    (let ([len (length li)])
+      (let collect ([even '()] [old '()] [index 0] [rest li])
+	(cond
+	 [(null? rest) (values (reverse even) (reverse old))]
+	 [(even? index) (collect (cons (car rest)  even)
+				 old (1+ index) (cdr rest))]
+	 [(odd? index) (collect even (cons (car rest) old)
+				(1+ index) (cdr rest))])))))
+
+(define sequential
+  (lambda timelines
+    (let-values ([(times animators) (partition-by-index timelines)])
+      (let ([len (length animators)])
+	(lambda (passed)
+	  (let-values ([(actived-times left-times) (partition (lambda (t) (>= passed t)) times)])
+	    (let* ([applyed-total-times (append (cdr actived-times) (list passed))]
+		   [applyed-diff-times (map (lambda (start end) (- end start)) actived-times applyed-total-times)]
+		   [applyed-animators (list-head animators (length actived-times))])
+	      (apply
+	       overlay
+	       (map
+		(lambda (animator time)
+		  (animator time))
+		applyed-animators
+		applyed-diff-times)))))))))
 
 (define main
   (lambda ()
     (InitWindow (GetScreenWidth) (GetScreenHeight) "TEST")
+    (InitAudioDevice)
+    (SetTargetFPS 60)
     (test-init)
     (let* ([whole-region (make-region 0.0 0.0 (* (GetScreenWidth) 1.0)
 				      (* (GetScreenHeight) 1.0))]
-	   [ani (make-animation
-		 (overlay-animator
-		  (static-animator bg-pic)
-		  (static-animator char-pic)
-		  (apply sequence-animator (map dialogue-locate text-pics)))
-		 )])
-      (ani whole-region)
+	   [anis (list (animation-1) (animation-2))])
+      (for-each (lambda (ani) (ani whole-region)) anis)
+      (CloseAudioDevice)
       (CloseWindow))))
+
+(define (animation-1)
+  (make-animation
+   (overlap
+    (sounder ring)
+    (static bg-black))
+   (lambda (passed) (IsMouseButtonPressed MOUSE_BUTTON_LEFT))))
+
+(define (animation-2)
+  (let ([wakeup (animator<-shader #f "../assets/glsl/wakeup.transition.fs" 2.0)]
+	[dialogue-1 (typewriter "谁啊，这么早打电话……" 50 0.1)]
+	[mask (animator<-shader #f "../assets/glsl/mask.effect.fs" 1.0)]
+	[dialogue-2 (typewriter "喂？" 50 0.1)])
+    (make-animation
+     (sequential
+      0.0 (wakeup bg-morning-fra)
+      2.0 (lambda (passed) (locate-dialogue (dialogue-1 passed)))
+      4.0 (mask bg-morning-fra)
+      5.0 (overlap
+	   (sounder pickup)
+	   (lambda (passed) (locate-dialogue (dialogue-2 passed)))))
+   (lambda (passed) (IsMouseButtonPressed MOUSE_BUTTON_LEFT)))))
+
+(define test-init
+  (lambda ()
+    (set! bg-morning-fra (fragment<-texture (LoadTexture "../assets/bg/yuwen.bedroom.morning.png")))
+    (set! char-pic (fragment<-texture (LoadTexture "../assets/character/0896.png")))
+    (set! font-size (make-ftype-pointer Font (foreign-alloc (ftype-sizeof Font))))
+    (set! font-data (LoadFileData "../assets/font/Xiaolai-Regular.ttf" font-size))
+    (set! codepoints-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int))))
+    (set! bgm-fra (fragment<-music (LoadMusicStream "../assets/bgm/midnight-trip.mp3")))
+    (set! bg-black (fragment<-texture (LoadTexture "../assets/bg/black.png")))
+    (set! ring (LoadSound "../assets/sound/rightone.mp3"))
+    (set! pickup (LoadSound "../assets/sound/pickup-phone.mp3"))))

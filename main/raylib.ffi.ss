@@ -225,6 +225,7 @@
 
 					; Predicate
 (define-ffi IsWindowReady () boolean)
+(define-ffi SetWindowSize (int int) void)
 
 					; Logging
 (define-ffi TraceLog (int string) void)
