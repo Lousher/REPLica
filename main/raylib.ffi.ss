@@ -207,6 +207,7 @@
 (define-ffi BeginTextureMode ((& RenderTexture2D)) void)
 (define-ffi EndTextureMode () void)
 (define-ffi DrawRectangle (int int int int (& Color)) void)
+(define-ffi DrawRectangleRec ((& Rectangle) (& Color)) void)
 (define-ffi SetTextureFilter ((& Texture2D) int) void)
 (define-ffi GenTextureMipmaps ((* Texture2D)) void)
 
