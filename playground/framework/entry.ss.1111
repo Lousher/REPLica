@@ -1,0 +1,114 @@
+(load-shared-object "libraylib.5.5.0.dylib")
+(load-shared-object "raylib.ffi.so")
+(load "raylib.ffi.ss")
+(load "raylib.constant.ss")
+
+(load "resource.ss")
+(define preload-type car)
+(define preload-name cadr)
+(define preload-arguments (lambda (args) (list-tail args 2)))
+(define *animators* (make-hashtable symbol-hash symbol=?))
+(hashtable-set! *animators* 'static
+		(lambda (frag)
+		  (lambda (passed)
+		    frag)))
+
+(define *directives* (make-hashtable symbol-hash symbol=?))
+(define *fragments* (make-hashtable symbol-hash symbol=?))
+(hashtable-set! *fragments* 'background
+		(lambda (tex)
+		  (lambda (state)
+		    (DrawTexture tex 0 0 WHITE))))
+(hashtable-set! *fragments* 'character
+		(lambda (tex)
+		  (lambda (state)
+		    (DrawTexture tex 0 0 WHITE))))
+
+; directive
+(hashtable-set! *directives* 'preload
+		(lambda (script)
+		  (let ([assets (cdr script)])
+		    (for-each
+		     (lambda (asset)
+		       (let ([type (preload-type asset)]
+			     [name (preload-name asset)]
+			     [args (preload-arguments asset)])
+			 (let ([resource (apply (resource-lifecycle-loader type) args)])
+			   (TraceLog LOG_INFO (format "\033[0;32m [Load ~a Resource ~a Successfully] \033[0m" type name))
+			   (hashtable-set! *resources* name resource)
+			   (let ([fragment-loader (hashtable-ref *fragments* type 'NULL_FRAGMENT_LOADER)])
+			     (define-top-level-value name (fragment-loader resource))
+			     (TraceLog LOG_INFO (format "\033[0;32m [Load ~a Fragment ~a Successfully] \033[0m" type name))))))
+		     assets)
+		    (lambda (state next)
+		      (dynamic-wind
+			(lambda ()
+			  (TraceLog LOG_INFO (format "\033[0;32m [Preload ~a  Successfully] \033[0m"
+						     (map preload-arguments assets))))
+			(lambda () (next state))
+			(lambda ()
+			  (for-each
+			   (lambda (asset)
+			     (let ([type (preload-type asset)]
+				   [name (preload-name asset)]
+				   [args (preload-arguments asset)])
+			       (let ([unloader (resource-lifecycle-unloader type)])
+				 (unloader (hashtable-ref *resources* name 'NULL))
+				 (hashtable-delete! *resources* name)
+				 (TraceLog LOG_INFO (format "\033[0;32m [Unload ~a Resource ~a Successfully] \033[0m" type name)))))
+			   assets)))))))
+(hashtable-set! *directives* 'static
+		(lambda (script)
+		  (let* ([fragment-id (cadr script)]
+			 [fragment (top-level-value fragment-id)]
+			 [animator (hashtable-ref *animators* 'static 'NULL_ANIMATOR)])
+		    (make-animation (animator fragment) (lambda () (IsMouseButtonPressed MOUSE_BUTTON_LEFT))))))
+
+(define directive<-script
+  (lambda (script)
+    (let* ([keyword (car script)]
+	   [direct (hashtable-ref *directives* keyword 'NULL)])
+      (direct script))))
+
+(define reads
+  (lambda (port)
+    (let ([content (read port)])
+      (if (eof-object? content)
+	  '()
+	  (cons content (reads port))))))
+
+(define make-animation
+  (lambda (animator end?)
+    (lambda (state next)
+      (let animating ([passed 0.0])
+	(let ([fragment (animator passed)])
+	  (BeginDrawing)
+	  (ClearBackground BLACK)
+	  (fragment state)
+	  (EndDrawing)
+	  (cond
+	   [(WindowShouldClose) (void)]
+	   [(end?) (next state)]
+	   [else (animating (+ passed (GetFrameTime)))]))))))
+
+(define replica
+  (lambda (stories)
+    (InitWindow 800 600 "TEST")
+    (InitAudioDevice)
+    (let ([state '()])
+      (fold-left
+       (lambda (prev-state remaining-story)
+	 (let* ([scripts (call-with-input-file remaining-story reads)]
+		[directives (map directive<-script scripts)]
+		[final-k (lambda (s) (TraceLog LOG_INFO (format "Final State is ~a" s)))]
+		[stroy-cps (fold-right
+		      (lambda (directive acc-k)
+			(lambda (s)
+			  (directive s acc-k)))
+		      final-k
+		      directives)])
+	   (stroy-cps prev-state)))
+	 state
+	 stories))
+      (CloseAudioDevice)
+      (CloseWindow)))
