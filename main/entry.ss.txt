@@ -1,0 +1,158 @@
+(load-shared-object "libraylib.5.5.0.dylib")
+(load-shared-object "raylib.ffi.so")
+(load "raylib.ffi.ss")
+(load "raylib.constant.ss")
+
+(load "resource.ss")
+
+(define *animators* (make-hashtable symbol-hash symbol=?))
+(hashtable-set! *animators* 'static
+		(lambda (frag)
+		  (lambda (passed)
+		    frag)))
+
+(define preload-type car)
+(define preload-name cadr)
+(define preload-arguments (lambda (args) (list-tail args 2)))
+
+(define *directives* (make-hashtable symbol-hash symbol=?))
+(define *fragment-loaders* (make-hashtable symbol-hash symbol=?))
+(hashtable-set! *fragment-loaders* 'background
+		(lambda (tex)
+		  (lambda (state)
+		    (DrawTexture tex 0 0 WHITE))))
+(hashtable-set! *fragment-loaders* 'character
+		(lambda (tex)
+		  (lambda (state)
+		    (DrawTexture tex 0 0 WHITE))))
+
+(hashtable-set! *directives* 'preload
+		(lambda (script)
+		  (let ([assets (cdr script)])
+		    (for-each
+		     (lambda (asset)
+		       (let ([type (preload-type asset)]
+			     [name (preload-name asset)]
+			     [args (preload-arguments asset)])
+			 (let ([resource (apply (resource-lifecycle-loader type) args)])
+			   (TraceLog LOG_INFO (format "\033[0;32m [Load ~a Resource ~a Successfully] \033[0m" type name))
+			   (hashtable-set! *resources* name resource)
+			   (let ([fragment-loader (hashtable-ref *fragment-loaders* type 'NULL_FRAGMENT_LOADER)])
+			     (define-top-level-value name (fragment-loader resource))
+			     (TraceLog LOG_INFO (format "\033[0;32m [Load ~a Fragment ~a Successfully] \033[0m" type name))))))
+		     assets)
+		    (lambda (state next)
+		      (dynamic-wind
+			(lambda ()
+			  (void))
+			(lambda () (next state))
+			(lambda ()
+			  (for-each
+			   (lambda (asset)
+			     (let ([type (preload-type asset)]
+				   [name (preload-name asset)]
+				   [args (preload-arguments asset)])
+			       (let ([unloader (resource-lifecycle-unloader type)])
+				 (unloader (hashtable-ref *resources* name 'NULL))
+				 (hashtable-delete! *resources* name)
+				 (TraceLog LOG_INFO (format "\033[0;32m [Unload ~a Resource ~a Successfully] \033[0m" type name)))))
+			   assets)))))))
+
+(hashtable-set! *directives* 'static
+		(lambda (script)
+		  (let* ([fragment-id (cadr script)]
+			 [fragment (top-level-value fragment-id)]
+			 [animator (hashtable-ref *animators* 'static 'NULL_ANIMATOR)])
+		    (make-animation (animator fragment) (lambda () (IsMouseButtonPressed MOUSE_BUTTON_LEFT))))))
+
+(hashtable-set! *directives* 'overlay
+		(lambda (script)
+		  (let* ([frag-ids (cdr script)]
+			 [w (GetScreenWidth)] [h (GetScreenHeight)]
+			 [rt (LoadRenderTexture w h)]
+			 [src-rect (make-Rectangle 0.0 0.0 (* 1.0 w) (* -1.0 h))]
+			 [ori-vec (make-Vector2 0.0 0.0)])
+		    (TraceLog LOG_INFO (format "Load Rentertexture with width ~a height ~a" w h))
+		    (TraceLog LOG_INFO (format "Load Rectangle with width x ~a y ~a width ~a height ~a" 0.0 0.0 (* 1.0 w) (* -1.0 h)))
+		    (TraceLog LOG_INFO (format "Load Vector2 with x ~a y ~a" 0.0 0.0))
+		    (lambda (state next)
+		      (let ([frags (map top-level-value frag-ids)])
+			(BeginTextureMode rt)
+			(for-each (lambda (frag) (frag state)) frags)
+			(EndTextureMode)
+			(let ([tex (RenderTexture-texture rt)])
+			  (let drawing ()
+			    (BeginDrawing)
+			    (ClearBackground BLACK)
+			    (DrawTextureRec tex src-rect ori-vec WHITE)
+			    (EndDrawing)
+			    (cond
+			     [(WindowShouldClose)
+			      (begin
+				(UnloadRenderTexture rt)
+				(foreign-free (ftype-pointer-address src-rect))
+				(foreign-free (ftype-pointer-address ori-vec))
+				(TraceLog LOG_INFO (format "Unload Rentertexture with width ~a height ~a" w h))
+				(TraceLog LOG_INFO (format "Unload Rectangle with width x ~a y ~a width ~a height ~a" 0.0 0.0 (* 1.0 w) (* -1.0 h)))
+				(TraceLog LOG_INFO (format "Unload Vector2 with x ~a y ~a" 0.0 0.0))
+)]
+			     [(IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+			      (begin
+				(UnloadRenderTexture rt)
+				(foreign-free (ftype-pointer-address src-rect))
+				(foreign-free (ftype-pointer-address ori-vec))
+				(TraceLog LOG_INFO (format "Unload Rentertexture with width ~a height ~a" w h))
+				(TraceLog LOG_INFO (format "Unload Rectangle with width x ~a y ~a width ~a height ~a" 0.0 0.0 (* 1.0 w) (* -1.0 h)))
+				(TraceLog LOG_INFO (format "Unload Vector2 with x ~a y ~a" 0.0 0.0))
+)
+				(next state)]
+			     [else (drawing)]))))))))
+
+(define directive<-script
+  (lambda (script)
+    (let* ([keyword (car script)]
+	   [direct (hashtable-ref *directives* keyword 'NULL)])
+      (direct script))))
+
+(define reads
+  (lambda (port)
+    (let ([content (read port)])
+      (if (eof-object? content)
+	  '()
+	  (cons content (reads port))))))
+
+(define make-animation
+  (lambda (animator end?)
+    (lambda (state next)
+      (let animating ([passed 0.0])
+	(let ([fragment (animator passed)])
+	  (BeginDrawing)
+	  (ClearBackground BLACK)
+	  (fragment state)
+	  (EndDrawing)
+	  (cond
+	   [(WindowShouldClose) (void)]
+	   [(end?) (next state)]
+	   [else (animating (+ passed (GetFrameTime)))]))))))
+
+(define replica
+  (lambda (stories)
+    (InitWindow 800 600 "TEST")
+    (InitAudioDevice)
+    (let ([state '()])
+      (fold-left
+       (lambda (prev-state remaining-story)
+	 (let* ([scripts (call-with-input-file remaining-story reads)]
+		[directives (map directive<-script scripts)]
+		[final-k (lambda (s) (TraceLog LOG_INFO (format "Final State is ~a" s)))]
+		[stroy-cps (fold-right
+		      (lambda (directive acc-k)
+			(lambda (s)
+			  (directive s acc-k)))
+		      final-k
+		      directives)])
+	   (stroy-cps prev-state)))
+	 state
+	 stories))
+      (CloseAudioDevice)
+      (CloseWindow)))
