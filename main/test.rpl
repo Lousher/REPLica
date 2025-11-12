@@ -1,8 +1,13 @@
 (preload
- (background bedroom-morning "../assets/bg/yuwen.bedroom.morning.png")
+ (background morning "../assets/bg/yuwen.bedroom.morning.png")
+ (background afternoon "../assets/bg/yuwen.bedroom.afternoon.png")
  (background black "../assets/bg/black.png")
- (background bedroom-afternoon "../assets/bg/yuwen.bedroom.afternoon.png")
  (character yuki-smile "../assets/character/0896.png")
- (effect wakeup #f "../assets/glsl/wakeup.transition.fs"))
- 
+ (sound rightone "../assets/sound/rightone.mp3")
+ (transition wakeup #f "../assets/glsl/wakeup.transition.fs"))
+
 (static black)
+
+(wakeup morning 3)
+
+(wakeup afternoon 3)

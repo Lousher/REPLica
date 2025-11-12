@@ -50,7 +50,7 @@
 			   (PlaySound sound)
 			   (set! played #t))]
 			[() (UnloadSound sound)])))))
-(hashtable-set! *primitive-loaders* 'effect
+(hashtable-set! *primitive-loaders* 'transition
 		(lambda (vs fs)
 		  (let* ([shader (LoadShader vs fs)]
 			 [texture1-location (GetShaderLocation shader "texture1")]

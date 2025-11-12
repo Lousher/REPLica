@@ -299,6 +299,9 @@
 ;; Logging
 (define-ffi TraceLog (int string) void)
 
+;;Validator
+(define-ffi IsTextureValid ((& Texture2D)) boolean)
+
 ;; Custome Extension
 (define RenderTexture-texture
   (lambda params
