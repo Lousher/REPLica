@@ -3,6 +3,9 @@
 (load "raylib.ffi.ss")
 (load "raylib.constant.ss")
 
+; fluid variable, all used text in each chapter script
+(define all-text #f)
+
 (define reads
   (lambda (port)
     (let ([content (read port)])
@@ -77,6 +80,46 @@
 		       (begin
 			 (UnloadShader shader)
 			 (foreign-free progress-ptr))]))))
+(hashtable-set! *primitive-loaders* 'effect
+		(lambda (vs fs)
+		  (let* ([shader (LoadShader vs fs)]
+			 [progress-location (GetShaderLocation shader "progress")]
+			 [progress-ptr (foreign-alloc (ftype-sizeof float))]
+			 [progress-fptr (make-ftype-pointer float progress-ptr)])
+		    (case-lambda
+		      [(frag time)
+		       (lambda (passed)
+			 (lambda (state)
+			   (BeginShaderMode shader)
+			   (let ([progress (/ passed time)])
+			     (when (< progress 1.0)
+			       (ftype-set! float () progress-fptr (* progress 1.0))
+			       (SetShaderValue shader progress-location progress-ptr SHADER_UNIFORM_FLOAT)))
+			   (frag state)
+			   (EndShaderMode)))]
+		      [()
+		       (begin
+			 (UnloadShader shader)
+			 (foreign-free progress-ptr))]))))
+(hashtable-set! *primitive-loaders* 'font
+		(lambda (path)
+		  (let* ([codepoints-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int)))]
+			 [codepoints (LoadCodepoints all-text codepoints-count)]
+			 [font (LoadFontEx path 50 codepoints (ftype-ref int () codepoints-count))]
+			 [pos (make-Vector2 0.0 0.0)])
+		    (UnloadCodepoints codepoints)
+		    (foreign-free (ftype-pointer-address codepoints-count))
+		    (case-lambda
+		      [(str speed)
+		       (let ([len (string-length str)])
+			(lambda (passed)
+			  (lambda (state)
+			    (let* ([index (/ passed speed)]
+				   [sub-index (inexact->exact (floor (min index len)))])
+			      (DrawTextEx font (substring str 0 sub-index) pos 50.0 0.0 WHITE)))))]
+		      [()
+		       (begin
+			 (foreign-free (ftype-pointer-address pos)))]))))
 
 (define overlay
   (lambda frags
@@ -107,6 +150,15 @@
   (lambda (frag)
     (lambda (passed)
       frag)))
+
+(define parallel
+  (lambda animators
+    (lambda (passed)
+      (lambda (state)
+	(for-each
+	 (lambda (animator)
+	   ((animator passed) state))
+	 animators)))))
 
 (define script-preload?
   (lambda (script)
@@ -153,6 +205,16 @@
      animator
      (lambda (s) (IsMouseButtonPressed MOUSE_BUTTON_LEFT)))))
 
+(define extract-strings
+  (lambda (scripts)
+    (cond
+     [(null? scripts) '()]
+     [(string? scripts) (list scripts)]
+     [(atom? scripts) '()]
+     [(list? scripts)
+      (append (extract-strings (car scripts))
+	    (extract-strings (cdr scripts)))])))
+
 (define replica
   (lambda (stories)
     (InitWindow (GetScreenWidth) (GetScreenHeight) "TEST")
@@ -171,7 +233,10 @@
 			    (lambda (s) 
 			      (TraceLog LOG_INFO (format "Final State is ~a" s)))
 			    scripts)])
-	   (stroy-cps prev-state)))
+	   (let* ([strings (extract-strings scripts)]
+		  [available-strs (filter (lambda (str) (not (file-exists? str))) strings)])
+	     (fluid-let ([all-text (apply string-append available-strs)])
+	       (stroy-cps prev-state)))))
        state
        stories))
     (CloseAudioDevice)

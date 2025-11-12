@@ -4,10 +4,21 @@
  (background black "../assets/bg/black.png")
  (character yuki-smile "../assets/character/0896.png")
  (sound rightone "../assets/sound/rightone.mp3")
- (transition wakeup #f "../assets/glsl/wakeup.transition.fs"))
+ (sound searching "../assets/sound/searching.mp3")
+ (transition wakeup #f "../assets/glsl/wakeup.transition.fs")
+ (effect mask #f "../assets/glsl/mask.effect.fs")
+ (font xiaolai "../assets/font/Xiaolai-Regular.ttf"))
 
-(static black)
+(static
+ (overlay rightone
+	  black))
 
 (wakeup morning 3)
+
+(parallel
+ (static morning)
+ (xiaolai "……在哪……手机……啊！" 0.1))
+
+(mask morning 1)
 
 (wakeup afternoon 3)
