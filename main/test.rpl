@@ -5,6 +5,8 @@
  (character yuki-smile "../assets/character/0896.png")
  (sound rightone "../assets/sound/rightone.mp3")
  (sound searching "../assets/sound/searching.mp3")
+ (sound thud "../assets/sound/thud.mp3")
+ (sound pickup "../assets/sound/pickup-phone.mp3")
  (transition wakeup #f "../assets/glsl/wakeup.transition.fs")
  (effect mask #f "../assets/glsl/mask.effect.fs")
  (font xiaolai "../assets/font/Xiaolai-Regular.ttf"))
@@ -13,12 +15,15 @@
  (play rightone)
  (static black))
 
-
-
 (sequential
  0.0 (wakeup morning 2)
- 2.0 (mask morning 1.0)
- 3.0 (play searching)
- 4.0 (xiaolai "……在哪……" 50 0.1))
+ 2.0 (static morning)
+ 3.5 (play searching 2.5)
+ 6.5 (play thud 1.0)
+ 7.0 (xiaolai "……好痛！" 50 0.1))
 
-(wakeup afternoon 3)
+(sequential
+ 0.0 (mask morning 2)
+ 2.0 (play pickup)
+ 3.0 (xiaolai "喂？" 50 0.1))
+

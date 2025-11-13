@@ -59,6 +59,7 @@
 		  (let ([sound (LoadSound path)])
 		    (case-lambda
 		      [(state) (PlaySound sound)]
+		      [(x y) (StopSound sound)]
 		      [() (UnloadSound sound)]))))
 (hashtable-set! *primitive-loaders* 'transition
 		(lambda (vs fs)
@@ -145,13 +146,17 @@
 			 (foreign-free (ftype-pointer-address text-bg-color)))]))))
 
 (define play
-  (lambda (frag)
-    (let ([played #f])
-      (lambda (passed)
-	(lambda (state)
-	  (unless played
-	    (frag state)
-	    (set! played #t)))))))
+  (case-lambda
+    [(frag time)
+     (let ([played #f])
+       (lambda (passed)
+	 (when (and time (> passed time))
+	   (frag 'x 'y))
+	 (lambda (state)
+	   (unless played
+	     (frag state)
+	     (set! played #t)))))]
+    [(frag) (play frag #f)]))
   
 (define overlay
   (lambda frags
