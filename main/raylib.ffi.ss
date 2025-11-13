@@ -38,6 +38,7 @@
 		 #'(field-name ...))
 	     ))])))
 
+
 (define-ftype-ex Image
   (struct
     [data void*]
@@ -74,6 +75,15 @@
   (struct
     [x float]
     [y float]))
+
+(define Vector2-x-set!
+  (lambda (vec updated)
+    (ftype-set! Vector2 (x) vec updated)))
+
+(define Vector2-y-set!
+  (lambda (vec updated)
+    (ftype-set! Vector2 (y) vec updated)))
+
 
 ; nested complex structure
 (define-ftype RenderTexture

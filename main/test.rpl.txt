@@ -9,16 +9,16 @@
  (effect mask #f "../assets/glsl/mask.effect.fs")
  (font xiaolai "../assets/font/Xiaolai-Regular.ttf"))
 
+(static
+ (overlay rightone
+	  black))
+
+(wakeup morning 3)
+
 (parallel
- (play rightone)
- (static black))
+ (static morning)
+ (xiaolai "……在哪……手机……啊！" 0.1))
 
-
-
-(sequential
- 0.0 (wakeup morning 2)
- 2.0 (mask morning 1.0)
- 3.0 (play searching)
- 4.0 (xiaolai "……在哪……" 50 0.1))
+(mask morning 1)
 
 (wakeup afternoon 3)

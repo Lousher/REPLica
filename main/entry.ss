@@ -26,6 +26,17 @@
       (let ([screen-tex (LoadTextureFromImage screen-img)])
 	(UnloadImage screen-img)
 	screen-tex))))
+
+(define partition-by-index
+  (lambda (li)
+    (let ([len (length li)])
+      (let collect ([even '()] [old '()] [index 0] [rest li])
+	(cond
+	 [(null? rest) (values (reverse even) (reverse old))]
+	 [(even? index) (collect (cons (car rest)  even)
+				 old (1+ index) (cdr rest))]
+	 [(odd? index) (collect even (cons (car rest) old)
+				(1+ index) (cdr rest))])))))
       
 (define *primitive-loaders* (make-hashtable symbol-hash symbol=?))
 (hashtable-set! *primitive-loaders* 'background
@@ -46,13 +57,9 @@
 (hashtable-set! *primitive-loaders* 'sound
 		(lambda (path)
 		  (let ([sound (LoadSound path)])
-		    (let ([played #f])
-		      (case-lambda
-			[(state)
-			 (unless played
-			   (PlaySound sound)
-			   (set! played #t))]
-			[() (UnloadSound sound)])))))
+		    (case-lambda
+		      [(state) (PlaySound sound)]
+		      [() (UnloadSound sound)]))))
 (hashtable-set! *primitive-loaders* 'transition
 		(lambda (vs fs)
 		  (let* ([shader (LoadShader vs fs)]
@@ -106,21 +113,46 @@
 		  (let* ([codepoints-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int)))]
 			 [codepoints (LoadCodepoints all-text codepoints-count)]
 			 [font (LoadFontEx path 50 codepoints (ftype-ref int () codepoints-count))]
-			 [pos (make-Vector2 0.0 0.0)])
+			 [w (GetScreenWidth)] [h (GetScreenHeight)]
+			 [subtext-y (* h 0.75)]
+			 [text-vec (make-Vector2 0.0 subtext-y)]
+			 [text-bg-color (make-Color 120 120 160 125)])
 		    (UnloadCodepoints codepoints)
 		    (foreign-free (ftype-pointer-address codepoints-count))
 		    (case-lambda
-		      [(str speed)
-		       (let ([len (string-length str)])
-			(lambda (passed)
+		      [(str size speed)
+		       (let* ([len (string-length str)]
+			      [subtexts (map (lambda (sub-index) (substring str 0 sub-index)) (map 1+ (iota len)))]
+			      [measured-vecs (map (lambda (subtext) (MeasureTextEx font subtext (inexact size) 0.0)) subtexts)]
+			      [subtext-h (Vector2-y (car measured-vecs))]
+			      [subtext-ws (map (lambda (measured-vec) (Vector2-x measured-vec)) measured-vecs)]
+			      [subtext-xs (map (lambda (subtext-w) (/ (- w subtext-w) 2.0)) subtext-ws)])
+			 (for-each (lambda (vec) (foreign-free (ftype-pointer-address vec))) measured-vecs)
+			 (lambda (passed)
 			  (lambda (state)
-			    (let* ([index (/ passed speed)]
-				   [sub-index (inexact->exact (floor (min index len)))])
-			      (DrawTextEx font (substring str 0 sub-index) pos 50.0 0.0 WHITE)))))]
+			    (let* ([index (exact (floor (min (/ passed speed) (1- len))))]
+				   [subtext (list-ref subtexts index)]
+				   [subtext-x (list-ref subtext-xs index)]
+				   [subtext-w (list-ref subtext-ws index)])
+			      (Vector2-x-set! text-vec subtext-x)
+			      (DrawRectangle (exact (floor subtext-x)) (exact (floor subtext-y))
+					     (exact (floor subtext-w)) (exact (floor subtext-h))
+					     text-bg-color)
+			      (DrawTextEx font subtext text-vec (inexact size) 0.0 WHITE)))))]
 		      [()
 		       (begin
-			 (foreign-free (ftype-pointer-address pos)))]))))
+			 (foreign-free (ftype-pointer-address text-vec))
+			 (foreign-free (ftype-pointer-address text-bg-color)))]))))
 
+(define play
+  (lambda (frag)
+    (let ([played #f])
+      (lambda (passed)
+	(lambda (state)
+	  (unless played
+	    (frag state)
+	    (set! played #t)))))))
+  
 (define overlay
   (lambda frags
     (let* ([w (GetScreenWidth)] [h (GetScreenHeight)]
@@ -142,6 +174,7 @@
 	   (DrawTextureRec tex src-rect ori-vec WHITE))]
 	[()
 	 (begin
+	   (TraceLog LOG_INFO (format-green "[Unload Overlayed Primitive]"))
 	   (UnloadRenderTexture rt)
 	   (foreign-free (ftype-pointer-address src-rect))
 	   (foreign-free (ftype-pointer-address ori-vec)))]))))
@@ -159,6 +192,20 @@
 	 (lambda (animator)
 	   ((animator passed) state))
 	 animators)))))
+
+(define sequential
+  (lambda timelines
+    (let-values ([(times animators) (partition-by-index timelines)])
+      (let ([len (length animators)])
+	(lambda (passed)
+	  (let ([actived-times (filter (lambda (t) (>= passed t)) times)])
+	    (let* ([applyed-total-times (append (cdr actived-times) (list passed))]
+		   [applyed-diff-times (map (lambda (start end) (- end start)) actived-times applyed-total-times)]
+		   [applyed-animators (list-head animators (length actived-times))])
+	      (lambda (state)
+		(for-each (lambda (animator diff-pass)
+			    ((animator diff-pass) state))
+			  applyed-animators applyed-diff-times)))))))))
 
 (define script-preload?
   (lambda (script)
@@ -230,8 +277,10 @@
 						      (eval script)
 						      (normal-directive (eval script)))])
 				  (directive state acc-k))))
-			    (lambda (s) 
-			      (TraceLog LOG_INFO (format "Final State is ~a" s)))
+			    (lambda (s)
+			      (TraceLog LOG_INFO (format "Final State is ~a" s))
+			      (let ([previous-part (assv ':previous s)])
+				(UnloadTexture (cdr previous-part))))
 			    scripts)])
 	   (let* ([strings (extract-strings scripts)]
 		  [available-strs (filter (lambda (str) (not (file-exists? str))) strings)])
