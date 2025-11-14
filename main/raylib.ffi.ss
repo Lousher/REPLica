@@ -312,6 +312,9 @@
 ;;Validator
 (define-ffi IsTextureValid ((& Texture2D)) boolean)
 
+;; Exporter
+(define-ffi ExportImage ((& Image) string) boolean)
+
 ;; Custome Extension
 (define RenderTexture-texture
   (lambda params

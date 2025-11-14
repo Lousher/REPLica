@@ -34,7 +34,9 @@
 (define load-texture-from-screen
   (lambda ()
     (let ([screen-img (LoadImageFromScreen)])
+ ;     (image-exporter screen-img)
       (ImageResize screen-img (GetScreenWidth) (GetScreenHeight))
+      (ImageFlipVertical screen-img)
       (let ([screen-tex (LoadTextureFromImage screen-img)])
 	(UnloadImage screen-img)
 	screen-tex))))
@@ -80,6 +82,10 @@
 			 [progress-location (GetShaderLocation shader "progress")]
 			 [progress-ptr (foreign-alloc (ftype-sizeof float))]
 			 [progress-fptr (make-ftype-pointer float progress-ptr)]
+			 [w (GetScreenWidth)] [h (GetScreenHeight)]
+			 [rt (LoadRenderTexture w h)] [rt-tex (RenderTexture-texture rt)]
+			 [src-rect (make-Rectangle 0.0 0.0 (* 1.0 w) (* -1.0 h))]
+			 [ori-vec (make-Vector2 0.0 0.0)]
 			 [previous-screen #f])
 		    (case-lambda
 		      [(animator time)
@@ -88,17 +94,24 @@
 			   (unless previous-screen
 			     (let ([previous-part (assv ':previous state)])
 			       (set! previous-screen (cdr previous-part))))
+			   (BeginTextureMode rt)
+			   (ClearBackground BLACK)
+			   ((animator passed) state)
+			   (EndTextureMode)
 			   (BeginShaderMode shader)
 			   (let ([progress (/ passed time)])
 			     (when (< progress 1.0)
 			       (ftype-set! float () progress-fptr (* progress 1.0))
 			       (SetShaderValueTexture shader texture1-location previous-screen)
 			       (SetShaderValue shader progress-location progress-ptr SHADER_UNIFORM_FLOAT)))
-			   ((animator passed) state)
+			   (DrawTextureRec rt-tex src-rect ori-vec WHITE)
 			   (EndShaderMode)))]
 		      [()
 		       (begin
 			 (UnloadShader shader)
+			 (UnloadRenderTexture rt)
+			 (foreign-free (ftype-pointer-address src-rect))
+			 (foreign-free (ftype-pointer-address ori-vec))
 			 (foreign-free progress-ptr))]))))
 (hashtable-set! *primitive-loaders* 'effect
 		(lambda (vs fs)
@@ -179,7 +192,6 @@
 			 [target-fn (eval (cadr (assv ':target alls)))]
 			 [zoom-fn (eval (cadr (assv ':zoom alls)))]
 			 [rotation-fn (eval (cadr (assv ':rotation alls)))])
-		    (TraceLog LOG_INFO (format-green "Parsed Camera Args ~a" offset-fn))
 		    (case-lambda [(animator)
 				  (lambda (passed)
 				    (Camera2D-offset-set! camera (offset-fn passed))
@@ -302,7 +314,11 @@
 	     [locked-animator-alist (cdr locked-part)])
 	(set-cdr! locked-part (delv name locked-animator-alist))
 	(next state)))))
-      
+(define image-exporter
+  (let ([count 0])
+    (lambda (image)
+      (ExportImage image (format "~a.png" count))
+      (set! count (1+ count)))))
 (define make-directive
   (lambda (animator end?)
     (lambda (state next)
@@ -326,6 +342,7 @@
 	      (next state))]
 	   [else
 	    (animating (+ passed (GetFrameTime)))]))))))
+
 (define normal-directive
   (lambda (animator)
     (make-directive

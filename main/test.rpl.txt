@@ -11,8 +11,8 @@
  (effect mask #f "../assets/glsl/mask.effect.fs")
  (transition fade #f "../assets/glsl/fade.transition.fs")
  (font xiaolai "../assets/font/Xiaolai-Regular.ttf")
- (camera enlarge-and-move :zoom (lambda (passed) 2.0) :target (lambda (passed) `(,(* 10 passed) . 500.0)))
- (camera enlarge :zoom (lambda (passed) 2.0) :target (lambda (passed) `(0.0 . 500.0))))
+ (camera zoom-and-move :zoom (lambda (passed) 2.0) :target (lambda (passed) `(,(* 10 passed) . 500.0)))
+ (camera zoom :zoom (lambda (passed) 2.0)))
 	 
 (parallel
  (play rightone)
@@ -24,10 +24,10 @@
  5.0 (play thud 1.0)
  6.0 (xiaolai "……好痛！" 50 0.1))
 
+(wakeup (zoom (static afternoon)) 2)
+
 (lock 'masked
-      (sequential
-       0.0 (fade (enlarge (static morning)) 0.5)
-       0.5 (mask (enlarge-and-move (static morning)) 1)))
+      (mask (zoom-and-move (static morning)) 1))
 
 (sequential
  0.0 (play pickup)
