@@ -5,18 +5,7 @@
 
 					; fluid variable, all used text in each chapter script
 (define all-text #f)
-(define :id? (lambda (id) (and (symbol? id) (char=? #\: (string-ref (symbol->string id) 0)))))
-(define parse-params
-  (lambda (params)
-    (fold-left
-     (lambda (acc next)
-       (if (:id? next)
-	   (append acc (list (list next)))
-	   (let ([last (last-pair acc)])
-	     (set-cdr! (car last) (append (cdar last) (list next)))
-	     acc)))
-     '()
-     params)))
+
 (define reads
   (lambda (port)
     (let ([content (read port)])
@@ -72,19 +61,6 @@
 		      [(state) (PlaySound sound)]
 		      [(x y) (StopSound sound)]
 		      [() (UnloadSound sound)]))))
-(hashtable-set! *primitive-loaders* 'camera
-		(lambda ()
-		  (let ([camera (init-Camera2D)])
-		    (Camera2D-zoom-set! camera 2.0)
-		    (case-lambda [(animator)
-				  (lambda (passed)
-				    (lambda (state)
-				      (BeginMode2D camera)
-				      ((animator passed) state)
-				      (EndMode2D)))]
-				 [()
-				  (void)]))))
-			   
 (hashtable-set! *primitive-loaders* 'transition
 		(lambda (vs fs)
 		  (let* ([shader (LoadShader vs fs)]
@@ -94,7 +70,7 @@
 			 [progress-fptr (make-ftype-pointer float progress-ptr)]
 			 [previous-screen #f])
 		    (case-lambda
-		      [(animator time)
+		      [(frag time)
 		       (lambda (passed)
 			 (lambda (state)
 			   (unless previous-screen
@@ -106,7 +82,7 @@
 			       (ftype-set! float () progress-fptr (* progress 1.0))
 			       (SetShaderValueTexture shader texture1-location previous-screen)
 			       (SetShaderValue shader progress-location progress-ptr SHADER_UNIFORM_FLOAT)))
-			   ((animator passed) state)
+			   (frag state)
 			   (EndShaderMode)))]
 		      [()
 		       (begin
@@ -119,7 +95,7 @@
 			 [progress-ptr (foreign-alloc (ftype-sizeof float))]
 			 [progress-fptr (make-ftype-pointer float progress-ptr)])
 		    (case-lambda
-		      [(animator time)
+		      [(frag time)
 		       (lambda (passed)
 			 (lambda (state)
 			   (BeginShaderMode shader)
@@ -127,7 +103,7 @@
 			     (when (< progress 1.0)
 			       (ftype-set! float () progress-fptr (* progress 1.0))
 			       (SetShaderValue shader progress-location progress-ptr SHADER_UNIFORM_FLOAT)))
-			   ((animator passed) state)
+			   (frag state)
 			   (EndShaderMode)))]
 		      [()
 		       (begin
@@ -240,7 +216,7 @@
   (syntax-rules ()
     [(_ (type name . args) ...)
      (begin
-       (define-top-level-value 'name (load-primitive 'type `args)) ...
+       (define-top-level-value 'name (load-primitive 'type 'args)) ...
        (TraceLog LOG_INFO (format-green "[~a Type Primitive ~a Definied]" 'type 'name)) ...
        (lambda (state next)
 	 (dynamic-wind
