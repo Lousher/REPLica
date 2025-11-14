@@ -5,6 +5,7 @@
 
 					; fluid variable, all used text in each chapter script
 (define all-text #f)
+
 (define :id? (lambda (id) (and (symbol? id) (char=? #\: (string-ref (symbol->string id) 0)))))
 (define parse-params
   (lambda (params)
@@ -72,19 +73,6 @@
 		      [(state) (PlaySound sound)]
 		      [(x y) (StopSound sound)]
 		      [() (UnloadSound sound)]))))
-(hashtable-set! *primitive-loaders* 'camera
-		(lambda ()
-		  (let ([camera (init-Camera2D)])
-		    (Camera2D-zoom-set! camera 2.0)
-		    (case-lambda [(animator)
-				  (lambda (passed)
-				    (lambda (state)
-				      (BeginMode2D camera)
-				      ((animator passed) state)
-				      (EndMode2D)))]
-				 [()
-				  (void)]))))
-			   
 (hashtable-set! *primitive-loaders* 'transition
 		(lambda (vs fs)
 		  (let* ([shader (LoadShader vs fs)]
@@ -117,21 +105,32 @@
 		  (let* ([shader (LoadShader vs fs)]
 			 [progress-location (GetShaderLocation shader "progress")]
 			 [progress-ptr (foreign-alloc (ftype-sizeof float))]
-			 [progress-fptr (make-ftype-pointer float progress-ptr)])
+			 [progress-fptr (make-ftype-pointer float progress-ptr)]
+			 [w (GetScreenWidth)] [h (GetScreenHeight)]
+			 [rt (LoadRenderTexture w h)] [rt-tex (RenderTexture-texture rt)]
+			 [src-rect (make-Rectangle 0.0 0.0 (* 1.0 w) (* -1.0 h))]
+			 [ori-vec (make-Vector2 0.0 0.0)])
 		    (case-lambda
 		      [(animator time)
 		       (lambda (passed)
 			 (lambda (state)
+			   (BeginTextureMode rt)
+			   (ClearBackground BLACK)
+			   ((animator passed) state)
+			   (EndTextureMode)
 			   (BeginShaderMode shader)
 			   (let ([progress (/ passed time)])
 			     (when (< progress 1.0)
 			       (ftype-set! float () progress-fptr (* progress 1.0))
 			       (SetShaderValue shader progress-location progress-ptr SHADER_UNIFORM_FLOAT)))
-			   ((animator passed) state)
+			   (DrawTextureRec rt-tex src-rect ori-vec WHITE)
 			   (EndShaderMode)))]
 		      [()
 		       (begin
 			 (UnloadShader shader)
+			 (UnloadRenderTexture rt)
+			 (foreign-free (ftype-pointer-address src-rect))
+			 (foreign-free (ftype-pointer-address ori-vec))
 			 (foreign-free progress-ptr))]))))
 (hashtable-set! *primitive-loaders* 'font
 		(lambda (path)
@@ -168,6 +167,31 @@
 		       (begin
 			 (foreign-free (ftype-pointer-address text-vec))
 			 (foreign-free (ftype-pointer-address text-bg-color)))]))))
+(hashtable-set! *primitive-loaders* 'camera
+		(let ([default `((:offset (lambda (p) `(0.0 . 0.0)))
+				 (:target (lambda (p) `(0.0 . 0.0)))
+				 (:zoom (lambda (p) 1.0))
+				 (:rotation (lambda (p) 0.0)))])
+		(lambda args
+		  (let* ([camera (init-Camera2D)]
+			 [alls (append (parse-params args) default)]
+			 [offset-fn (eval (cadr (assv ':offset alls)))]
+			 [target-fn (eval (cadr (assv ':target alls)))]
+			 [zoom-fn (eval (cadr (assv ':zoom alls)))]
+			 [rotation-fn (eval (cadr (assv ':rotation alls)))])
+		    (TraceLog LOG_INFO (format-green "Parsed Camera Args ~a" offset-fn))
+		    (case-lambda [(animator)
+				  (lambda (passed)
+				    (Camera2D-offset-set! camera (offset-fn passed))
+				    (Camera2D-target-set! camera (target-fn passed))
+				    (Camera2D-zoom-set! camera (zoom-fn passed))
+				    (Camera2D-rotation-set! camera (rotation-fn passed))
+				    (lambda (state)
+				      (BeginMode2D camera)
+				      ((animator passed) state)
+				      (EndMode2D)))]
+				 [()
+				  (void)])))))
 
 (define play
   (case-lambda
@@ -240,7 +264,7 @@
   (syntax-rules ()
     [(_ (type name . args) ...)
      (begin
-       (define-top-level-value 'name (load-primitive 'type `args)) ...
+       (define-top-level-value 'name (load-primitive 'type (quasiquote args))) ...
        (TraceLog LOG_INFO (format-green "[~a Type Primitive ~a Definied]" 'type 'name)) ...
        (lambda (state next)
 	 (dynamic-wind
@@ -316,7 +340,8 @@
      [(atom? scripts) '()]
      [(list? scripts)
       (append (extract-strings (car scripts))
-	      (extract-strings (cdr scripts)))])))
+	      (extract-strings (cdr scripts)))]
+     [else '()])))
 
 (define replica
   (lambda (stories)
