@@ -76,6 +76,22 @@
     [x float]
     [y float]))
 
+(define Rectangle-x-set!
+  (lambda (rect updated)
+    (ftype-set! Rectangle (x) rect updated)))
+
+(define Rectangle-y-set!
+  (lambda (rect updated)
+    (ftype-set! Rectangle (y) rect updated)))
+
+(define Rectangle-width-set!
+  (lambda (rect updated)
+    (ftype-set! Rectangle (width) rect updated)))
+
+(define Rectangle-height-set!
+  (lambda (rect updated)
+    (ftype-set! Rectangle (height) rect updated)))
+
 (define Vector2-x-set!
   (lambda (vec updated)
     (ftype-set! Vector2 (x) vec updated)))
@@ -218,6 +234,9 @@
 (define-ffi EndTextureMode () void)
 (define-ffi DrawRectangle (int int int int (& Color)) void)
 (define-ffi DrawRectangleRec ((& Rectangle) (& Color)) void)
+(define-ffi DrawRectangleV ((& Vector2) (& Vector2) (& Color)) void)
+(define-ffi DrawRectangleRounded ((& Rectangle) float int (& Color)) void)
+(define-ffi DrawRectangleRoundedLinesEx ((& Rectangle) float int float (& Color)) void)
 (define-ffi SetTextureFilter ((& Texture2D) int) void)
 (define-ffi GenTextureMipmaps ((* Texture2D)) void)
 

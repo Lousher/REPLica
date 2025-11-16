@@ -3,207 +3,14 @@
 (load "raylib.ffi.ss")
 (load "raylib.constant.ss")
 
-					; fluid variable, all used text in each chapter script
+(load "primitive.ss")
+(load "tool.ss")
+
 (define all-text #f)
 
-(define :id? (lambda (id) (and (symbol? id) (char=? #\: (string-ref (symbol->string id) 0)))))
-(define parse-params
-  (lambda (params)
-    (fold-left
-     (lambda (acc next)
-       (if (:id? next)
-	   (append acc (list (list next)))
-	   (let ([last (last-pair acc)])
-	     (set-cdr! (car last) (append (cdar last) (list next)))
-	     acc)))
-     '()
-     params)))
-(define reads
-  (lambda (port)
-    (let ([content (read port)])
-      (if (eof-object? content)
-	  '()
-	  (cons content (reads port))))))
-(define format-green
-  (lambda (fmt-str . rest)
-    (apply format (format "\033[0;32m~a\033[0m" fmt-str) rest)))
-(define load-primitive
-  (lambda (type args)
-    (let ([loader (hashtable-ref *primitive-loaders* type (lambda () (error 'load-primitive "No Loader Definition Found" type)))])
-      (apply loader args))))
-(define load-texture-from-screen
-  (lambda ()
-    (let ([screen-img (LoadImageFromScreen)])
- ;     (image-exporter screen-img)
-      (ImageResize screen-img (GetScreenWidth) (GetScreenHeight))
-      (ImageFlipVertical screen-img)
-      (let ([screen-tex (LoadTextureFromImage screen-img)])
-	(UnloadImage screen-img)
-	screen-tex))))
-
-(define partition-by-index
-  (lambda (li)
-    (let ([len (length li)])
-      (let collect ([even '()] [old '()] [index 0] [rest li])
-	(cond
-	 [(null? rest) (values (reverse even) (reverse old))]
-	 [(even? index) (collect (cons (car rest)  even)
-				 old (1+ index) (cdr rest))]
-	 [(odd? index) (collect even (cons (car rest) old)
-				(1+ index) (cdr rest))])))))
-
-(define *primitive-loaders* (make-hashtable symbol-hash symbol=?))
-(hashtable-set! *primitive-loaders* 'background
-		(lambda (path)
-		  (let ([img (LoadImage path)])
-		    (ImageResize img (GetScreenWidth) (GetScreenHeight))
-		    (let ([tex (LoadTextureFromImage img)])
-		      (UnloadImage img)
-		      (case-lambda
-			[(state) (DrawTexture tex 0 0 WHITE)]
-			[() (UnloadTexture tex)])))))
-(hashtable-set! *primitive-loaders* 'character
-		(lambda (path)
-		  (let ([tex (LoadTexture path)])
-		    (case-lambda
-		      [(state) (DrawTexture tex 0 0 WHITE)]
-		      [() (UnloadTexture tex)]))))
-(hashtable-set! *primitive-loaders* 'sound
-		(lambda (path)
-		  (let ([sound (LoadSound path)])
-		    (case-lambda
-		      [(state) (PlaySound sound)]
-		      [(x y) (StopSound sound)]
-		      [() (UnloadSound sound)]))))
-(hashtable-set! *primitive-loaders* 'transition
-		(lambda (vs fs)
-		  (let* ([shader (LoadShader vs fs)]
-			 [texture1-location (GetShaderLocation shader "texture1")]
-			 [progress-location (GetShaderLocation shader "progress")]
-			 [progress-ptr (foreign-alloc (ftype-sizeof float))]
-			 [progress-fptr (make-ftype-pointer float progress-ptr)]
-			 [w (GetScreenWidth)] [h (GetScreenHeight)]
-			 [rt (LoadRenderTexture w h)] [rt-tex (RenderTexture-texture rt)]
-			 [src-rect (make-Rectangle 0.0 0.0 (* 1.0 w) (* -1.0 h))]
-			 [ori-vec (make-Vector2 0.0 0.0)]
-			 [previous-screen #f])
-		    (case-lambda
-		      [(animator time)
-		       (lambda (passed)
-			 (lambda (state)
-			   (unless previous-screen
-			     (let ([previous-part (assv ':previous state)])
-			       (set! previous-screen (cdr previous-part))))
-			   (BeginTextureMode rt)
-			   (ClearBackground BLACK)
-			   ((animator passed) state)
-			   (EndTextureMode)
-			   (BeginShaderMode shader)
-			   (let ([progress (/ passed time)])
-			     (when (< progress 1.0)
-			       (ftype-set! float () progress-fptr (* progress 1.0))
-			       (SetShaderValueTexture shader texture1-location previous-screen)
-			       (SetShaderValue shader progress-location progress-ptr SHADER_UNIFORM_FLOAT)))
-			   (DrawTextureRec rt-tex src-rect ori-vec WHITE)
-			   (EndShaderMode)))]
-		      [()
-		       (begin
-			 (UnloadShader shader)
-			 (UnloadRenderTexture rt)
-			 (foreign-free (ftype-pointer-address src-rect))
-			 (foreign-free (ftype-pointer-address ori-vec))
-			 (foreign-free progress-ptr))]))))
-(hashtable-set! *primitive-loaders* 'effect
-		(lambda (vs fs)
-		  (let* ([shader (LoadShader vs fs)]
-			 [progress-location (GetShaderLocation shader "progress")]
-			 [progress-ptr (foreign-alloc (ftype-sizeof float))]
-			 [progress-fptr (make-ftype-pointer float progress-ptr)]
-			 [w (GetScreenWidth)] [h (GetScreenHeight)]
-			 [rt (LoadRenderTexture w h)] [rt-tex (RenderTexture-texture rt)]
-			 [src-rect (make-Rectangle 0.0 0.0 (* 1.0 w) (* -1.0 h))]
-			 [ori-vec (make-Vector2 0.0 0.0)])
-		    (case-lambda
-		      [(animator time)
-		       (lambda (passed)
-			 (lambda (state)
-			   (BeginTextureMode rt)
-			   (ClearBackground BLACK)
-			   ((animator passed) state)
-			   (EndTextureMode)
-			   (BeginShaderMode shader)
-			   (let ([progress (/ passed time)])
-			     (when (< progress 1.0)
-			       (ftype-set! float () progress-fptr (* progress 1.0))
-			       (SetShaderValue shader progress-location progress-ptr SHADER_UNIFORM_FLOAT)))
-			   (DrawTextureRec rt-tex src-rect ori-vec WHITE)
-			   (EndShaderMode)))]
-		      [()
-		       (begin
-			 (UnloadShader shader)
-			 (UnloadRenderTexture rt)
-			 (foreign-free (ftype-pointer-address src-rect))
-			 (foreign-free (ftype-pointer-address ori-vec))
-			 (foreign-free progress-ptr))]))))
-(hashtable-set! *primitive-loaders* 'font
-		(lambda (path)
-		  (let* ([codepoints-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int)))]
-			 [codepoints (LoadCodepoints all-text codepoints-count)]
-			 [font (LoadFontEx path 50 codepoints (ftype-ref int () codepoints-count))]
-			 [w (GetScreenWidth)] [h (GetScreenHeight)]
-			 [subtext-y (* h 0.75)]
-			 [text-vec (make-Vector2 0.0 subtext-y)]
-			 [text-bg-color (make-Color 120 120 160 125)])
-		    (UnloadCodepoints codepoints)
-		    (foreign-free (ftype-pointer-address codepoints-count))
-		    (case-lambda
-		      [(str size speed)
-		       (let* ([len (string-length str)]
-			      [subtexts (map (lambda (sub-index) (substring str 0 sub-index)) (map 1+ (iota len)))]
-			      [measured-vecs (map (lambda (subtext) (MeasureTextEx font subtext (inexact size) 0.0)) subtexts)]
-			      [subtext-h (Vector2-y (car measured-vecs))]
-			      [subtext-ws (map (lambda (measured-vec) (Vector2-x measured-vec)) measured-vecs)]
-			      [subtext-xs (map (lambda (subtext-w) (/ (- w subtext-w) 2.0)) subtext-ws)])
-			 (for-each (lambda (vec) (foreign-free (ftype-pointer-address vec))) measured-vecs)
-			 (lambda (passed)
-			   (lambda (state)
-			     (let* ([index (exact (floor (min (/ passed speed) (1- len))))]
-				    [subtext (list-ref subtexts index)]
-				    [subtext-x (list-ref subtext-xs index)]
-				    [subtext-w (list-ref subtext-ws index)])
-			       (Vector2-x-set! text-vec subtext-x)
-			       (DrawRectangle (exact (floor subtext-x)) (exact (floor subtext-y))
-					      (exact (floor subtext-w)) (exact (floor subtext-h))
-					      text-bg-color)
-			       (DrawTextEx font subtext text-vec (inexact size) 0.0 WHITE)))))]
-		      [()
-		       (begin
-			 (foreign-free (ftype-pointer-address text-vec))
-			 (foreign-free (ftype-pointer-address text-bg-color)))]))))
-(hashtable-set! *primitive-loaders* 'camera
-		(let ([default `((:offset (lambda (p) `(0.0 . 0.0)))
-				 (:target (lambda (p) `(0.0 . 0.0)))
-				 (:zoom (lambda (p) 1.0))
-				 (:rotation (lambda (p) 0.0)))])
-		(lambda args
-		  (let* ([camera (init-Camera2D)]
-			 [alls (append (parse-params args) default)]
-			 [offset-fn (eval (cadr (assv ':offset alls)))]
-			 [target-fn (eval (cadr (assv ':target alls)))]
-			 [zoom-fn (eval (cadr (assv ':zoom alls)))]
-			 [rotation-fn (eval (cadr (assv ':rotation alls)))])
-		    (case-lambda [(animator)
-				  (lambda (passed)
-				    (Camera2D-offset-set! camera (offset-fn passed))
-				    (Camera2D-target-set! camera (target-fn passed))
-				    (Camera2D-zoom-set! camera (zoom-fn passed))
-				    (Camera2D-rotation-set! camera (rotation-fn passed))
-				    (lambda (state)
-				      (BeginMode2D camera)
-				      ((animator passed) state)
-				      (EndMode2D)))]
-				 [()
-				  (void)])))))
+(define :size ':size)
+(define :color ':color)
+(define :speed ':speed)
 
 (define play
   (case-lambda
@@ -299,13 +106,6 @@
 	     [locked-animator-alist (cdr locked-part)])
 	(set-cdr! locked-part (cons (cons name locked-animator) locked-animator-alist))
 	(next state))))))
-
-(define delv
-  (lambda (key alist)
-    (cond
-     [(null? alist) '()]
-     [(eqv? key (caar alist)) (delv key (cdr alist))]
-     [else (cons (car alist) (delv key (cdr alist)))])))
     
 (define unlock
   (lambda (name)
@@ -314,11 +114,7 @@
 	     [locked-animator-alist (cdr locked-part)])
 	(set-cdr! locked-part (delv name locked-animator-alist))
 	(next state)))))
-(define image-exporter
-  (let ([count 0])
-    (lambda (image)
-      (ExportImage image (format "~a.png" count))
-      (set! count (1+ count)))))
+
 (define make-directive
   (lambda (animator end?)
     (lambda (state next)
@@ -348,17 +144,6 @@
     (make-directive
      animator
      (lambda (s) (IsMouseButtonPressed MOUSE_BUTTON_LEFT)))))
-
-(define extract-strings
-  (lambda (scripts)
-    (cond
-     [(null? scripts) '()]
-     [(string? scripts) (list scripts)]
-     [(atom? scripts) '()]
-     [(list? scripts)
-      (append (extract-strings (car scripts))
-	      (extract-strings (cdr scripts)))]
-     [else '()])))
 
 (define replica
   (lambda (stories)

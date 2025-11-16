@@ -7,6 +7,7 @@
 (define BLACK (make-Color 0 0 0 255))
 (define WHITE (make-Color 255 255 255 255))
 (define RED (make-Color 255 0 0 255))
+(define LIGHTGRAY (make-Color 200 200 200 255))
 
 (define SHADER_UNIFORM_FLOAT 0)
 
