@@ -6,14 +6,20 @@
  (sound rightone "../assets/sound/rightone.mp3")
  (sound searching "../assets/sound/search.mp3")
  (sound thud "../assets/sound/thud.mp3")
+ (sound walking "../assets/sound/walking.mp3")
  (sound pickup "../assets/sound/pickup-phone.mp3")
  (sound take "../assets/sound/take.mp3")
+ (sound getup "../assets/sound/getup.mp3")
+ (sound sitdown "../assets/sound/sitdown.mp3")
+ (sound scroll-books "../assets/sound/scroll-books.mp3")
  (transition wakeup #f "../assets/glsl/wakeup.transition.fs")
  (effect mask #f "../assets/glsl/mask.effect.fs")
  (transition fade #f "../assets/glsl/fade.transition.fs")
  (font xiaolai "../assets/font/Xiaolai-Regular.ttf")
  (camera enlarge-and-move :zoom (lambda (passed) 2.0) :target (lambda (passed) `(,(min (* 10 passed) 300) . 500.0)))
- (camera enlarge :zoom (lambda (passed) 2.0) :target (lambda (passed) `(0.0 . 500.0))))
+ (camera enlarge :zoom (lambda (passed) 2.0) :target (lambda (passed) `(0.0 . 500.0)))
+ (camera zoom-bookcase :target (lambda (p) `(1000.0 . 400.0)) :zoom (lambda (p) 2.5))
+ (camera sitdown-bookcase :target (lambda (p) `(1000.0 . ,(min 420.0 (+ 400.0 (* p 100))))) :zoom (lambda (p) 2.5)))
 	 
 (parallel
  (play rightone)
@@ -41,9 +47,47 @@
  0.0 (play pickup)
  1.0 (xiaolai "喂？"))
 
-(xiaolai "喂，还在睡啊？都早十点了。")
+(xiaolai "喂，还在睡啊？都早十点了，过早没？")
 
-(xiaolai "周六睡个懒觉怎么了啊，我加班都那么累了。")
+(xiaolai "没，待会儿直接吃午饭。")
 
+(xiaolai "昨晚降温了，你睡前加被子没有？")
 
+(xiaolai "早就加了…………你一大早打电话就为这些事吗？")
 
+(xiaolai "………………")
+
+(xiaolai "怎么了？没话说的话我先挂了？")
+
+(xiaolai "昨天，我和你爸认真讨论了一下")
+
+(xiaolai "(啊啊……)")
+
+(xiaolai "他上个月说的话确实过分了些，可担心你也是真的。")
+
+(unlock 'masked)
+
+(sequential
+ 0.0 (parallel
+      (fade (static morning) 1.0)
+      (play getup))
+ 1.0 (xiaolai "嗯，我知道。"))
+
+(lock 'bookcase (sequential
+		 0.0 (parallel
+		      (play walking 2.5)
+		      (static morning))
+		 3.0 (fade (zoom-bookcase (static morning)) 1)
+		 4.0 (parallel
+		      (sitdown-bookcase (static morning))
+		      (play sitdown))))
+
+(xiaolai "然后啊，他昨天也好好反思了。")
+
+(lock 'scrolling (play scroll-books 7.0))
+
+(xiaolai "所以我们这周见个面，好好聊聊怎么样？")
+
+(xiaolai "嗯……")
+
+(xiaolai "……还是算了吧，感觉再见面还会吵起来的样子。")

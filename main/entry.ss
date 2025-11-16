@@ -12,6 +12,8 @@
 (define :color ':color)
 (define :speed ':speed)
 
+(define empty-fragment (lambda (state) (void)))
+
 (define play
   (case-lambda
     [(frag time)
@@ -106,6 +108,13 @@
 	     [locked-animator-alist (cdr locked-part)])
 	(set-cdr! locked-part (cons (cons name locked-animator) locked-animator-alist))
 	(next state))))))
+
+(define wait
+  (lambda (animator time)
+    (lambda (passed)
+      (if (> passed time)
+	  (animator (- passed time))
+	  empty-fragment))))
     
 (define unlock
   (lambda (name)
