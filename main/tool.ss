@@ -1,3 +1,18 @@
+(define (list-group lst n)
+  (unless (and (integer? n) (> n 0))
+    (error 'list-group "n must be a positive integer" n))
+  (if (null? lst)
+      '()
+      (let loop ([k n]
+                 [current-lst lst]
+                 [group-acc '()])
+        (if (or (zero? k) (null? current-lst))
+            (cons (reverse group-acc)
+                  (list-group current-lst n))
+            (loop (- k 1)
+                  (cdr current-lst)
+                  (cons (car current-lst) group-acc))))))
+
 (define extract-strings
   (lambda (scripts)
     (cond
@@ -31,6 +46,7 @@
 	     acc)))
      '()
      params)))
+
 (define reads
   (lambda (port)
     (let ([content (read port)])

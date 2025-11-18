@@ -12,46 +12,47 @@
 (define :color ':color)
 (define :speed ':speed)
 
+(define :volume ':volume)
+(define :pitch ':pitch)
+(define :pan ':pan)
+(define :time ':time)
+
 (define empty-fragment (lambda (state) (void)))
 
+(define-syntax with-defaults
+  (lambda (stx)
+    (syntax-case stx (lambda)
+      [(k defaults (lambda (arg ...) rest ...))
+       (let* ([grouped (list-group (datum defaults) 2)]
+	      [keys (map car grouped)]
+	      [vals (map cadr grouped)])
+	 (with-syntax ([((key val) ...) (datum->syntax #'k grouped)])
+	   #`(let ([key val] ...)
+	       (case-lambda
+		 [(arg ...) rest ...]
+		 [(arg ... . new)
+		  (let* ([grouped-new (list-group new 2)]
+			 [keys-new (map car grouped-new)])
+		    (for-each
+		     (lambda (p)
+		       (case (car p)
+			 [(key) (set! key (cadr p))] ...
+			 [else (error 'with-defaults "No Such Default key" (car p))]))
+		     grouped-new)
+		    rest ...)]))))])))
+
 (define play
-  (case-lambda
-    [(frag time)
+  (with-defaults
+   (:volume 1.0 :pitch 1.0 :pan 0.5 :time #f)
+   (lambda (frag)
      (let ([played #f])
        (lambda (passed)
-	 (when (and time (> passed time))
+	 (when (and :time (> passed :time))
 	   (frag 'x 'y))
 	 (lambda (state)
 	   (unless played
 	     (frag state)
-	     (set! played #t)))))]
-    [(frag) (play frag #f)]))
-
-(define overlay
-  (lambda frags
-    (let* ([w (GetScreenWidth)] [h (GetScreenHeight)]
-	   [rt (LoadRenderTexture w h)]
-	   [src-rect (make-Rectangle 0.0 0.0 (* 1.0 w) (* -1.0 h))]
-	   [ori-vec (make-Vector2 0.0 0.0)]
-	   [tex (RenderTexture-texture rt)]
-	   [draw-rt (lambda (s)
-		      (BeginTextureMode rt)
-		      (ClearBackground BLACK)
-		      (for-each (lambda (frag) (frag s)) frags)
-		      (EndTextureMode))])
-      (case-lambda
-	[(state)
-	 (let ([cached #f])
-	   (unless cached
-	     (draw-rt state)
-	     (set! cached #t))
-	   (DrawTextureRec tex src-rect ori-vec WHITE))]
-	[()
-	 (begin
-	   (TraceLog LOG_INFO (format-green "[Unload Overlayed Primitive]"))
-	   (UnloadRenderTexture rt)
-	   (foreign-free (ftype-pointer-address src-rect))
-	   (foreign-free (ftype-pointer-address ori-vec)))]))))
+	     (set! played #t))))))))
 
 (define static
   (lambda (frag)
