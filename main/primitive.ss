@@ -44,7 +44,12 @@
 		  (let ([sound (LoadSound path)])
 		    (case-lambda
 		      [(state) (PlaySound sound)]
-		      [(x y) (StopSound sound)]
+		      [(op . args)
+		       (case op
+			 [(stop) (StopSound sound)]
+			 [(pan) (apply SetSoundPan sound args)]
+			 [(volume) (apply SetSoundVolume sound args)]
+			 [(pitch) (apply SetSoundPitch sound args)])]
 		      [() (UnloadSound sound)]))))
 (hashtable-set! *primitive-loaders* 'transition
 		(lambda (vs fs)

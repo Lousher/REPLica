@@ -27,28 +27,34 @@
 	      [keys (map car grouped)]
 	      [vals (map cadr grouped)])
 	 (with-syntax ([((key val) ...) (datum->syntax #'k grouped)])
-	   #`(let ([key val] ...)
+	   #`
 	       (case-lambda
-		 [(arg ...) rest ...]
+		 [(arg ...)
+		  (let ([key val] ...)
+		    rest ...)]
 		 [(arg ... . new)
-		  (let* ([grouped-new (list-group new 2)]
-			 [keys-new (map car grouped-new)])
-		    (for-each
-		     (lambda (p)
-		       (case (car p)
-			 [(key) (set! key (cadr p))] ...
-			 [else (error 'with-defaults "No Such Default key" (car p))]))
-		     grouped-new)
-		    rest ...)]))))])))
+		  (let ([key val] ...)
+		    (let* ([grouped-new (list-group new 2)]
+			   [keys-new (map car grouped-new)])
+		      (for-each
+		       (lambda (p)
+			 (case (car p)
+			   [(key) (set! key (cadr p))] ...
+			   [else (error 'with-defaults "No Such Default key" (car p))]))
+		       grouped-new)
+		      rest ...))])))])))
 
 (define play
   (with-defaults
    (:volume 1.0 :pitch 1.0 :pan 0.5 :time #f)
    (lambda (frag)
+     (frag 'volume :volume)
+     (frag 'pitch :pitch)
+     (frag 'pan :pan)
      (let ([played #f])
        (lambda (passed)
 	 (when (and :time (> passed :time))
-	   (frag 'x 'y))
+	   (frag 'stop '()))
 	 (lambda (state)
 	   (unless played
 	     (frag state)

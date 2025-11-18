@@ -297,6 +297,10 @@
 (define-ffi PauseSound ((& Sound)) void)
 (define-ffi ResumeSound ((& Sound)) void)
 (define-ffi IsSoundPlaying ((& Sound)) boolean)
+(define-ffi SetSoundPan ((& Sound) float) void)
+(define-ffi SetSoundVolume ((& Sound) float) void)
+(define-ffi SetSoundPitch ((& Sound) float) void)
+
 
 ;; Music
 (define-ffi LoadMusicStream (string) (& Music))
