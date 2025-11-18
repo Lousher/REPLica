@@ -128,39 +128,37 @@
 			 [w (GetScreenWidth)] [h (GetScreenHeight)]
 			 [subtext-y (* h 0.75)]
 			 [text-vec (make-Vector2 0.0 subtext-y)]
-			 [text-bg-color (make-Color 120 120 160 125)]
-			 [default `((:size 50) (:speed 0.05) (:color ,WHITE))])
+			 [text-bg-color (make-Color 120 120 160 125)])
 		    (UnloadCodepoints codepoints)
 		    (foreign-free (ftype-pointer-address codepoints-count))
+		    (let ([text-fn (with-defaults
+				    (:size 50 :speed 0.05 :color WHITE)
+				    (lambda (str)
+				      (let* ([len (string-length str)]
+					     [subtexts (map (lambda (sub-index) (substring str 0 sub-index)) (map 1+ (iota len)))]
+					     [measured-vecs (map (lambda (subtext) (MeasureTextEx font subtext (inexact :size) 0.0)) subtexts)]
+					     [subtext-h (Vector2-y (car measured-vecs))]
+					     [subtext-ws (map (lambda (measured-vec) (Vector2-x measured-vec)) measured-vecs)]
+					     [subtext-xs (map (lambda (subtext-w) (/ (- w subtext-w) 2.0)) subtext-ws)])
+					(for-each (lambda (vec) (foreign-free (ftype-pointer-address vec))) measured-vecs)
+					(lambda (passed)
+					  (lambda (state)
+					    (let* ([index (exact (floor (min (/ passed :speed) (1- len))))]
+						   [subtext (list-ref subtexts index)]
+						   [subtext-x (list-ref subtext-xs index)]
+						   [subtext-w (list-ref subtext-ws index)])
+					      (Vector2-x-set! text-vec subtext-x)
+					      (DrawRectangle (exact (floor subtext-x)) (exact (floor subtext-y))
+							     (exact (floor subtext-w)) (exact (floor subtext-h))
+							     text-bg-color)
+					      (DrawTextEx font subtext text-vec (inexact :size) 0.0 :color)))))))])
 		    (case-lambda
-		      [(str . args)
-		       (let* ([parsed (parse-params args)]
-			      [all (append parsed default)]
-			      [size (cadr (assv :size all))]
-			      [speed (cadr (assv :speed all))]
-			      [color (cadr (assv :color all))])
-		       (let* ([len (string-length str)]
-			      [subtexts (map (lambda (sub-index) (substring str 0 sub-index)) (map 1+ (iota len)))]
-			      [measured-vecs (map (lambda (subtext) (MeasureTextEx font subtext (inexact size) 0.0)) subtexts)]
-			      [subtext-h (Vector2-y (car measured-vecs))]
-			      [subtext-ws (map (lambda (measured-vec) (Vector2-x measured-vec)) measured-vecs)]
-			      [subtext-xs (map (lambda (subtext-w) (/ (- w subtext-w) 2.0)) subtext-ws)])
-			 (for-each (lambda (vec) (foreign-free (ftype-pointer-address vec))) measured-vecs)
-			 (lambda (passed)
-			   (lambda (state)
-			     (let* ([index (exact (floor (min (/ passed speed) (1- len))))]
-				    [subtext (list-ref subtexts index)]
-				    [subtext-x (list-ref subtext-xs index)]
-				    [subtext-w (list-ref subtext-ws index)])
-			       (Vector2-x-set! text-vec subtext-x)
-			       (DrawRectangle (exact (floor subtext-x)) (exact (floor subtext-y))
-					      (exact (floor subtext-w)) (exact (floor subtext-h))
-					      text-bg-color)
-			       (DrawTextEx font subtext text-vec (inexact size) 0.0 color))))))]
 		      [()
 		       (begin
 			 (foreign-free (ftype-pointer-address text-vec))
-			 (foreign-free (ftype-pointer-address text-bg-color)))]))))
+			 (foreign-free (ftype-pointer-address text-bg-color)))]
+		      [args (apply text-fn args)])))))
+
 (hashtable-set! *primitive-loaders* 'camera
 		(let ([camera (init-Camera2D)])
 		  (with-defaults

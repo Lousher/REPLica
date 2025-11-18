@@ -75,3 +75,27 @@
 				 old (1+ index) (cdr rest))]
 	 [(odd? index) (collect even (cons (car rest) old)
 				(1+ index) (cdr rest))])))))
+
+(define-syntax with-defaults
+  (lambda (stx)
+    (syntax-case stx (lambda)
+      [(k defaults (lambda (arg ...) rest ...))
+       (let* ([grouped (list-group (datum defaults) 2)]
+	      [keys (map car grouped)]
+	      [vals (map cadr grouped)])
+	 (with-syntax ([((key val) ...) (datum->syntax #'k grouped)])
+	   #`(case-lambda
+	       [(arg ...)
+		(let ([key val] ...)
+		  rest ...)]
+	       [(arg ... . new)
+		(let ([key val] ...)
+		  (let* ([grouped-new (list-group new 2)]
+			 [keys-new (map car grouped-new)])
+		    (for-each
+		     (lambda (p)
+		       (case (car p)
+			 [(key) (set! key (eval (cadr p)))] ...
+			 [else (error 'with-defaults "No Such Default key" (car p))]))
+		     grouped-new)
+		    rest ...))])))])))
