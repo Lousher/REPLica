@@ -3,7 +3,7 @@
 (load "raylib.ffi.ss")
 (load "raylib.constant.ss")
 
-(load "primitive.ss")
+
 (load "tool.ss")
 
 (define all-text #f)
@@ -27,23 +27,22 @@
 	      [keys (map car grouped)]
 	      [vals (map cadr grouped)])
 	 (with-syntax ([((key val) ...) (datum->syntax #'k grouped)])
-	   #`
-	       (case-lambda
-		 [(arg ...)
-		  (let ([key val] ...)
-		    rest ...)]
-		 [(arg ... . new)
-		  (let ([key val] ...)
-		    (let* ([grouped-new (list-group new 2)]
-			   [keys-new (map car grouped-new)])
-		      (for-each
-		       (lambda (p)
-			 (case (car p)
-			   [(key) (set! key (cadr p))] ...
-			   [else (error 'with-defaults "No Such Default key" (car p))]))
-		       grouped-new)
-		      rest ...))])))])))
-
+	   #`(case-lambda
+	       [(arg ...)
+		(let ([key val] ...)
+		  rest ...)]
+	       [(arg ... . new)
+		(let ([key val] ...)
+		  (let* ([grouped-new (list-group new 2)]
+			 [keys-new (map car grouped-new)])
+		    (for-each
+		     (lambda (p)
+		       (case (car p)
+			 [(key) (set! key (eval (cadr p)))] ...
+			 [else (error 'with-defaults "No Such Default key" (car p))]))
+		     grouped-new)
+		    rest ...))])))])))
+(load "primitive.ss")
 (define play
   (with-defaults
    (:volume 1.0 :pitch 1.0 :pan 0.5 :time #f)

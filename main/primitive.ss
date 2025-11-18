@@ -17,7 +17,6 @@
 		      (case-lambda
 			[(state) (DrawTexture tex 0 0 WHITE)]
 			[() (UnloadTexture tex)])))))
-
 (hashtable-set! *primitive-loaders* 'picture
 		(lambda (path)
 		  (let* ([tex (LoadTexture path)]
@@ -163,26 +162,22 @@
 			 (foreign-free (ftype-pointer-address text-vec))
 			 (foreign-free (ftype-pointer-address text-bg-color)))]))))
 (hashtable-set! *primitive-loaders* 'camera
-		(let ([default `((:offset (lambda (p) `(0.0 . 0.0)))
-				 (:target (lambda (p) `(0.0 . 0.0)))
-				 (:zoom (lambda (p) 1.0))
-				 (:rotation (lambda (p) 0.0)))])
-		(lambda args
-		  (let* ([camera (init-Camera2D)]
-			 [alls (append (parse-params args) default)]
-			 [offset-fn (eval (cadr (assv ':offset alls)))]
-			 [target-fn (eval (cadr (assv ':target alls)))]
-			 [zoom-fn (eval (cadr (assv ':zoom alls)))]
-			 [rotation-fn (eval (cadr (assv ':rotation alls)))])
-		    (case-lambda [(animator)
-				  (lambda (passed)
-				    (Camera2D-offset-set! camera (offset-fn passed))
-				    (Camera2D-target-set! camera (target-fn passed))
-				    (Camera2D-zoom-set! camera (zoom-fn passed))
-				    (Camera2D-rotation-set! camera (rotation-fn passed))
-				    (lambda (state)
-				      (BeginMode2D camera)
-				      ((animator passed) state)
-				      (EndMode2D)))]
-				 [()
-				  (void)])))))
+		(let ([camera (init-Camera2D)])
+		  (with-defaults
+		   (:offset (lambda (p) `(0.0 . 0.0))
+		    :target (lambda (p) `(0.0 . 0.0))
+		    :zoom (lambda (p) 1.0)
+		    :rotation (lambda (p) 0.0))
+		   (lambda ()
+		     (case-lambda
+		       [(animator)
+			(lambda (passed)
+			  (Camera2D-offset-set! camera (:offset passed))
+			  (Camera2D-target-set! camera (:target passed))
+			  (Camera2D-zoom-set! camera (:zoom passed))
+			  (Camera2D-rotation-set! camera (:rotation passed))
+			  (lambda (state)
+			    (BeginMode2D camera)
+			    ((animator passed) state)
+			    (EndMode2D)))]
+		       [() (void)])))))
