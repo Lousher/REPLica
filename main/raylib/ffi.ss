@@ -6,4 +6,4 @@
     (case (machine-type)
       [(tarm64osx) (load-shared-object "libraylib.5.5.0.dylib")]))
   
-  (include "raylib.ffi.ss"))
+  (include "raylib/raylib.ffi.ss"))
