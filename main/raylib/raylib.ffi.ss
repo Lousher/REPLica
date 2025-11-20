@@ -1,20 +1,20 @@
 					; syntax Extension
+(define ffi-guardian (make-guardian))
 (define-syntax define-ffi
-  (syntax-rules (&)
-    [(_ name (args ...) (& ret))
-     (define name
-       (lambda params
-	 (let ([proc (foreign-procedure #f (symbol->string 'name) (args ...) (& ret))]
-	       [ret-result (make-ftype-pointer ret (foreign-alloc (ftype-sizeof ret)))])
-	   (apply proc ret-result params)
-	   ret-result)))]
-    [(_ name (args ...) ret)
-     (define name
-       (foreign-procedure #f
-			  (symbol->string 'name)
-			  (args ...)
-			  ret))]))
-
+  (lambda (stx)
+    (syntax-case stx (&)
+      [(_ name (param-type ...) (& ret-type))
+       (with-syntax ([(arg ...) (generate-temporaries #'(param-type ...))])
+	 #'(define name
+	     (let ([proc (foreign-procedure #f (symbol->string 'name) (param-type ...) (& ret-type))])
+	       (lambda (arg ...)
+		 (let ([ret-result (make-ftype-pointer ret-type (foreign-alloc (ftype-sizeof ret-type)))])
+		   (ffi-guardian ret-result)
+		   (proc ret-result arg ...)
+		   ret-result)))))]
+      [(_ name (param-type ...) ret-type)
+       #'(define name
+	   (foreign-procedure #f (symbol->string 'name) (param-type ...) ret-type))])))
 					; Struct
 (define-syntax define-ftype-ex
   (lambda (stx)
@@ -35,9 +35,7 @@
 		 (lambda (stx)
 		   (with-syntax ([ref-name (datum->syntax #'name (string->symbol (format "~a-~a" (syntax->datum #'name) (syntax->datum stx))))])
 		     #`(define ref-name (lambda (_) (ftype-ref name (#,stx) _)))))
-		 #'(field-name ...))
-	     ))])))
-
+		 #'(field-name ...))))])))
 
 (define-ftype-ex Image
   (struct
@@ -46,7 +44,6 @@
     [height int]
     [mipmaps int]
     [format int]))
-
 (define-ftype-ex Texture
   (struct
     [id unsigned-int]
@@ -54,23 +51,19 @@
     [height int]
     [mipmaps int]
     [format int]))
-
 (alias Texture2D Texture)
-
 (define-ftype-ex Color
   (struct
     [r unsigned-8]
     [g unsigned-8]
     [b unsigned-8]
     [a unsigned-8]))
-
 (define-ftype-ex Rectangle
   (struct
     [x float]
     [y float]
     [width float]
     [height float]))
-
 (define-ftype-ex Vector2
   (struct
     [x float]
@@ -99,7 +92,6 @@
 (define Vector2-y-set!
   (lambda (vec updated)
     (ftype-set! Vector2 (y) vec updated)))
-
 
 ; nested complex structure
 (define-ftype RenderTexture
@@ -163,6 +155,7 @@
   (lambda ()
     (make-Camera2D
      '(0.0 . 0.0) '(0.0 . 0.0) 0.0 1.0)))
+
 (define Camera2D-offset-set!
   (lambda (camera2d vec)
     (ftype-set! Camera2D (offset x) camera2d (car vec))
@@ -329,8 +322,6 @@
 ;;Camera
 (define-ffi BeginMode2D ((& Camera2D)) void)
 (define-ffi EndMode2D () void)
-;; Logging
-(define-ffi TraceLog (int string) void)
 
 ;;Validator
 (define-ffi IsTextureValid ((& Texture2D)) boolean)
@@ -340,8 +331,6 @@
 
 ;; Custome Extension
 (define RenderTexture-texture
-  (lambda params
-    (let ([fun-ori (foreign-procedure #f "RenderTexture_texture" ((& RenderTexture2D)) (& Texture2D))]
-	  [result (make-ftype-pointer Texture2D (foreign-alloc (ftype-sizeof Texture2D)))])
-      (apply fun-ori result params)
-      result)))
+  (lambda (fptr)
+    (ftype-&ref RenderTexture (texture) fptr)))
+

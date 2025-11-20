@@ -1,0 +1,9 @@
+(library (raylib ffi)
+  (export ffi-guardian make-Color Rectangle-x-set! Rectangle-y-set! Rectangle-width-set! Rectangle-height-set! Vector2-x-set! Vector2-y-set! make-Camera2D init-Camera2D Camera2D-offset-set! Camera2D-target-set! Camera2D-rotation-set! Camera2D-zoom-set! reset-Camera2D camera-2d->Camera2D GetMonitorWidth GetMonitorHeight GetScreenWidth GetScreenHeight SetConfigFlags InitWindow SetTargetFPS WindowShouldClose CloseWindow GetTime GetFrameTime Fade BeginDrawing EndDrawing DrawTexture DrawTexturePro DrawTextureV DrawTextureRec UnloadTexture UnloadRenderTexture ClearBackground LoadRenderTexture BeginTextureMode EndTextureMode DrawRectangle DrawRectangleRec DrawRectangleV DrawRectangleRounded DrawRectangleRoundedLinesEx SetTextureFilter GenTextureMipmaps BeginShaderMode EndShaderMode LoadShader UnloadShader GetShaderLocation SetShaderValue SetShaderValueTexture LoadFileData UnloadFileData IsWindowReady SetWindowSize LoadImage LoadImageFromTexture ImageFlipVertical ImageFlipHorizontal LoadImageFromScreen LoadTextureFromImage LoadTexture UnloadImage ImageResize IsMouseButtonPressed IsMouseButtonDown IsMouseButtonReleased IsMouseButtonUp IsKeyPressed IsKeyPressedRepeat IsKeyDown IsKeyReleased IsKeyUp GetKeyPressed GetCharPressed InitAudioDevice CloseAudioDevice LoadSound UnloadSound PlaySound StopSound PauseSound ResumeSound IsSoundPlaying SetSoundPan SetSoundVolume SetSoundPitch LoadMusicStream UnloadMusicStream PlayMusicStream UpdateMusicStream StopMusicStream SetMusicVolume IsMusicStreamPlaying DrawTextCodepoints DrawText LoadFileText LoadCodepoints LoadFontEx LoadFontFromMemory LoadFont UnloadFileText UnloadCodepoints UnloadFont DrawTextEx TextSubtext GetCodepointCount MeasureTextEx BeginMode2D EndMode2D TraceLog IsTextureValid ExportImage RenderTexture-texture)
+  (import (chezscheme))
+
+  (define _init
+    (case (machine-type)
+      [(tarm64osx) (load-shared-object "libraylib.5.5.0.dylib")]))
+  
+  (include "raylib.ffi.ss"))
