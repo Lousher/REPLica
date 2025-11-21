@@ -1,17 +1,7 @@
 (library (tool)
-  (export reads format-green extract-strings alist-update format-red load-texture-from-screen)
-  (import (chezscheme)
-	  (raylib ffi))
+  (export reads format-green extract-strings alist-update format-red)
+  (import (chezscheme))
 
-  (define load-texture-from-screen
-    (lambda ()
-      (let ([screen-img (LoadImageFromScreen)])
-	(ImageResize screen-img (GetScreenWidth) (GetScreenHeight))
-	(ImageFlipVertical screen-img)
-	(let ([screen-tex (LoadTextureFromImage screen-img)])
-	  (UnloadImage screen-img)
-	  screen-tex))))
-  
   (define alist-update
     (lambda (alist key val)
       (cons (cons key val)

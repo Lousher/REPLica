@@ -4,7 +4,7 @@
 	  (raylib ffi)
 	  (raylib constant)
 	  (only (monad) sequence)
-	  (only (primitive) preload static)
+	  (only (primitive) preload static resource-collect load-texture-from-screen)
 	  (chezscheme))
 
   (define script-env
@@ -18,11 +18,13 @@
 	  (ClearBackground BLACK)
 	  ((animator passed) state)
 	  (EndDrawing)
-	  (ffi-collect)
 	  (cond
 	   [(WindowShouldClose) (values 'done state)]
 	   [(end? state passed)
 	    (let ([new-state (alist-update state ':previous (load-texture-from-screen))])
+	      (collect 4)
+	      (resource-collect)	      
+	      (ffi-collect)
 	      (values 'next new-state))]
 	   [else (animating (+ passed (GetFrameTime)))])))))
 
@@ -41,7 +43,7 @@
   (define action<-script
     (lambda (exp)
       (case (car exp)
-	[(preload)
+	[(preload resource-clear)
 	 (eval exp script-env)]
 	[(define define-syntax import)
 	 (eval exp) #f]
@@ -67,6 +69,7 @@
 		  (let ([clean-state (alist-update new-state ':resources '())])
 		    (collect)
 		    (ffi-collect)
+		    (resource-collect)
 		    (case (if (pair? sig) (car sig) sig)
 		      [(jump)
 		       (let ([next-script (cadr sig)])

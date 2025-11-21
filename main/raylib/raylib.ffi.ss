@@ -6,6 +6,7 @@
     (let loop ()
       (let ([res (ffi-guardian)])
 	(when res
+	  (TraceLog 3 (format-green "Free Allocated Pointer ~a" res))
 	  (foreign-free (ftype-pointer-address res))
 	  (loop))))))
 		

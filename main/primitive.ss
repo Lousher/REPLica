@@ -1,12 +1,33 @@
 (library (primitive)
-  (export preload static)
-
+  (export preload static resource-collect resource-clear load-texture-from-screen)
+  
   (import (chezscheme)
 	  (only (raylib ffi)
 		LoadTexture DrawTexture ImageResize LoadImage LoadTextureFromImage
-		GetScreenWidth GetScreenHeight UnloadImage)
-	  (only (raylib constant) WHITE)
-	  (only (tool) alist-update))
+		GetScreenWidth GetScreenHeight UnloadImage UnloadTexture TraceLog
+		ImageFlipVertical LoadImageFromScreen)
+	  (only (raylib constant) WHITE LOG_INFO)
+	  (only (tool) alist-update format-green))
+
+  (define load-texture-from-screen
+    (lambda ()
+      (let ([screen-img (LoadImageFromScreen)])
+	(ImageResize screen-img (GetScreenWidth) (GetScreenHeight))
+	(ImageFlipVertical screen-img)
+	(let ([screen-tex (LoadTextureFromImage screen-img)])
+	  (UnloadImage screen-img)
+	  screen-tex))))
+
+  (define resource-collect
+    (lambda ()
+      (let loop ()
+	(let ([res (resource-guardian)])
+	  (when res
+	    (UnloadTexture res)
+	    (TraceLog LOG_INFO (format-green "Unload Resource ~a" res))
+	    (loop))))))
+	
+  (define resource-guardian (make-guardian))
 
   (define load-primitive
     (lambda (type args)
@@ -15,6 +36,7 @@
 	 (let ([img (apply LoadImage args)])
 	   (ImageResize img (GetScreenWidth) (GetScreenHeight))
 	   (let ([tex (LoadTextureFromImage img)])
+	     (resource-guardian tex)
 	     (UnloadImage img)
 	     tex))])))
 		
@@ -33,6 +55,12 @@
 				(list `args ...))]
 		[new-state (alist-update state ':resources new-resources)])
 	   (values 'ok new-state)))]))
+
+  (define resource-clear
+    (lambda ()
+      (lambda (state)
+	(TraceLog LOG_INFO (format-green "State is ~a" state))
+	(values 'ok (alist-update state ':resources '())))))
 
   (define static
     (lambda (res-id)
