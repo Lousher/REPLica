@@ -1,5 +1,14 @@
 					; syntax Extension
 (define ffi-guardian (make-guardian))
+
+(define ffi-collect
+  (lambda ()
+    (let loop ()
+      (let ([res (ffi-guardian)])
+	(when res
+	  (foreign-free (ftype-pointer-address res))
+	  (loop))))))
+		
 (define-syntax define-ffi
   (lambda (stx)
     (syntax-case stx (&)

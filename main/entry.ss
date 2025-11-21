@@ -1,3 +1,3 @@
 (import (replica))
 
-(replica)
+(replica "test.rpl")
