@@ -1,6 +1,17 @@
 (library (tool)
-  (export reads format-green extract-strings alist-update format-red)
+  (export reads format-green extract-strings alist-update format-red ftype-pointer->ftype-symbol)
   (import (chezscheme))
+
+  (define ftype-pointer->ftype-symbol
+    (let* ([prefix "#<ftype-pointer"]
+	   [start (string-length prefix)])
+      (lambda (fptr)
+	(let* ([str (with-output-to-string (lambda () (display fptr)))]
+	       [len (string-length str)])
+	  (let find ([end (- len 1)])
+	    (if (char=? #\space (string-ref str end))
+		(string->symbol (substring str (+ start 1) end))
+		(find (- end 1))))))))
 
   (define alist-update
     (lambda (alist key val)

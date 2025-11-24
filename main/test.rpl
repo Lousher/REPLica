@@ -1,26 +1,14 @@
 (preload
  (background morning "../assets/bg/yuwen.bedroom.morning.png")
+ (background black "../assets/bg/black.png")
+ (sound rightone "../assets/sound/rightone.mp3")
+ (transition wakeup #f "../assets/glsl/wakeup.transition.fs")
  )
 
-(static 'morning)
+(parallel
+ (static 'morning)
+ (play 'rightone))
 
-(preload
- (background afternoon "../assets/bg/yuwen.bedroom.afternoon.png")
- )
 
-(static 'afternoon)
-
-(preload
- (background night "../assets/bg/yuwen.bedroom.night.png")
- )
-
-(static 'night)
-
-(resource-clear)
-
-(preload
- (background light "../assets/bg/yuwen.bedroom.night.light.png")
- )
-
-(static 'light)
+(static 'black)
 

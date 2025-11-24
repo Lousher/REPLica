@@ -3,12 +3,12 @@
   (import (tool)
 	  (raylib ffi)
 	  (raylib constant)
-	  (only (monad) sequence)
-	  (only (primitive) preload static resource-collect load-texture-from-screen)
+	  (monad)
+	  (primitive)
 	  (chezscheme))
 
   (define script-env
-    (environment '(chezscheme) '(primitive) '(monad) '(raylib constant)))
+    (environment '(chezscheme) '(primitive) '(monad) '(raylib constant) '(combinator)))
 
   (define make-action
     (lambda (animator end?)
@@ -46,13 +46,14 @@
 	[(preload resource-clear)
 	 (eval exp script-env)]
 	[(define define-syntax import)
-	 (eval exp) #f]
+	 (eval exp script-env) #f]
 	[else
 	 (normal-action (eval exp script-env))])))
   
   (define replica
     (lambda (entry-file)
       (InitWindow (GetScreenWidth) (GetScreenHeight) "test")
+      (InitAudioDevice)
       (SetTargetFPS 60)
       (let storying ([current-script entry-file]
 		     [current-state '((:locked . ())
@@ -68,8 +69,8 @@
 		(let-values ([(sig new-state) (stroying-action current-state)])
 		  (let ([clean-state (alist-update new-state ':resources '())])
 		    (collect)
-		    (ffi-collect)
 		    (resource-collect)
+		    (ffi-collect)
 		    (case (if (pair? sig) (car sig) sig)
 		      [(jump)
 		       (let ([next-script (cadr sig)])
@@ -79,6 +80,7 @@
 		       (TraceLog LOG_INFO (format-green "Replica: Game finished normally."))]
 		      [else
 		       (TraceLog LOG_WARNING (format-red "Replica: Unknow Signal ~a." sig))])))))))
+	(CloseAudioDevice)
 	(CloseWindow))))
   )
 
