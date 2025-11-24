@@ -1,5 +1,5 @@
 (library (combinator)
-  (export parallel)
+  (export parallel sequential)
   (import (chezscheme))
 
   (define parallel
@@ -10,4 +10,6 @@
 	   (lambda (anim)
 	     ((anim passed) state))
 	   animators)))))
+
+  (define sequential)
   )

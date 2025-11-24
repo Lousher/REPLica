@@ -32,8 +32,6 @@
     (lambda (animator)
       (make-action animator
 		   (lambda (s p) (IsMouseButtonPressed MOUSE_BUTTON_LEFT)))))
-    
-  (define *story-text* #f)
 
   (define signal?
     (lambda (x)
@@ -63,7 +61,7 @@
 	(let ([raw-exps (call-with-input-file current-script reads)])
 	  (let* ([strings (extract-strings raw-exps)]
 		 [valid-strs (filter (lambda (s) (not (file-exists? s))) strings)])
-	    (fluid-let ([*story-text* (apply string-append valid-strs)])
+	    (parameterize ([*story-text* (apply string-append valid-strs)])
 	      (let* ([actions (map action<-script raw-exps)]
 		     [stroying-action (sequence (filter procedure? actions))])
 		(let-values ([(sig new-state) (stroying-action current-state)])
