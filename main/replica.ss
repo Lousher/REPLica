@@ -9,24 +9,31 @@
 
   (define script-env
     (environment '(chezscheme) '(primitive) '(monad) '(raylib constant) '(combinator)))
-
+  (define layer-below?
+    (lambda (a b) (< (car a) (car b))))
   (define make-action
     (lambda (animator end?)
       (lambda (state)
-	(let animating ([passed 0.0])
-	  (BeginDrawing)
-	  (ClearBackground BLACK)
-	  ((animator passed) state)
-	  (EndDrawing)
-	  (cond
-	   [(WindowShouldClose) (values 'done state)]
-	   [(end? state passed)
-	    (let ([new-state (alist-update state ':previous (load-texture-from-screen))])
-	      (collect 4)
-	      (resource-collect)	      
-	      (ffi-collect)
-	      (values 'next new-state))]
-	   [else (animating (+ passed (GetFrameTime)))])))))
+	(let ([layers (cdr (assv ':layers state))])
+	  (let-values ([(bg-layers fg-layers) (partition (lambda (pair) (< (car pair) 0)) layers)])
+	    (let ([bg-anis (map cdr (sort layer-below? bg-layers))]
+		  [fg-anis (map cdr (sort layer-below? fg-layers))])
+	    (let animating ([passed 0.0])
+	      (BeginDrawing)
+	      (ClearBackground BLACK)
+	      (for-each (lambda (ani) (ani state)) bg-anis)
+	      ((animator passed) state)
+	      (for-each (lambda (ani) (ani state)) fg-anis)
+	      (EndDrawing)
+	      (cond
+	       [(WindowShouldClose) (values 'done state)]
+	       [(end? state passed)
+		(let ([new-state (alist-update state ':previous (load-texture-from-screen))])
+		  (collect 4)
+		  (resource-collect)
+		  (ffi-collect)
+		  (values 'next new-state))]
+	       [else (animating (+ passed (GetFrameTime)))]))))))))
 
   (define normal-action
     (lambda (animator)
@@ -41,7 +48,7 @@
   (define action<-script
     (lambda (exp)
       (case (car exp)
-	[(preload resource-clear)
+	[(preload resource-clear lock unlock)
 	 (eval exp script-env)]
 	[(define define-syntax import)
 	 (eval exp script-env) #f]
@@ -54,7 +61,7 @@
       (InitAudioDevice)
       (SetTargetFPS 60)
       (let storying ([current-script entry-file]
-		     [current-state '((:locked . ())
+		     [current-state '((:layers . ())
 				      (:resources . ())
 				      (:previous . #f))])
 	(TraceLog LOG_INFO (format-green "Replica: Loading Story ~a." current-script))
@@ -65,6 +72,7 @@
 	      (let* ([actions (map action<-script raw-exps)]
 		     [stroying-action (sequence (filter procedure? actions))])
 		(let-values ([(sig new-state) (stroying-action current-state)])
+		  (TraceLog LOG_INFO (format-green "State is ~a" (assv ':layers new-state)))
 		  (let ([clean-state (alist-update new-state ':resources '())])
 		    (collect)
 		    (resource-collect)

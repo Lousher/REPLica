@@ -1,5 +1,6 @@
 (library (primitive)
-  (export preload static resource-collect resource-clear load-texture-from-screen play with-transition *story-text*)
+  (export preload static resource-collect resource-clear load-texture-from-screen
+	  play with-transition *story-text* with-font with-effect  stop lock)
   
   (import (chezscheme)
 	  (raylib ffi)
@@ -28,8 +29,18 @@
 		[font (LoadFontEx (car args) 50 codepoints (ftype-ref int () codepoints-count))])
 	   (UnloadCodepoints codepoints)
 	   (foreign-free (ftype-pointer-address codepoints-count))
-	   (make-visual font '(0 . 0) 50.0 0.0 WHITE))]
-	[(transition effect)
+	   (make-context font 'font `((:size . 50) (:color . ,WHITE) (:speed . 0.1) (:position . (0 . 0)))))]
+	[(effect)
+	 (let* ([sh (apply LoadShader args)]
+		[progress-ptr (foreign-alloc (ftype-sizeof float))]
+		[progress-fptr (make-ftype-pointer float progress-ptr)]
+		[progress-location (GetShaderLocation sh "progress")]
+		[progress-setter (lambda (p)
+				   (ftype-set! float () progress-fptr p)
+				   (SetShaderValue sh progress-location progress-ptr SHADER_UNIFORM_FLOAT))])
+	   (resource-guardian sh progress-fptr)
+	   (make-context sh 'shader `((:setters . ((:progress . ,progress-setter))))))]
+	[(transition)
 	 (let* ([sh (apply LoadShader args)]
 		[progress-ptr (foreign-alloc (ftype-sizeof float))]
 		[progress-fptr (make-ftype-pointer float progress-ptr)]
@@ -54,6 +65,42 @@
 	     (UnloadImage img)
 	     (make-visual tex '(0 . 0) 1.0 0.0 WHITE)))])))
 
+  (define with-font
+    (lambda (font-id text)
+	(let ([cached #f] [speed #f] [color #f] [size #f]
+	      [position #f])
+	  (lambda (passed)
+	    (lambda (state)
+	      (unless cached
+		(let* ([ctx (resource-ref state font-id)]
+		       [props (context-properties ctx)])
+		  (set! size (cdr (assv ':size props)))
+		  (set! color (cdr (assv ':color props)))
+		  (set! speed (cdr (assv ':speed props)))
+		  (let* ([pos (cdr (assv ':position props))]
+			 [pos-vec (make-Vector2 (inexact (car pos)) (inexact (cdr pos)))])
+		    (resource-guardian pos-vec)
+		    (set! position pos-vec))
+		  (set! cached (context-resource ctx))))
+	      (DrawTextEx cached text position (inexact size) 0.0 color))))))
+
+  (define with-effect
+    (lambda (tran-id anim duration)
+      (let ([cached #f] [progress-setter #f])
+	(lambda (passed)
+	  (lambda (state)
+	    (unless cached
+	      (let* ([ctx (resource-ref state tran-id)]
+		     [setters (assv ':setters (context-properties ctx))])
+		(set! cached (context-resource ctx))
+		(set! progress-setter (cdr (assv ':progress (cdr setters))))))
+	    (BeginShaderMode cached)
+	    (let ([progress (/ passed duration)])
+	      (when (< progress 1.0)
+		(progress-setter progress))
+	      ((anim passed) state)
+	      (EndShaderMode)))))))
+	  
   (define with-transition
     (lambda (tran-id anim duration)
       (let ([cached #f] [progress-setter #f] [texture1-setter #f] [previous #f])
@@ -73,7 +120,7 @@
 		(texture1-setter previous))
 	      ((anim passed) state)
 	      (EndShaderMode)))))))
-
+  
   (define load-texture-from-screen
     (lambda ()
       (let ([screen-img (LoadImageFromScreen)])
@@ -124,6 +171,22 @@
 		  [new-state (alist-update state ':resources new-resources)])
 	     (values 'ok new-state))))]))
 
+  (define make-locked-action
+    (lambda (animator)
+      (lambda (state)
+	(let animating ([passed 0.0])
+	  (BeginDrawing)
+	  (ClearBackground BLACK)
+	  ((animator passed) state)
+	  (EndDrawing)
+	  (animating (+ (GetFrameTime) passed))))))
+
+  (define lock
+    (lambda (z-index animator)
+      (lambda (state)
+	(let ([layers (cdr (assv ':layers state))])
+	  (values 'ok (alist-update state ':layers (alist-update layers z-index (make-locked-action animator))))))))
+
   (define resource-clear
     (lambda ()
       (lambda (state)
@@ -154,6 +217,16 @@
 	    (unless played
 	      (PlaySound (audio-resource res))
 	      (set! played #t)))))))
-  	  
+
+  (define stop
+    (lambda (res-id)
+      (let ([stoped #f] [res #f])
+	(lambda (passed)
+	  (lambda (state)
+	    (unless res
+	      (set! res (resource-ref state res-id)))
+	    (unless stoped
+	      (StopSound (audio-resource res))
+	      (set! stoped #t)))))))
 
 )
