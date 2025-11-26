@@ -1,26 +1,3 @@
-(preload
- (background morning "../assets/bg/yuwen.bedroom.morning.png")
- (background black "../assets/bg/black.png")
- (background afternoon "../assets/bg/yuwen.bedroom.afternoon.png")
- (background night "../assets/bg/yuwen.bedroom.night.png")
- (background light "../assets/bg/yuwen.bedroom.night.light.png")
- (sound rightone "../assets/sound/rightone.mp3")
- (sound pickup "../assets/sound/pickup-phone.mp3")
- (sound searching "../assets/sound/search.mp3")
- (transition wakeup #f "../assets/glsl/wakeup.transition.fs")
- (transition fade #f "../assets/glsl/fade.transition.fs")
- (effect mask #f "../assets/glsl/mask.effect.fs")
- (font xiaolai "../assets/font/Xiaolai-Regular.ttf"))
+(preload background morning "../assets/bg/yuwen.bedroom.morning.png")
 
-(parallel
- (static 'black)
- (play 'rightone))
-
-(lock -100 (with-transition 'wakeup (static 'morning) 2))
-
-(play 'pickup)
-
-(with-font 'xiaolai "真是难受啊")
-
-(with-font 'xiaolai "该怎么说的")
-
+(static morning)
