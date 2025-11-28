@@ -1,0 +1,11 @@
+(import (loader) (animator) (replica))
+(let ()
+    (background night "../assets/bg/yuwen.bedroom.night.png")
+    (background light "../assets/bg/yuwen.bedroom.night.light.png")
+    
+    (*story*
+     (directing
+      (static night)
+      (static light)
+      ))
+    )
