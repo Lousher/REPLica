@@ -1,0 +1,11 @@
+(import (replica) (loader) (directive))
+(let ()
+  (background black "../assets/bg/black.png")
+  (background morning "../assets/bg/yuwen.bedroom.morning.png")
+  (background afternoon "../assets/bg/yuwen.bedroom.afternoon.png")
+
+  (*actions*
+   (vector
+    (static morning)
+    (static afternoon)))
+  )
