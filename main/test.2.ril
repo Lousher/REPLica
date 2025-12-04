@@ -1,0 +1,11 @@
+(import (replica) (loader) (directive))
+(let ()
+  (background night "../assets/bg/yuwen.bedroom.night.png")
+  (background light "../assets/bg/yuwen.bedroom.night.light.png")
+
+  (*actions*
+   (list
+    (static night)
+    (static light)
+    (jump "test.1.so")))
+  )

@@ -1,27 +1,32 @@
 (library (directive)
-  (export static)
+  (export static jump)
   (import (chezscheme)
+	  (loader)
 	  (raylib ffi)
 	  (raylib constant))
 
-  (define make-animation
+  (define make-action
     (lambda (animator)
       (lambda (state)
 	(let animating ([s state])
 	  (BeginDrawing)
-	  (animator state)
+	  (ClearBackground BLACK)
+	  (animator s)
 	  (EndDrawing)
-	  (unless (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-	    (animating s))))))
+	  (cond
+	   [(WindowShouldClose)
+	    (values `(exit) s)]
+	   [(IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+	    (values `(next) s)]
+	   [else (animating s)])))))
+  
+  (define jump
+    (lambda (next)
+      (lambda (state)
+	(values `(jump ,next) state))))
 
   (define static
     (lambda (tex)
-      (lambda (state)
-	(let animating ([s state])
-	  (BeginDrawing)
-	  (DrawTexture tex 0 0 WHITE)
-	  (EndDrawing)
-	  (unless (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-	    (animating s))))))
-  
-  )
+      (make-action (lambda (s) (DrawTexture tex 0 0 WHITE)))))
+
+    )

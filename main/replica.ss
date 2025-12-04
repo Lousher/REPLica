@@ -1,26 +1,38 @@
 (library (replica)
   (export replica *actions*)
   (import (chezscheme)
-	  (raylib ffi))
+	  (state)
+	  (loader)
+	  (raylib ffi)
+	  (raylib constant))
 
   (define *actions* (make-parameter #f))
 
-  (define state-init (lambda () `((:global . ((:window . ((:x . 0) (:y . 0) (:width . ,(GetScreenWidth)) (:height . ,(GetScreenHeight)))))) (:local . ()))))
+  (define replica-collect
+    (lambda ()
+      (collect 4)
+      (resource-collect)
+      (ffi-collect)))
   
   (define replica
     (lambda (entry)
       (InitWindow (GetScreenWidth) (GetScreenHeight) "Test")
       (InitAudioDevice)
       (SetTargetFPS 60)
-      (let storying ([current-story entry]
-		     [current-state (state-init)])
-	(load current-story)
-	(let* ([steps (*actions*)]
-	       [len (vector-length steps)])
-	  (let stepper ([index 0])
-	    (unless (>= index len)
-	      ((vector-ref steps index) current-state)
-	      (stepper (+ index 1))))))
+      (call/cc
+       (lambda (exit)
+	 (let storying ([current-story entry]
+			[story-state (state-init)])
+	   (load current-story)
+	   (let stepper ([rest (*actions*)] [step-state story-state])
+	     (*actions* #f)
+	     (let-values ([(sig new-state) ((car rest) step-state)])
+	       (TraceLog LOG_INFO (format "Signal is ~a" sig))
+	       (case (car sig)
+		 [(exit) (exit)]
+		 [(jump) (replica-collect) (storying (cadr sig) new-state)]
+		 [else (stepper (cdr rest) new-state)])
+	       )))))
       (CloseAudioDevice)
       (CloseWindow)))
   )

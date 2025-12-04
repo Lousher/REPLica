@@ -23,6 +23,7 @@
       (let loop ()
 	(let ([res (resource-guardian)])
 	  (when res
+	    (TraceLog LOG_INFO (format-green "Begin Resource Collect"))
 	    (resource-free res)
 	    (loop))))))
   
@@ -33,6 +34,7 @@
 	 (let ([img (LoadImage path)])
 	   (ImageResize img (GetScreenWidth) (GetScreenHeight))
 	   (let ([tex (LoadTextureFromImage img)])
+	     (UnloadImage img)
 	     (resource-guardian tex)
 	     tex)))]))
   )
