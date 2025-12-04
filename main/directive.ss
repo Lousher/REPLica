@@ -1,10 +1,19 @@
 (library (directive)
-  (export make-animation static jump above beside)
+  (export make-animation static jump above beside play parallel)
   (import (chezscheme)
 	  (state)
 	  (loader)
 	  (raylib ffi)
 	  (raylib constant))
+
+  (define state-save-previous
+    (lambda (s)
+      (let* ([prev-img (LoadImageFromScreen)]
+	     [prev-tex (LoadTextureFromImage prev-img)])
+	(UnloadImage prev-img)
+	(resource-guardian prev-tex)
+	(state-previous-set! s prev-tex)
+	s)))
 
   (define make-animation
     (lambda (animator)
@@ -18,8 +27,8 @@
 	   [(WindowShouldClose)
 	    (values `(exit) s)]
 	   [(IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-	    (values `(next) s)]
-	   [else (animating s)])))))
+	    (values `(next) (state-save-previous s))]
+	   [else (animating (state-time-pass s (GetFrameTime)))])))))
   
   (define jump
     (lambda (next)
@@ -48,6 +57,14 @@
 	  (unless dest
 	    (set! dest (window->Rectangle (state-window s))))
 	  (DrawTexturePro tex src dest origin 0.0 WHITE)))))
+
+  (define play
+    (lambda (so)
+      (let ([played #f])
+	(lambda (s)
+	  (unless played
+	    (PlaySound so)
+	    (set! played #t))))))
 
   (define above
     (lambda (ani-a ani-b factor)
@@ -80,6 +97,10 @@
 	      (set! s-b (make-state (make-window (+ x w-a) y (- w w-a) h)))))
 	  (ani-a s-a)
 	  (ani-b s-b)))))
-
+  
+  (define parallel
+    (lambda anis
+      (lambda (s)
+	(for-each (lambda (ani) (ani s)) anis))))
   )
 

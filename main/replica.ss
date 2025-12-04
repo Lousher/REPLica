@@ -10,7 +10,9 @@
 
   (define state-init
     (lambda ()
-      (make-state (make-window 0.0 0.0 (inexact (GetScreenWidth)) (inexact (GetScreenHeight))))))
+      (make-state
+       (make-window 0.0 0.0 (inexact (GetScreenWidth)) (inexact (GetScreenHeight)))
+       0.0 #f)))
 
   (define replica-collect
     (lambda ()
@@ -27,17 +29,16 @@
        (lambda (exit)
 	 (let storying ([current-story entry]
 			[story-state (state-init)])
+	   (replica-collect)
 	   (load current-story)
 	   (let stepper ([rest (*actions*)] [step-state story-state])
 	     (*actions* #f)
 	     (let-values ([(sig new-state) ((car rest) step-state)])
-	       (TraceLog LOG_INFO (format "Signal is ~a" sig))
 	       (case (car sig)
 		 [(exit)
-		  (TraceLog LOG_INFO (format "State is ~a" new-state))
+		  (TraceLog LOG_INFO (format "State is ~a" (state-time new-state)))
 		  (exit)]
 		 [(jump)
-		  (replica-collect)
 		  (storying (cadr sig) new-state)]
 		 [else (stepper (cdr rest) new-state)]
 		 ))))))
