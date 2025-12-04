@@ -5,7 +5,7 @@
 
   (*actions*
    (list
-    (static night)
-    (static light)
+    (make-animation (static night))
+    (make-animation (static light))
     (jump "test.1.so")))
   )

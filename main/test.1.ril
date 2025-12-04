@@ -2,10 +2,16 @@
 (let ()
   (background morning "../assets/bg/yuwen.bedroom.morning.png")
   (background afternoon "../assets/bg/yuwen.bedroom.afternoon.png")
+  (background night "../assets/bg/yuwen.bedroom.night.png")
+  (background light "../assets/bg/yuwen.bedroom.night.light.png")
 
   (*actions*
    (list
-    (static morning)
-    (static afternoon)
-    (jump "test.2.so")))
+    (make-animation
+     (above
+      (beside (static morning) (static afternoon) 0.5)
+      (beside (static night) (static light) 0.5)
+      0.5))
+     (make-animation (static afternoon))
+     (jump "test.2.so")))
   )

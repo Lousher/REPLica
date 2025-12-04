@@ -1,5 +1,5 @@
 (library (loader)
-  (export background resource-collect)
+  (export background resource-collect resource-guardian)
   (import (chezscheme)
 	  (tool)
 	  (raylib ffi)
@@ -13,8 +13,10 @@
        [(ftype-pointer? res)
 	(case (ftype-pointer->ftype-symbol res)
 	  [(Texture Texture2D)
-	   (UnloadTexture res)])
-	(TraceLog LOG_INFO (format-green "Unload Foreign Resurces ~a" res))]
+	   (UnloadTexture res)
+	   (TraceLog LOG_INFO (format-green "Unload Texture Resurces ~a" res))]
+	  [(Vector2 Vector Rectangle) (foreign-free (ftype-pointer-address res))
+	   (TraceLog LOG_INFO (format-green "Unload Vector/Rectangle Resurces ~a" res))])]
        [else (TraceLog LOG_INFO (format-green "Unload Normal Resurces ~a" res))]
        )))
   
@@ -37,4 +39,5 @@
 	     (UnloadImage img)
 	     (resource-guardian tex)
 	     tex)))]))
+  
   )

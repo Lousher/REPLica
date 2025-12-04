@@ -33,7 +33,7 @@
       (alist-update alist key (lambda (old) new))))
 
   (define alist-ref
-    (lambda (alist . keys)
+    (lambda (alist keys)
       (fold-left
        (lambda (v key)
 	 (cdr (assv key v)))
