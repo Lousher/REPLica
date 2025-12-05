@@ -1,5 +1,5 @@
 (library (directive)
-  (export make-animation static jump above beside play parallel)
+  (export make-animation static jump above beside play parallel locate)
   (import (chezscheme)
 	  (state)
 	  (loader)
@@ -77,8 +77,11 @@
 		   [w (window-width win)]
 		   [h (window-height win)]
 		   [h-a (* h factor)])
-	      (set! s-a (make-state (make-window x y w h-a)))
-	      (set! s-b (make-state (make-window x (+ y h-a) w (- h h-a))))))
+	      (set! s-a (state-copy s))
+	      (window-height-set! (state-window s-a) h-a)
+	      (set! s-b (state-copy s))
+	      (window-y-set! (state-window s-b) (+ y h-a))
+	      (window-height-set! (state-window s-b) (- h h-a))))
 	  (ani-a s-a)
 	  (ani-b s-b)))))
 
@@ -93,8 +96,11 @@
 		   [w (window-width win)]
 		   [h (window-height win)]
 		   [w-a (* w factor)])
-	      (set! s-a (make-state (make-window x y w-a h)))
-	      (set! s-b (make-state (make-window (+ x w-a) y (- w w-a) h)))))
+	      (set! s-a (state-copy s))
+	      (window-width-set! (state-window s-a) w-a)
+	      (set! s-b (state-copy s))
+	      (window-x-set! (state-window s-b) (+ x w-a))
+	      (window-width-set! (state-window s-b) (- w w-a))))
 	  (ani-a s-a)
 	  (ani-b s-b)))))
   
@@ -102,7 +108,15 @@
     (lambda anis
       (lambda (s)
 	(for-each (lambda (ani) (ani s)) anis))))
-  
-  
+
+  (define locate
+    (lambda (ani x-factor y-factor)
+      (lambda (s)
+	(let* ([s-located (state-copy s)]
+	       [win-located (state-window s-located)])
+	  (window-x-set! win-located (* x-factor (window-width win-located)))
+	  (window-y-set! win-located (* y-factor (window-height win-located)))
+	  (ani s-located)))))
+    
   )
 

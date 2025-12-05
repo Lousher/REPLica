@@ -13,7 +13,7 @@
 
   (*actions*
    (list
-    (make-animation
+    (make-imation
      (parallel
       (play rightone)
       (static black)))

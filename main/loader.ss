@@ -1,5 +1,5 @@
 (library (loader)
-  (export *text* font effect transition background sound resource-collect resource-guardian)
+  (export *text* dialogue effect transition background sound resource-collect resource-guardian)
   (import (chezscheme)
 	  (state)
 	  (tool)
@@ -113,7 +113,7 @@
 
   (define *text* (make-parameter #f))
 
-  (define-syntax font
+  (define-syntax dialogue
     (syntax-rules ()
       [(_ name path)
        (define name
@@ -130,7 +130,7 @@
 	   (UnloadCodepoints codepoints)
 	   (foreign-free (ftype-pointer-address codepoints-count))
 
-	   (foreign-set! 'float width-ptr 0 2.0)
+	   (foreign-set! 'float width-ptr 0 1.0)
 	   (SetShaderValue sh width-location width-ptr SHADER_UNIFORM_FLOAT)
 	   (foreign-set! 'float color-ptr 0 0.0)
 	   (foreign-set! 'float color-ptr 4 0.0)
@@ -140,12 +140,21 @@
 	   (foreign-free color-ptr)
 	   (foreign-free width-ptr)
 	   (lambda (text)
-	     (let* ([position-x 100.0] [position-y 100.0]
-		    [position (make-Vector2 position-x position-y)])
+	     (let* ([position (make-Vector2 0.0 0.0)]
+		    [origin (MeasureTextEx font text 50.0 0.0)]
+		    [origin-x (/ (Vector2-x origin) 2.0)]
+		    [origin-y (/ (Vector2-y origin) 2.0)])
+	       (Vector2-x-set! origin origin-x)
+	       (Vector2-y-set! origin origin-y)
 	       (resource-guardian position)
 	       (lambda (s)
+		 (let* ([win (state-window s)]
+			[win-width (window-width win)]
+			[win-height (window-height win)])
+		   (Vector2-x-set! position (* win-width 0.5))
+		   (Vector2-y-set! position (* win-height 0.8)))
 		 (BeginShaderMode sh)
-		 (DrawTextEx font text position 50.0 0.0 WHITE)
+		 (DrawTextPro font text position origin 0.0 50.0 0.0 WHITE)
 		 (EndShaderMode))))
 	   ))]))
   )

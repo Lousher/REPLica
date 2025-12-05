@@ -1,5 +1,5 @@
 (library (state)
-  (export make-state state-copy state-window make-window window-x window-y window-width window-height state-time state-time-pass state-previous-set! state-previous)
+  (export make-state state-copy state-window make-window window-x window-y window-width window-height state-time state-time-pass state-previous-set! state-previous window-x-set! window-y-set! window-width-set! window-height-set!)
   (import (chezscheme))
   
   (define-record-type state
@@ -8,7 +8,11 @@
 	    (mutable previous)))
 
   (define-record-type window
-    (fields x y width height))
+    (fields
+     (mutable x)
+     (mutable y)
+     (mutable width)
+     (mutable height)))
 
   (define window-copy
     (lambda (win)
