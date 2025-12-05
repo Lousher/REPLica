@@ -130,7 +130,7 @@
 	   (UnloadCodepoints codepoints)
 	   (foreign-free (ftype-pointer-address codepoints-count))
 
-	   (foreign-set! 'float width-ptr 0 1.0)
+	   (foreign-set! 'float width-ptr 0 2.0)
 	   (SetShaderValue sh width-location width-ptr SHADER_UNIFORM_FLOAT)
 	   (foreign-set! 'float color-ptr 0 0.0)
 	   (foreign-set! 'float color-ptr 4 0.0)
@@ -141,20 +141,29 @@
 	   (foreign-free width-ptr)
 	   (lambda (text)
 	     (let* ([position (make-Vector2 0.0 0.0)]
-		    [origin (MeasureTextEx font text 50.0 0.0)]
-		    [origin-x (/ (Vector2-x origin) 2.0)]
-		    [origin-y (/ (Vector2-y origin) 2.0)])
-	       (Vector2-x-set! origin origin-x)
+		    [origin (make-Vector2 0.0 0.0)]
+		    [len (string-length text)]
+		    [subtexts (map (lambda (index) (substring text 0 index)) (map (lambda (x) (+ x 1)) (iota len)))]
+		    [measured-vecs (map (lambda (t) (MeasureTextEx font t 50.0 0.0)) subtexts)]
+		    [origin-xs (map (lambda (v) (/ (Vector2-x v) 2.0)) measured-vecs)]
+		    [origin-y (/ (Vector2-y (car measured-vecs)) 2.0)]
+		    [started #f])
 	       (Vector2-y-set! origin origin-y)
-	       (resource-guardian position)
+	       (resource-guardian position origin)
 	       (lambda (s)
+		 (unless started
+		   (set! started (state-time s)))
 		 (let* ([win (state-window s)]
 			[win-width (window-width win)]
 			[win-height (window-height win)])
 		   (Vector2-x-set! position (* win-width 0.5))
 		   (Vector2-y-set! position (* win-height 0.8)))
 		 (BeginShaderMode sh)
-		 (DrawTextPro font text position origin 0.0 50.0 0.0 WHITE)
+		 (let* ([passed (- (state-time s) started)]
+			[index (min (exact (round (/ passed 0.1))) (- len 1))]
+			[sub (list-ref subtexts index)] [origin-x (list-ref origin-xs index)])
+		   (Vector2-x-set! origin origin-x)
+		   (DrawTextPro font sub position origin 0.0 50.0 0.0 WHITE))
 		 (EndShaderMode))))
 	   ))]))
   )
