@@ -1,4 +1,5 @@
 (import (replica) (loader) (directive))
+(*text* "这么早……是谁啊……")
 (let ()
   (background morning "../assets/bg/yuwen.bedroom.morning.png")
   (background black "../assets/bg/black.png")
@@ -6,6 +7,7 @@
   (transition wakeup #f "../assets/glsl/wakeup.transition.fs")
   (effect mask #f "../assets/glsl/mask.effect.fs")
   (sound rightone "../assets/sound/rightone.mp3")
+  (font dialogue "../assets/font/Xiaolai-Regular.ttf")
 
   (*actions*
    (list
@@ -14,6 +16,10 @@
       (play rightone)
       (static black)))
     (make-animation (wakeup (static morning) 2))
+    (make-animation
+     (parallel
+      (static morning)
+      (dialogue "这么早……是谁啊……")))
     (jump "test.2.so")
     ))
   )
