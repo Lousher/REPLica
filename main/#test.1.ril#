@@ -14,6 +14,7 @@
       (play rightone)
       (static black)))
     (make-animation (wakeup (static morning) 2))
+    
     (jump "test.2.so")
     ))
   )

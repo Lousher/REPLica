@@ -1,5 +1,5 @@
 (library (loader)
-  (export transition background sound resource-collect resource-guardian)
+  (export effect transition background sound resource-collect resource-guardian)
   (import (chezscheme)
 	  (state)
 	  (tool)
@@ -72,14 +72,39 @@
 		   (set! started (state-time s)))
 		 (unless prev
 		   (set! prev (state-previous s)))
+		 (BeginShaderMode sh)
 		 (when (< progress 1.0)
 		   (set! progress (/ (- (state-time s) started) duration))
-		   (BeginShaderMode sh)
 		   (SetShaderValueTexture sh texture1-location prev)
 		   (ftype-set! float () progress-fptr progress)
 		   (SetShaderValue sh progress-location progress-ptr SHADER_UNIFORM_FLOAT))
 		 (ani s)
 		 (EndShaderMode))
 	       ))))]))
-  
+
+  (define-syntax effect
+    (syntax-rules ()
+      [(_ name vs fs)
+       (define name
+	 (let* ([sh (LoadShader vs fs)]
+		[progress-location (GetShaderLocation sh "progress")]
+		[progress-ptr (foreign-alloc (ftype-sizeof float))]
+		[progress-fptr (make-ftype-pointer float progress-ptr)])
+	   (resource-guardian sh)
+	   (resource-guardian progress-fptr)
+	   (lambda (ani duration)
+	     (let ([started #f] [progress 0.0])
+	       (lambda (s)
+		 (unless started
+		   (set! started (state-time s)))
+		 (BeginShaderMode sh)
+		 (when (< progress 1.0)
+		   (set! progress (/ (- (state-time s) started) duration))
+		   (ftype-set! float () progress-fptr progress)
+		   (SetShaderValue sh progress-location progress-ptr SHADER_UNIFORM_FLOAT))
+		 (ani s)
+		 (EndShaderMode))
+	       ))))]))
+
+    
   )
