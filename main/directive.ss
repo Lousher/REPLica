@@ -1,5 +1,5 @@
 (library (directive)
-  (export make-animation static jump above beside play parallel locate)
+  (export make-animation static jump above beside play parallel locate duration stop trigger)
   (import (chezscheme)
 	  (state)
 	  (loader)
@@ -66,6 +66,15 @@
 	    (PlaySound so)
 	    (set! played #t))))))
 
+  (define stop
+    (lambda (so)
+      (let ([stopped #f])
+	(lambda (s)
+	  (unless stopped
+	    (StopSound so)
+	    (set! stopped #t))))))
+	
+
   (define above
     (lambda (ani-a ani-b factor)
       (let ([s-a #f] [s-b #f])
@@ -117,6 +126,25 @@
 	  (window-x-set! win-located (* x-factor (window-width win-located)))
 	  (window-y-set! win-located (* y-factor (window-height win-located)))
 	  (ani s-located)))))
-    
+
+  (define duration
+    (lambda (ani t)
+      (let ([started #f])
+	(lambda (s)
+	  (unless started
+	    (set! started (state-time s)))
+	  (when (< (- (state-time s) started) t)
+	    (ani s))
+	  ))))
+
+  (define trigger
+    (lambda (ani t)
+      (let ([started #f])
+	(lambda (s)
+	  (unless started
+	    (set! started (state-time s)))
+	  (unless (< (- (state-time s) started) t)
+	    (ani s))))))
+
   )
 

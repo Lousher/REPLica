@@ -1,5 +1,5 @@
 (library (loader)
-  (export *text* dialogue effect transition background sound resource-collect resource-guardian)
+  (export *text* phone dialogue effect transition background sound resource-collect resource-guardian texture phone)
   (import (chezscheme)
 	  (state)
 	  (tool)
@@ -22,6 +22,10 @@
 	  [(Shader)
 	   (UnloadShader res)
 	   (TraceLog LOG_INFO (format-green "Unload Shader Resurce ~a" res))]
+	  [(RenderTexture RenderTexture2D)
+	   (UnloadRenderTexture res)
+	   (TraceLog LOG_INFO (format-green "Unload RenderTexture Resurce ~a" res))
+	   ]
 	  [(Sound)
 	   (UnloadSound res)
 	   (TraceLog LOG_INFO (format-green "Unload Sound Resurce ~a" res))]
@@ -50,6 +54,14 @@
 	     (UnloadImage img)
 	     (resource-guardian tex)
 	     tex)))]))
+
+  (define-syntax texture
+    (syntax-rules ()
+      [(_ name path)
+       (define name
+	 (let ([tex (LoadTexture path)])
+	   (resource-guardian tex)
+	   tex))]))
 
   (define-syntax sound
     (syntax-rules ()
@@ -91,10 +103,14 @@
     (syntax-rules ()
       [(_ name vs fs)
        (define name
-	 (let* ([sh (LoadShader vs fs)]
+	 (let* ([sh (LoadShader vs fs)] [rt #f]
+		[origin (make-Vector2 0.0 0.0)]
+		[src (make-Rectangle 0.0 0.0 0.0 0.0)]
 		[progress-location (GetShaderLocation sh "progress")]
 		[progress-ptr (foreign-alloc (ftype-sizeof float))]
 		[progress-fptr (make-ftype-pointer float progress-ptr)])
+	   (resource-guardian origin)
+	   (resource-guardian src)
 	   (resource-guardian sh)
 	   (resource-guardian progress-fptr)
 	   (lambda (ani duration)
@@ -102,12 +118,21 @@
 	       (lambda (s)
 		 (unless started
 		   (set! started (state-time s)))
+		 (unless rt
+		   (let ([win (state-window s)])
+		     (set! rt (LoadRenderTexture (exact (window-width win)) (exact (window-height win))))
+		     (Rectangle-width-set! src (inexact (window-width win)))
+		     (Rectangle-height-set! src (* -1.0 (window-height win)))
+		     (resource-guardian rt)))
+		 (BeginTextureMode rt)
+		 (ani s)
+		 (EndTextureMode)
 		 (BeginShaderMode sh)
 		 (when (< progress 1.0)
 		   (set! progress (/ (- (state-time s) started) duration))
 		   (ftype-set! float () progress-fptr progress)
 		   (SetShaderValue sh progress-location progress-ptr SHADER_UNIFORM_FLOAT))
-		 (ani s)
+		 (DrawTextureRec (RenderTexture-texture rt) src origin  WHITE)
 		 (EndShaderMode))
 	       ))))]))
 
@@ -160,10 +185,30 @@
 		   (Vector2-y-set! position (* win-height 0.8)))
 		 (BeginShaderMode sh)
 		 (let* ([passed (- (state-time s) started)]
-			[index (min (exact (round (/ passed 0.1))) (- len 1))]
+			[index (min (exact (round (/ passed 0.05))) (- len 1))]
 			[sub (list-ref subtexts index)] [origin-x (list-ref origin-xs index)])
 		   (Vector2-x-set! origin origin-x)
 		   (DrawTextPro font sub position origin 0.0 50.0 0.0 WHITE))
 		 (EndShaderMode))))
 	   ))]))
+
+  (define-syntax phone
+    (syntax-rules ()
+      [(_ name phone-w phone-h)
+       (define name
+	 (let* ([w (GetScreenWidth)]
+		[h (GetScreenHeight)]
+		[round-rec (make-Rectangle (- (/ w 2.0) (/ phone-w 2.0)) (- (/ h 2.0) (/ phone-h 2.0)) (inexact phone-w) (inexact phone-h))])
+	   (resource-guardian round-rec)
+	   (lambda (tex)
+	     (let* ([tex-w (Texture-width tex)]
+		    [tex-h (Texture-height tex)]
+		    [src (make-Rectangle 0.0 0.0 (inexact tex-w) (inexact tex-h))]
+		    [origin (make-Vector2 0.0 0.0)])
+	     (resource-guardian src origin)
+	     (lambda (s)
+	       (DrawRectangleRounded round-rec 0.25 8 BLACK)
+	       (DrawTexturePro tex src round-rec origin 0.0 WHITE)
+	       (DrawRectangleRoundedLinesEx round-rec 0.25 8 3.0 LIGHTGRAY)
+	       )))))]))
   )

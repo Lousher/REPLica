@@ -42,6 +42,7 @@
 		  (storying (cadr sig) new-state)]
 		 [else (stepper (cdr rest) new-state)]
 		 ))))))
+      (replica-collect)
       (CloseAudioDevice)
       (CloseWindow)))
   )
