@@ -41,12 +41,13 @@
       (appear (yuki calling) 1)
       (trigger (normal "啊……") 1.5)))
     (make-animation
-     (fade (zoom-move-start (static morning)) 2))
-    (make-animation
      (parallel
-      masked
-      (play pickup)
-      (normal "喂")))
+      (fade (zoom-move-start (static morning)) 1)
+      (trigger
+       (parallel
+	masked
+	(play pickup)) 1)
+      (trigger (normal "喂？") 1.5)))
     (make-animation
      (parallel
       masked
@@ -54,6 +55,6 @@
     (make-animation
      (parallel
       masked
-      (normal "这不是才早上10点吗")))
+      (normal "这不是才10点吗")))
     (jump "test.2.so")
     )))

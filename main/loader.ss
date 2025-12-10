@@ -47,25 +47,29 @@
 	  (when res
 	    (resource-free res)
 	    (loop))))))
+
+  (define load-texture-async
+    (lambda (path)
+      (let ([future (make-resource (make-mutex) 'loading #f)])
+	(fork-thread
+	 (lambda ()
+	   (let ([img (LoadImage path)])
+	     (with-mutex (resource-lock future)
+	       (resource-data-set! future img)
+	       (resource-status-set! future 'ram-ready))
+	     (TraceLog LOG_INFO (format-green "Async: RAM loaded for ~a\n" path)))))
+	future)))
   
   (define-syntax background
     (syntax-rules ()
       [(_ name path)
-       (define name
-	 (let ([img (LoadImage path)])
-	   (ImageResize img (GetScreenWidth) (GetScreenHeight))
-	   (let ([tex (LoadTextureFromImage img)])
-	     (UnloadImage img)
-	     (resource-guardian tex)
-	     tex)))]))
+       (define name (load-texture-async path)
+	 )]))
 
   (define-syntax texture
     (syntax-rules ()
       [(_ name path)
-       (define name
-	 (let ([tex (LoadTexture path)])
-	   (resource-guardian tex)
-	   tex))]))
+       (define name (load-texture-async path))]))
 
   (define-syntax sound
     (syntax-rules ()
@@ -215,19 +219,37 @@
        (define name
 	 (let* ([w (GetScreenWidth)]
 		[h (GetScreenHeight)]
-		[round-rec (make-Rectangle (- (/ w 2.0) (/ phone-w 2.0)) (- (/ h 2.0) (/ phone-h 2.0)) (inexact phone-w) (inexact phone-h))])
+		[round-rec (make-Rectangle (- (/ w 2.0) (/ phone-w 2.0)) (- (/ h 2.0) (/ phone-h 2.0)) (inexact phone-w) (inexact phone-h))]
+		[src #f])
 	   (resource-guardian round-rec)
-	   (lambda (tex)
-	     (let* ([tex-w (Texture-width tex)]
-		    [tex-h (Texture-height tex)]
-		    [src (make-Rectangle 0.0 0.0 (inexact tex-w) (inexact tex-h))]
-		    [origin (make-Vector2 0.0 0.0)])
-	     (resource-guardian src origin)
-	     (lambda (s)
-	       (DrawRectangleRounded round-rec 0.25 8 BLACK)
-	       (DrawTexturePro tex src round-rec origin 0.0 WHITE)
-	       (DrawRectangleRoundedLinesEx round-rec 0.25 8 3.0 LIGHTGRAY)
-	       )))))]))
+	   (lambda (res)
+	     (let ([origin (make-Vector2 0.0 0.0)])
+	       (resource-guardian origin)
+	       (lambda (s)
+	       (let ([current-status #f] [current-data #f])
+		 (with-mutex (resource-lock res)
+		   (set! current-status (resource-status res))
+		   (when (or (eqv? current-status 'ram-ready)
+			     (eqv? current-status 'gpu-ready))
+		     (set! current-data (resource-data res))))
+		 (case current-status
+		   [(loading)
+		    (DrawText "Loading ..." 0 0 20 WHITE)]
+		   [(ram-ready)
+		    (TraceLog LOG_INFO "Async: Uploading Image to VRAM ...\n")
+		    (let ([tex (LoadTextureFromImage current-data)])
+		      (UnloadImage current-data)
+		      (resource-guardian tex)
+		      (with-mutex (resource-lock res)
+			(resource-data-set! res tex)
+			(resource-status-set! res 'gpu-ready)))]
+		   [(gpu-ready)
+		    (unless src
+		      (set! src (make-Rectangle 0.0 0.0 (inexact (Texture-width current-data)) (inexact (Texture-height current-data))))
+		      (resource-guardian src))
+		    (DrawRectangleRounded round-rec 0.25 8 BLACK)
+		    (DrawTexturePro current-data src round-rec origin 0.0 WHITE)
+		    (DrawRectangleRoundedLinesEx round-rec 0.25 8 3.0 LIGHTGRAY)])))))))]))
 
   (define-syntax camera
     (syntax-rules ()

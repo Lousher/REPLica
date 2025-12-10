@@ -11,10 +11,10 @@
       (let ([prev-img (LoadImageFromScreen)])
 	(ImageFlipVertical prev-img)
 	(let ([prev-tex (LoadTextureFromImage prev-img)])
-	(UnloadImage prev-img)
-	(resource-guardian prev-tex)
-	(state-previous-set! s prev-tex)
-	s))))
+	  (UnloadImage prev-img)
+	  (resource-guardian prev-tex)
+	  (state-previous-set! s prev-tex)
+	  s))))
 
   (define make-animation
     (lambda (animator)
@@ -49,15 +49,35 @@
 	rect)))
   
   (define static
-    (lambda (tex)
-      (let ([src (texture->Rectangle tex)]
-	    [origin (make-Vector2 0.0 0.0)]
-	    [dest #f])
+    (lambda (res)
+      (let ([src #f] [dest #f]
+	    [origin (make-Vector2 0.0 0.0)])
 	(resource-guardian origin)
 	(lambda (s)
 	  (unless dest
 	    (set! dest (window->Rectangle (state-window s))))
-	  (DrawTexturePro tex src dest origin 0.0 WHITE)))))
+	  (let ([current-status #f] [current-data #f])
+	    (with-mutex (resource-lock res)
+	      (set! current-status (resource-status res))
+	      (when (or (eqv? current-status 'ram-ready)
+			(eqv? current-status 'gpu-ready))
+		(set! current-data (resource-data res))))
+	    (case current-status
+	      [(loading)
+	       (DrawText "Loading ..." 0 0 20 WHITE)]
+	      [(ram-ready)
+	       (TraceLog LOG_INFO "Async: Uploading Image to VRAM ...\n")
+	       (let ([tex (LoadTextureFromImage current-data)])
+		 (UnloadImage current-data)
+		 (resource-guardian tex)
+		 (with-mutex (resource-lock res)
+		   (resource-data-set! res tex)
+		   (resource-status-set! res 'gpu-ready)))]
+	      [(gpu-ready)
+	       (unless src
+		 (set! src (texture->Rectangle current-data)))
+	       (DrawTexturePro current-data src dest origin 0.0 WHITE)])
+	  )))))
 
   (define play
     (lambda (so)

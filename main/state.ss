@@ -1,5 +1,5 @@
 (library (state)
-  (export make-state state-copy state-window make-window window-x window-y window-width window-height state-time state-time-pass state-previous-set! state-previous window-x-set! window-y-set! window-width-set! window-height-set!)
+  (export make-state state-copy state-window make-window window-x window-y window-width window-height state-time state-time-pass state-previous-set! state-previous window-x-set! window-y-set! window-width-set! window-height-set! make-resource resource-lock resource-status resource-status-set! resource-data resource-data-set!)
   (import (chezscheme))
   
   (define-record-type state
@@ -7,6 +7,12 @@
 	    (mutable time)
 	    (mutable previous)))
 
+  (define-record-type resource
+    (fields
+     (immutable lock)
+     (mutable status)
+     (mutable data)))
+ 
   (define-record-type window
     (fields
      (mutable x)
