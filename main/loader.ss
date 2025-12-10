@@ -1,5 +1,5 @@
 (library (loader)
-  (export *text* phone dialogue effect transition background sound resource-collect resource-guardian texture phone)
+  (export *text* phone dialogue effect transition background sound resource-collect resource-guardian texture phone camera)
   (import (chezscheme)
 	  (state)
 	  (tool)
@@ -29,8 +29,13 @@
 	  [(Sound)
 	   (UnloadSound res)
 	   (TraceLog LOG_INFO (format-green "Unload Sound Resurce ~a" res))]
-	  [(Vector2 Vector Rectangle) (foreign-free (ftype-pointer-address res))
-	   (TraceLog LOG_INFO (format-green "Unload Vector/Rectangle Resurce ~a" res))])]
+	  [(Vector2 Vector Rectangle)
+	   (foreign-free (ftype-pointer-address res))
+	   (TraceLog LOG_INFO (format-green "Unload Vector/Rectangle Resurce ~a" res))]
+	  [(Camera Camera2D)
+	   (foreign-free (ftype-pointer-address res))
+	   (TraceLog LOG_INFO (format-green "Unload Camera2D Resurce ~a" res))
+	   ])]
        [else
 	(foreign-free res)
 	(TraceLog LOG_INFO (format-green "Unload Normal Resurce ~a" res))])))
@@ -211,4 +216,27 @@
 	       (DrawTexturePro tex src round-rec origin 0.0 WHITE)
 	       (DrawRectangleRoundedLinesEx round-rec 0.25 8 3.0 LIGHTGRAY)
 	       )))))]))
+
+  (define-syntax camera
+    (syntax-rules ()
+      [(_ name movment)
+       (define name
+	 (lambda (ani)
+	   (let ([started #f]
+		 [ca (init-Camera2D)])
+	     (resource-guardian ca)
+	   (lambda (s)
+	     (unless started
+	       (set! started (state-time s)))
+	     (call-with-values
+		 (lambda () (movment (- (state-time s) started)))
+	       (lambda (off tar ro zo)
+		 (Camera2D-offset-set! ca off)
+		 (Camera2D-target-set! ca tar)
+		 (Camera2D-rotation-set! ca ro)
+		 (Camera2D-zoom-set! ca zo)))
+	     (BeginMode2D ca)
+	     (ani s)
+	     (EndMode2D))))
+	 )]))
   )
