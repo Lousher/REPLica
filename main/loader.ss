@@ -45,7 +45,6 @@
       (let loop ()
 	(let ([res (resource-guardian)])
 	  (when res
-	    (TraceLog LOG_INFO (format-green "Begin Resource Collect"))
 	    (resource-free res)
 	    (loop))))))
   
@@ -80,11 +79,15 @@
     (syntax-rules ()
       [(_ name vs fs)
        (define name
-	 (let* ([sh (LoadShader vs fs)]
+	 (let* ([sh (LoadShader vs fs)] [rt #f]
+		[origin (make-Vector2 0.0 0.0)]
+		[src (make-Rectangle 0.0 0.0 0.0 0.0)]
 		[texture1-location (GetShaderLocation sh "texture1")]
 		[progress-location (GetShaderLocation sh "progress")]
 		[progress-ptr (foreign-alloc (ftype-sizeof float))]
 		[progress-fptr (make-ftype-pointer float progress-ptr)])
+	   (resource-guardian origin)
+	   (resource-guardian src)
 	   (resource-guardian sh)
 	   (resource-guardian progress-fptr)
 	   (lambda (ani duration)
@@ -94,13 +97,22 @@
 		   (set! started (state-time s)))
 		 (unless prev
 		   (set! prev (state-previous s)))
+		 (unless rt
+		   (let ([win (state-window s)])
+		     (set! rt (LoadRenderTexture (exact (window-width win)) (exact (window-height win))))
+		     (Rectangle-width-set! src (inexact (window-width win)))
+		     (Rectangle-height-set! src (* -1.0 (window-height win)))
+		     (resource-guardian rt)))
+		 (BeginTextureMode rt)
+		 (ani s)
+		 (EndTextureMode)
 		 (BeginShaderMode sh)
 		 (when (< progress 1.0)
 		   (set! progress (/ (- (state-time s) started) duration))
 		   (SetShaderValueTexture sh texture1-location prev)
 		   (ftype-set! float () progress-fptr progress)
 		   (SetShaderValue sh progress-location progress-ptr SHADER_UNIFORM_FLOAT))
-		 (ani s)
+		 (DrawTextureRec (RenderTexture-texture rt) src origin WHITE)
 		 (EndShaderMode))
 	       ))))]))
 
@@ -225,18 +237,20 @@
 	   (let ([started #f]
 		 [ca (init-Camera2D)])
 	     (resource-guardian ca)
-	   (lambda (s)
-	     (unless started
-	       (set! started (state-time s)))
-	     (call-with-values
-		 (lambda () (movment (- (state-time s) started)))
-	       (lambda (off tar ro zo)
-		 (Camera2D-offset-set! ca off)
-		 (Camera2D-target-set! ca tar)
-		 (Camera2D-rotation-set! ca ro)
-		 (Camera2D-zoom-set! ca zo)))
-	     (BeginMode2D ca)
-	     (ani s)
-	     (EndMode2D))))
-	 )]))
+	     (lambda (s)
+	       (unless started
+		 (set! started (state-time s)))
+	       (call-with-values
+		   (lambda () (movment (- (state-time s) started)))
+		 (lambda (off-x off-y tar-x tar-y ro zo)
+		   (ftype-set! Camera2D (offset x) ca off-x)
+                   (ftype-set! Camera2D (offset y) ca off-y)
+                   (ftype-set! Camera2D (target x) ca tar-x)
+                   (ftype-set! Camera2D (target y) ca tar-y)
+                   (Camera2D-rotation-set! ca ro)
+                   (Camera2D-zoom-set! ca zo)))
+	       (BeginMode2D ca)
+	       (ani s)
+	       (EndMode2D)
+	       ))))]))
   )

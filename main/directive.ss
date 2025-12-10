@@ -8,12 +8,13 @@
 
   (define state-save-previous
     (lambda (s)
-      (let* ([prev-img (LoadImageFromScreen)]
-	     [prev-tex (LoadTextureFromImage prev-img)])
+      (let ([prev-img (LoadImageFromScreen)])
+	(ImageFlipVertical prev-img)
+	(let ([prev-tex (LoadTextureFromImage prev-img)])
 	(UnloadImage prev-img)
 	(resource-guardian prev-tex)
 	(state-previous-set! s prev-tex)
-	s)))
+	s))))
 
   (define make-animation
     (lambda (animator)
