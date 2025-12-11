@@ -1,0 +1,41 @@
+(import (replica) (loader) (directive))
+
+(*text*
+  (string-append
+    "啊～今天又起晚了，早上就WFH吧。"
+    "马上要去新疆了，最近太兴奋了难睡着啊。"
+    "赶紧在群里发个消息，不然就要发红包了。"))
+
+(let ()
+  (texture jiazhen "../assets/character/jiazhen.png")
+  (texture morning "../assets/bg/yuwen.bedroom.morning.png")
+  (texture black "../assets/bg/black.png")
+  (sound rightone "../assets/sound/rightone.mp3")
+  (transition wakeup #f "../assets/glsl/wakeup.transition.fs")
+  (dialogue speak "../assets/font/Xiaolai-Regular.ttf")
+  (effect appear #f "../assets/glsl/appear.fs")
+  (phone iphone 400 850)
+  (define man (appear (locate (static jiazhen) 0.3 0.1) 1))
+  (*actions*
+    (list
+      (make-animation
+        (parallel (background black) (play rightone)))
+      (make-animation
+        (parallel
+          (wakeup (background morning) 2)
+          (trigger (parallel man (speak "啊～今天又起晚了，早上就WFH吧。")) 2)))
+      (make-animation
+        (parallel
+          (background morning)
+          man
+          (speak "马上要去新疆了，最近太兴奋了难睡着啊。")))
+      (make-animation
+        (parallel
+          (background morning)
+          man
+          (speak "赶紧在群里发个消息，不然就要发红包了。")))
+      (make-animation
+        (parallel
+          (background morning)
+          (appear (iphone black) 1))))))
+

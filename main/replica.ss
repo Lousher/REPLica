@@ -66,6 +66,7 @@
 	   (load (string-append current-story ".so"))
 	   (let stepper ([rest (*actions*)] [step-state story-state])
 	     (*actions* #f)
+	     (when (null? rest) (exit))
 	     (let-values ([(sig new-state) ((car rest) step-state)])
 	       (case (car sig)
 		 [(exit)
