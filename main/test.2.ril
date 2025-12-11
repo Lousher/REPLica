@@ -1,7 +1,7 @@
 (import (replica) (loader) (directive))
 (let ()
-  (background night "../assets/bg/yuwen.bedroom.night.png")
-  (background light "../assets/bg/yuwen.bedroom.night.light.png")
+  (texture night "../assets/bg/yuwen.bedroom.night.png")
+  (texture light "../assets/bg/yuwen.bedroom.night.light.png")
 
   (*actions*
    (list

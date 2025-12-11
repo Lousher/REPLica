@@ -40,7 +40,9 @@
 		  (exit)]
 		 [(jump)
 		  (storying (cadr sig) new-state)]
-		 [else (stepper (cdr rest) new-state)]
+		 [else
+		  (replica-collect)
+		  (stepper (cdr rest) new-state)]
 		 ))))))
       (replica-collect)
       (CloseAudioDevice)

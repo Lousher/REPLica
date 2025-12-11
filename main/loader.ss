@@ -1,5 +1,5 @@
 (library (loader)
-  (export *text* phone dialogue effect transition background sound resource-collect resource-guardian texture phone camera)
+  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera)
   (import (chezscheme)
 	  (state)
 	  (tool)
@@ -16,6 +16,9 @@
 	  [(Font)
 	   (UnloadFont res)
 	   (TraceLog LOG_INFO (format-green "Unload Font Resurce ~a" res))]
+	  [(Image)
+	   (UnloadImage res)
+	   (TraceLog LOG_INFO (format-green "Unload Image Resurce ~a" res))]
 	  [(Texture Texture2D)
 	   (UnloadTexture res)
 	   (TraceLog LOG_INFO (format-green "Unload Texture Resurce ~a" res))]
@@ -54,17 +57,12 @@
 	(fork-thread
 	 (lambda ()
 	   (let ([img (LoadImage path)])
+	     (resource-guardian img)
 	     (with-mutex (resource-lock future)
 	       (resource-data-set! future img)
 	       (resource-status-set! future 'ram-ready))
 	     (TraceLog LOG_INFO (format-green "Async: RAM loaded for ~a\n" path)))))
 	future)))
-  
-  (define-syntax background
-    (syntax-rules ()
-      [(_ name path)
-       (define name (load-texture-async path)
-	 )]))
 
   (define-syntax texture
     (syntax-rules ()
@@ -108,6 +106,7 @@
 		     (Rectangle-height-set! src (* -1.0 (window-height win)))
 		     (resource-guardian rt)))
 		 (BeginTextureMode rt)
+		 (ClearBackground BLANK)
 		 (ani s)
 		 (EndTextureMode)
 		 (BeginShaderMode sh)
@@ -146,6 +145,7 @@
 		     (Rectangle-height-set! src (* -1.0 (window-height win)))
 		     (resource-guardian rt)))
 		 (BeginTextureMode rt)
+		 (ClearBackground BLANK)
 		 (ani s)
 		 (EndTextureMode)
 		 (BeginShaderMode sh)
@@ -238,7 +238,6 @@
 		   [(ram-ready)
 		    (TraceLog LOG_INFO "Async: Uploading Image to VRAM ...\n")
 		    (let ([tex (LoadTextureFromImage current-data)])
-		      (UnloadImage current-data)
 		      (resource-guardian tex)
 		      (with-mutex (resource-lock res)
 			(resource-data-set! res tex)

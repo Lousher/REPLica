@@ -1,11 +1,11 @@
 (import (replica) (loader) (directive))
 (*text* (string-append "好痛……！" "这么早……是谁啊……" "啊……" "喂" "喂？还没起床？" "这不是才早上10点吗"))
 (let ()
-  (background morning "../assets/bg/yuwen.bedroom.morning.png")
-  (background black "../assets/bg/black.png")
-  (background afternoon "../assets/bg/yuwen.bedroom.afternoon.png")
-  (background night "../assets/bg/yuwen.bedroom.night.png")
-  (background light "../assets/bg/yuwen.bedroom.night.light.png")
+  (texture morning "../assets/bg/yuwen.bedroom.morning.png")
+  (texture black "../assets/bg/black.png")
+  (texture afternoon "../assets/bg/yuwen.bedroom.afternoon.png")
+  (texture night "../assets/bg/yuwen.bedroom.night.png")
+  (texture light "../assets/bg/yuwen.bedroom.night.light.png")
   (texture calling "../assets/picture/call.png")
   (transition wakeup #f "../assets/glsl/wakeup.transition.fs")
   (transition fade #f "../assets/glsl/fade.transition.fs")
@@ -41,7 +41,7 @@
       (appear (yuki calling) 1)
       (trigger (normal "啊……") 1.5)))
     (make-animation
-     (parallel
+     (parallelp
       (fade (zoom-move-start (static morning)) 1)
       (trigger
        (parallel

@@ -1,5 +1,5 @@
 (library (directive)
-  (export make-animation static jump above beside play parallel locate duration stop trigger)
+  (export make-animation static background jump above beside play parallel locate duration stop trigger)
   (import (chezscheme)
 	  (state)
 	  (loader)
@@ -48,7 +48,7 @@
 	(resource-guardian rect)
 	rect)))
   
-  (define static
+  (define background
     (lambda (res)
       (let ([src #f] [dest #f]
 	    [origin (make-Vector2 0.0 0.0)])
@@ -67,8 +67,8 @@
 	       (DrawText "Loading ..." 0 0 20 WHITE)]
 	      [(ram-ready)
 	       (TraceLog LOG_INFO "Async: Uploading Image to VRAM ...\n")
+	       (ImageResize current-data (GetScreenWidth) (GetScreenHeight))
 	       (let ([tex (LoadTextureFromImage current-data)])
-		 (UnloadImage current-data)
 		 (resource-guardian tex)
 		 (with-mutex (resource-lock res)
 		   (resource-data-set! res tex)
@@ -77,7 +77,31 @@
 	       (unless src
 		 (set! src (texture->Rectangle current-data)))
 	       (DrawTexturePro current-data src dest origin 0.0 WHITE)])
-	  )))))
+	    )))))
+
+  (define static
+    (lambda (res)
+      (lambda (s)
+	(let ([current-status #f] [current-data #f] [win (state-window s)])
+	  (with-mutex (resource-lock res)
+	    (set! current-status (resource-status res))
+	    (when (or (eqv? current-status 'ram-ready)
+		      (eqv? current-status 'gpu-ready))
+	      (set! current-data (resource-data res))))
+	    (case current-status
+	      [(loading)
+	       (DrawText "Loading ..." 0 0 20 WHITE)]
+	      [(ram-ready)
+	       (TraceLog LOG_INFO "Async: Uploading Image to VRAM ...\n")
+	       (let ([tex (LoadTextureFromImage current-data)])
+		 (resource-guardian tex)
+		 (with-mutex (resource-lock res)
+		   (resource-data-set! res tex)
+		   (resource-status-set! res 'gpu-ready)))]
+	      [(gpu-ready)
+	       (DrawTexture current-data
+			    (round (exact (window-x win)))
+			    (round (exact (window-y win))) WHITE)])))))
 
   (define play
     (lambda (so)
