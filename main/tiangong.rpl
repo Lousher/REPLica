@@ -23,6 +23,11 @@
 (parallel
  (background morning)
  man
+ (speak "马上要去新疆了，最近太兴奋了难睡着啊。"))
+
+(parallel
+ (background morning)
+ man
  (speak "赶紧在群里发个消息，不然就要发红包了。"))
 
 (parallel
