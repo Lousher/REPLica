@@ -166,7 +166,7 @@
 	 (let* ([codepoints-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int)))]
 		[codepoints (LoadCodepoints (*text*) codepoints-count)]
 		[font (LoadFontEx path 50 codepoints (ftype-ref int () codepoints-count))]
-		[sh (LoadShader #f "../assets/glsl/outline.fs")]
+		[sh (LoadShader #f "assets/glsl/outline.fs")]
 		[color-location (GetShaderLocation sh "color")]
 		[width-location (GetShaderLocation sh "width")]
 		[width-ptr (foreign-alloc (ftype-sizeof float))]

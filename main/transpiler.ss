@@ -3,48 +3,54 @@
   (import (chezscheme))
 
   ;; 1. 辅助函数：读取文件中的所有 S-expression
-  (define (read-all-expressions filename)
-    (with-input-from-file filename
-      (lambda ()
-        (let loop ([acc '()])
-          (let ([x (read)])
-            (if (eof-object? x)
-                (reverse acc)
-                (loop (cons x acc))))))))
+(define (read-all-expressions filename)
+  (let loop ([forms '()]
+             [port (open-input-file filename)]) ;; 需要更严谨的 port 管理
+    (let ([x (read port)])
+      (cond
+       [(eof-object? x) 
+        (close-input-port port)
+        (reverse forms)]
+       ;; === 新增逻辑：拦截 load/include ===
+       [(and (pair? x) 
+             (eq? (car x) 'load) 
+             (string? (cadr x)))
+        ;; 递归读取目标文件，并拼接到当前流中
+        (let ([included-forms (read-all-expressions (cadr x))])
+          (loop (append (reverse included-forms) forms) port))]
+       ;; =================================
+       
+       [else (loop (cons x forms) port)]))))
 
   ;; 2. 核心逻辑：判断一个表达式是否为“定义/资源加载”
   ;;    根据 .rpl 文件，这些指令包括 texture, sound, transition, define 等
   (define (definition? x)
     (and (pair? x)
          (memq (car x) 
-               '(texture 
+               '(include
+		 load
+		 texture 
                  sound 
                  transition 
                  dialogue 
-                 effect 
-                 phone 
-                 define))))
+                 effect
+		 camera
+                 phone
+                 define
+		 define-syntax))))
 
-  ;; 3. 智能文本提取：先找到所有的 dialogue 别名，再提取文本
-  (define (extract-dialogue-text defs actions)
-    ;; 第一步：从定义中找到所有 dialogue 的名字（例如 'speak'）
-    (let ([dialogue-names 
-           (map cadr (filter (lambda (x) (eq? (car x) 'dialogue)) defs))])
-      
-      ;; 辅助递归：在动作树中查找 (speak "...") 形式的字符串
-      (let rec ([expr actions])
-        (cond
-          ;; 如果匹配 (dialogue-name "text" ...)
-          [(and (pair? expr)
-                (memq (car expr) dialogue-names)
-                (string? (cadr expr)))
-           (cons (cadr expr) (rec (cddr expr)))] ;; 提取字符串并继续
-          
-          ;; 如果是列表，递归处理所有子元素
-          [(pair? expr)
-           (append (rec (car expr)) (rec (cdr expr)))]
-          
-          [else '()]))))
+  (define (extract-dialogue-text actions)
+    (let rec ([x actions])
+      (cond
+       ;; 1. 如果当前节点就是字符串，收集它
+       [(string? x) (list x)]
+       
+       ;; 2. 如果是列表（S-expression），递归处理头(car)和尾(cdr)并拼接结果
+       [(pair? x)
+        (append (rec (car x)) (rec (cdr x)))]
+       
+       ;; 3. 其他情况（符号、数字、空列表等），跳过
+       [else '()])))
 
   ;; 4. 主函数：转译 RPL -> RIL
   (define (rpl->ril input-path output-path)
@@ -53,7 +59,7 @@
            [defs (filter definition? exprs)]
            [actions (filter (lambda (x) (not (definition? x))) exprs)]
            ;; 提取文本用于生成 (*text* ...)
-           [text-strings (extract-dialogue-text defs actions)])
+           [text-strings (extract-dialogue-text actions)])
       
       ;; 构建目标代码结构 (Quasiquote 模板)
       (let ([ril-code
@@ -67,15 +73,13 @@
                (let ()
                  ;; 插入所有资源定义
                  ,@defs
-                 
                  ;; 插入动作列表，并自动包裹 make-animation
                  (*actions*
-                  (list
-                   ,@(map (lambda (act) 
-                            `(make-animation ,act)) 
-                          actions)))))])
-        
-        ;; 写入输出文件
+		  (list
+		   ,@(map (lambda (act) 
+			    `(make-animation ,act))
+			  actions)))))])
+                ;; 写入输出文件
         (with-output-to-file output-path
           (lambda ()
             (for-each (lambda (e) 

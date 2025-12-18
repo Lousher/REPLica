@@ -1,11 +1,11 @@
 (library (directive)
-  (export make-animation static background jump above beside play parallel locate duration stop trigger)
+  (export make-animation static background jump above beside play parallel locate duration stop trigger chain)
   (import (chezscheme)
 	  (state)
 	  (loader)
 	  (raylib ffi)
 	  (raylib constant))
-
+  
   (define state-save-previous
     (lambda (s)
       (let ([prev-img (LoadImageFromScreen)])
@@ -190,6 +190,30 @@
 	    (set! started (state-time s)))
 	  (unless (< (- (state-time s) started) t)
 	    (ani s))))))
+
+  (define chain
+    (lambda args ;; 接受变长参数
+      (let loop ([rest args]          ;; 剩余的参数
+		 [current-time 0.0]   ;; 当前累计的时间游标
+		 [anis '()])          ;; 收集到的动画列表
+	(if (null? rest)
+            ;; 递归结束，将收集到的所有 trigger 包装进 parallel
+            ;; 注意：accumulated list 需要 reverse
+            (apply parallel (reverse anis))
+            
+            (let ([head (car rest)])
+              (cond
+               ;; 情况1：遇到数字 -> 增加时间游标（Delay）
+               [(number? head)
+		(loop (cdr rest) 
+                      (+ current-time head) 
+                      anis)]
+               
+               ;; 情况2：遇到动作 -> 用 trigger 锁定在当前时间点
+               [else
+		(loop (cdr rest) 
+                      current-time 
+                      (cons (trigger head current-time) anis))]))))))
 
   )
 

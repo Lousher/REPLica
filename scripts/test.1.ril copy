@@ -1,0 +1,51 @@
+(import (replica) (loader) (directive))
+
+(*text*
+  (string-append "好痛！" "啊……" "喂？" "喂？还没起床？" "这不是才10点吗"))
+
+(let ()
+  (texture afternoon "assets/bg/yuwen.bedroom.afternoon.png")
+  (texture black "assets/bg/black.png")
+  (texture morning "assets/bg/yuwen.bedroom.morning.png")
+  (texture night "assets/bg/yuwen.bedroom.night.png")
+  (texture light "assets/bg/yuwen.bedroom.night.light.png")
+  (texture calling "assets/picture/call.png")
+  (transition wakeup #f "assets/glsl/wakeup.transition.fs")
+  (transition fade #f "assets/glsl/fade.transition.fs")
+  (effect mask #f "assets/glsl/mask.effect.fs")
+  (effect appear #f "assets/glsl/appear.fs")
+  (sound rightone "assets/sound/rightone.mp3")
+  (sound searching "assets/sound/search.mp3")
+  (sound thud "assets/sound/thud.mp3")
+  (sound pickup "assets/sound/pickup-phone.mp3")
+  (dialogue normal "assets/font/Xiaolai-Regular.ttf")
+  (camera
+    zoom-move
+    (lambda (t)
+      (values 0.0 0.0 (min (* 10 t) 300) 500.0 0.0 2.0)))
+  (camera
+    zoom-move-start
+    (lambda (t) (values 0.0 0.0 0.0 500.0 0.0 2.0)))
+  (phone yuki 400 850)
+  (define masked (mask (zoom-move (background morning)) 1))
+  (*actions*
+    (list
+      (make-animation
+        (parallel (play rightone) (background black)))
+      (make-animation
+        (parallel (wakeup (background morning) 2) (play searching)
+          (trigger (stop searching) 3) (trigger (play thud) 3.5)
+          (trigger (normal "好痛！") 4.5)))
+      (make-animation
+        (parallel
+          (background morning)
+          (appear (yuki calling) 1)
+          (trigger (normal "啊……") 1.5)))
+      (make-animation
+        (parallel
+          (fade (zoom-move-start (background morning)) 1)
+          (trigger (parallel masked (play pickup)) 1)
+          (trigger (normal "喂？") 1.5)))
+      (make-animation (parallel masked (normal "喂？还没起床？")))
+      (make-animation (parallel masked (normal "这不是才10点吗"))))))
+

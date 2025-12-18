@@ -1,0 +1,43 @@
+(load "prologue.def")
+
+(parallel
+ (play rightone)
+ (background black))
+
+(parallel
+ (wakeup (background morning) 2)
+ (chain
+  (play searching) 2.5
+  (stop searching) 0.5
+  (play thud) 1.0
+  (normal "好痛！")))
+
+(parallel
+ (background morning)
+ (chain
+  (appear (yuwen-phone calling) 1)
+  1.5 (normal "…………唉")))
+
+(define masked-bed-moving
+  (mask (zoom-move (background morning)) 1))
+(define masked-bed-moving-saying
+  (lambda (text)
+    (parallel
+     masked-bed-moving
+     (normal text))))
+
+(chain
+ (fade (zoom-move-start (background morning)) 1)
+ 1
+ (play pickup)
+ masked-bed-moving
+ 0.5
+ (normal "喂？"))
+
+(masked-bed-moving-saying
+ "喂？你还没起啊？")
+(masked-bed-moving-saying
+ "……有什么事吗……")
+(masked-bed-moving-saying
+ "你这周回来吗？")
+

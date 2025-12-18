@@ -1,0 +1,54 @@
+(import (replica) (loader) (directive))
+
+(*text*
+  (string-append "好痛！" "…………唉" "喂？" "喂？你还没起啊？" "……有什么事吗……"
+    "你这周回来吗？"))
+
+(let ()
+  (texture black "assets/bg/black.png")
+  (sound rightone "assets/sound/rightone.mp3")
+  (transition wakeup #f "assets/glsl/wakeup.transition.fs")
+  (sound searching "assets/sound/search.mp3")
+  (sound thud "assets/sound/thud.mp3")
+  (dialogue normal "assets/font/Xiaolai-Regular.ttf")
+  (texture morning "assets/bg/yuwen.bedroom.morning.png")
+  (effect appear #f "assets/glsl/appear.fs")
+  (phone yuwen-phone 400 850)
+  (texture calling "assets/picture/call.png")
+  (camera
+    zoom-move
+    (lambda (t)
+      (values 0.0 0.0 (min (* 10 t) 300) 500.0 0.0 2.0)))
+  (transition fade #f "assets/glsl/fade.transition.fs")
+  (effect mask #f "assets/glsl/mask.effect.fs")
+  (camera
+    zoom-move-start
+    (lambda (t) (values 0.0 0.0 0.0 500.0 0.0 2.0)))
+  (sound pickup "assets/sound/pickup-phone.mp3")
+  (define masked-bed-moving
+    (mask (zoom-move (background morning)) 1))
+  (define masked-bed-moving-saying
+    (lambda (text) (parallel masked-bed-moving (normal text))))
+  (*actions*
+    (list
+      (make-animation
+        (parallel (play rightone) (background black)))
+      (make-animation
+        (parallel
+          (wakeup (background morning) 2)
+          (chain (play searching) 2.5 (stop searching) 0.5 (play thud)
+            1.0 (normal "好痛！"))))
+      (make-animation
+        (parallel
+          (background morning)
+          (chain
+            (appear (yuwen-phone calling) 1)
+            1.5
+            (normal "…………唉"))))
+      (make-animation
+        (chain (fade (zoom-move-start (background morning)) 1) 1
+          (play pickup) masked-bed-moving 0.5 (normal "喂？")))
+      (make-animation (masked-bed-moving-saying "喂？你还没起啊？"))
+      (make-animation (masked-bed-moving-saying "……有什么事吗……"))
+      (make-animation (masked-bed-moving-saying "你这周回来吗？")))))
+
