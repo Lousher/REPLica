@@ -2,7 +2,7 @@
 
 (*text*
   (string-append "好痛！" "…………唉" "喂？" "喂？你还没起啊？" "……有什么事吗……"
-    "你这周回来吗？"))
+    "啊～你今天打算回来吗？"))
 
 (let ()
   (texture black "assets/bg/black.png")
@@ -50,5 +50,5 @@
           (play pickup) masked-bed-moving 0.5 (normal "喂？")))
       (make-animation (masked-bed-moving-saying "喂？你还没起啊？"))
       (make-animation (masked-bed-moving-saying "……有什么事吗……"))
-      (make-animation (masked-bed-moving-saying "你这周回来吗？")))))
+      (make-animation (masked-bed-moving-saying "啊～你今天打算回来吗？")))))
 
