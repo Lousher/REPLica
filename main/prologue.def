@@ -13,7 +13,15 @@
 (effect mask #f "assets/glsl/mask.effect.fs")
 (camera zoom-move-start (lambda (t) (values 0.0 0.0 0.0 500.0 0.0 2.0)))
 (sound pickup "assets/sound/pickup-phone.mp3")
+(sound situp "assets/sound/situp.mp3")
+(sound walking "assets/sound/walking.mp3")
+(camera zoom-table (lambda (t) (values 0.0 0.0 1000.0 500.0 0.0 2.5)))
+(sound book-scrolling "assets/sound/scroll-books.mp3")
+(sound close-book "assets/sound/close-book.mp3")
+(sound hang-up "assets/sound/hang-up.mp3")
+(sound throw-on-bed "assets/sound/throw-on-bed.mp3")
+(camera zoom-bed-start (lambda (t) (values 0.0 0.0 0.0 500.0 0.0 2.0)))
+(camera zoom-bed-move (lambda (t) (values 0.0 0.0 0.0 (min 550.0 (+ 500.0 (* t 250))) 0.0 2.0)))
+(texture bye-chat "assets/picture/bye.wechat.png")
 
-
-
-
+(sound gulu "assets/sound/gugu.mp3")

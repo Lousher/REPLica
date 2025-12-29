@@ -248,7 +248,9 @@
 		      (resource-guardian src))
 		    (DrawRectangleRounded round-rec 0.25 8 BLACK)
 		    (DrawTexturePro current-data src round-rec origin 0.0 WHITE)
-		    (DrawRectangleRoundedLinesEx round-rec 0.25 8 3.0 LIGHTGRAY)])))))))]))
+
+		    (DrawRectangleRoundedLinesEx round-rec 0.25 8 6.0 LIGHTGRAY)
+		    ])))))))]))
 
   (define-syntax camera
     (syntax-rules ()
