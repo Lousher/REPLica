@@ -1,0 +1,52 @@
+(load "prologue.2.def")
+
+(static black)
+
+(chain
+(static black) 0.5
+(fade (store-zoom (background morning)) 2)
+(play street)
+(play lawson)
+2 (play plastic)
+1 (normal "哈……"))
+
+(chain
+ (store-zoom (background morning))
+ (play plastic)
+ (normal "玉米三块，包子也三块，这也太贵了"))
+
+(define masked-move
+  (mask (store-move (background morning)) 1))
+
+(chain
+ masked-move 1
+ (play walking)
+ (normal "(应该买套餐的啊)"))
+
+(chain
+ masked-move
+ (stop walking)
+ (normal "好烫！"))
+
+(chain
+ masked-move
+ (normal "呼呼……"))
+
+(chain
+ masked-move
+ (normal "(感觉，好久没吃早餐了)"))
+
+(chain
+ masked-move
+ (normal "(难得被吵醒一次，还是有点好处的)"))
+
+(chain
+ masked-move
+ (normal "哈哈"))
+
+(chain
+ masked-move
+ (color 92 127 238 175
+  (normal "诶？是班长吗？")))
+
+

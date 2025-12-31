@@ -1,0 +1,51 @@
+(import (replica) (loader) (directive))
+
+(*text*
+  (string-append "哈……" "玉米三块，包子也三块，这也太贵了" "(应该买套餐的啊)" "好烫！"
+    "呼呼……" "(感觉，好久没吃早餐了)" "(难得被吵醒一次，还是有点好处的)" "哈哈" "诶？是班长吗？"))
+
+(let ()
+  (texture morning "assets/bg/street.morning.png")
+  (texture black "assets/bg/black.png")
+  (transition fade #f "assets/glsl/fade.transition.fs")
+  (sound lawson "assets/sound/lawson.mp3")
+  (dialogue normal "assets/font/Xiaolai-Regular.ttf")
+  (sound plastic "assets/sound/plastic.mp3")
+  (camera
+    store-zoom
+    (lambda (t) (values 0.0 0.0 900.0 250.0 0.0 2.0)))
+  (effect mask #f "assets/glsl/mask.effect.fs")
+  (camera
+    store-move
+    (lambda (t)
+      (values 0.0 0.0 (max (- 900 (* t 10)) 850.0) 250.0 0.0
+        2.0)))
+  (sound street "assets/sound/street.mp3")
+  (sound walking "assets/sound/walking.street.mp3")
+  (define masked-move
+    (mask (store-move (background morning)) 1))
+  (*actions*
+    (list (make-animation (static black))
+      (make-animation
+        (chain (static black) 0.5
+          (fade (store-zoom (background morning)) 2) (play street)
+          (play lawson) 2 (play plastic) 1 (normal "哈……")))
+      (make-animation
+        (chain
+          (store-zoom (background morning))
+          (play plastic)
+          (normal "玉米三块，包子也三块，这也太贵了")))
+      (make-animation
+        (chain masked-move 1 (play walking) (normal "(应该买套餐的啊)")))
+      (make-animation
+        (chain masked-move (stop walking) (normal "好烫！")))
+      (make-animation (chain masked-move (normal "呼呼……")))
+      (make-animation (chain masked-move (normal "(感觉，好久没吃早餐了)")))
+      (make-animation
+        (chain masked-move (normal "(难得被吵醒一次，还是有点好处的)")))
+      (make-animation (chain masked-move (normal "哈哈")))
+      (make-animation
+        (chain
+          masked-move
+          (color 92 127 238 175 (normal "诶？是班长吗？")))))))
+

@@ -1,5 +1,5 @@
 (library (loader)
-  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera)
+  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color)
   (import (chezscheme)
 	  (state)
 	  (tool)
@@ -38,7 +38,11 @@
 	  [(Camera Camera2D)
 	   (foreign-free (ftype-pointer-address res))
 	   (TraceLog LOG_INFO (format-green "Unload Camera2D Resurce ~a" res))
-	   ])]
+	   ]
+	  [(Color)
+	   (foreign-free (ftype-pointer-address res))
+	   (TraceLog LOG_INFO (format-green "Unload Color Resurce ~a" res))]
+	  )]
        [else
 	(foreign-free res)
 	(TraceLog LOG_INFO (format-green "Unload Normal Resurce ~a" res))])))
@@ -159,6 +163,14 @@
 
   (define *text* (make-parameter #f))
 
+  (define *color* (make-parameter WHITE))
+  (define color
+    (lambda (r g b a ani)
+      (lambda (s)
+	(let ([color (make-Color r g b a)])
+	  (resource-guardian color)
+	  (parameterize ([*color* color])
+	    (ani s))))))
   (define-syntax dialogue
     (syntax-rules ()
       [(_ name path)
@@ -175,7 +187,6 @@
 	   (resource-guardian sh)
 	   (UnloadCodepoints codepoints)
 	   (foreign-free (ftype-pointer-address codepoints-count))
-
 	   (foreign-set! 'float width-ptr 0 2.0)
 	   (SetShaderValue sh width-location width-ptr SHADER_UNIFORM_FLOAT)
 	   (foreign-set! 'float color-ptr 0 0.0)
@@ -193,12 +204,14 @@
 		    [measured-vecs (map (lambda (t) (MeasureTextEx font t 50.0 0.0)) subtexts)]
 		    [origin-xs (map (lambda (v) (/ (Vector2-x v) 2.0)) measured-vecs)]
 		    [origin-y (/ (Vector2-y (car measured-vecs)) 2.0)]
-		    [started #f])
+		    [started #f] [color #f])
 	       (Vector2-y-set! origin origin-y)
 	       (resource-guardian position origin)
 	       (lambda (s)
 		 (unless started
 		   (set! started (state-time s)))
+		 (unless color
+		   (set! color (*color*)))
 		 (let* ([win (state-window s)]
 			[win-width (window-width win)]
 			[win-height (window-height win)])
@@ -209,7 +222,7 @@
 			[index (min (exact (round (/ passed 0.05))) (- len 1))]
 			[sub (list-ref subtexts index)] [origin-x (list-ref origin-xs index)])
 		   (Vector2-x-set! origin origin-x)
-		   (DrawTextPro font sub position origin 0.0 50.0 0.0 WHITE))
+		   (DrawTextPro font sub position origin 0.0 50.0 0.0 color))
 		 (EndShaderMode))))
 	   ))]))
 

@@ -39,6 +39,12 @@
                  define
 		 define-syntax))))
 
+  (define directive?
+    (lambda (x)
+      (and (pair? x)
+	   (memq (car x)
+		 '(jump)))))
+
   (define (extract-dialogue-text actions)
     (let rec ([x actions])
       (cond
@@ -76,8 +82,9 @@
                  ;; 插入动作列表，并自动包裹 make-animation
                  (*actions*
 		  (list
-		   ,@(map (lambda (act) 
-			    `(make-animation ,act))
+		   ,@(map (lambda (act)
+			    (if (directive? act) act
+			    `(make-animation ,act)))
 			  actions)))))])
                 ;; 写入输出文件
         (with-output-to-file output-path

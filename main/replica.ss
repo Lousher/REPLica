@@ -72,16 +72,17 @@
 	       (stepper (append (car rest) (cdr rest)) step-state)]
 	      [else
 	       (let-values ([(sig new-state) ((car rest) step-state)])
-	       (case (car sig)
-		 [(exit)
-		  (TraceLog LOG_INFO (format "State is ~a" (state-time new-state)))
-		  (exit)]
-		 [(jump)
-		  (storying (cadr sig) new-state)]
-		 [else
-		  (replica-collect)
-		  (stepper (cdr rest) new-state)]
-		 ))])))))
+		 (case (car sig)
+		   [(exit)
+		    (TraceLog LOG_INFO (format "State is ~a" (state-time new-state)))
+		    (exit)]
+		   [(jump)
+		    (TraceLog LOG_INFO "Jumping!")
+		    (storying (cadr sig) new-state)]
+		   [else
+		    (replica-collect)
+		    (stepper (cdr rest) new-state)]
+		   ))])))))
       (replica-collect)
       (CloseAudioDevice)
       (CloseWindow)))
