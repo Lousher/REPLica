@@ -3,7 +3,7 @@
 (transition wakeup #f "assets/glsl/wakeup.transition.fs")
 (sound searching "assets/sound/search.mp3")
 (sound thud "assets/sound/thud.mp3")
-(dialogue normal "assets/font/Xiaolai-Regular.ttf")
+(dialogue normal "assets/font/zhanku.ttf")
 (texture morning "assets/bg/yuwen.bedroom.morning.png")
 (effect appear #f "assets/glsl/appear.fs")
 (phone yuwen-phone 400 850)

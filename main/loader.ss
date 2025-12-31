@@ -223,7 +223,8 @@
 			[sub (list-ref subtexts index)] [origin-x (list-ref origin-xs index)])
 		   (Vector2-x-set! origin origin-x)
 		   (DrawTextPro font sub position origin 0.0 50.0 0.0 color))
-		 (EndShaderMode))))
+		 (EndShaderMode)
+		 )))
 	   ))]))
 
   (define-syntax phone

@@ -1,15 +1,16 @@
 (import (replica) (loader) (directive))
 
 (*text*
-  (string-append "哈……" "玉米三块，包子也三块，这也太贵了" "(应该买套餐的啊)" "好烫！"
-    "呼呼……" "(感觉，好久没吃早餐了)" "(难得被吵醒一次，还是有点好处的)" "哈哈" "诶？是班长吗？"))
+  (string-append "哈……" "玉米三块，包子也三块，这也太贵了" "(应该买套餐的啊)" "好烫！" "呼呼……"
+    "(感觉，好久没吃早餐了)" "(难得被吵醒一次，还是有点好处的)" "哈哈" "班长？" "诶？……好烫！"
+    "啊，玉米……！" "…………！" "还好还好" "……啊" "班长！好厉害啊！" "啊哈哈" "(已经……完了)"))
 
 (let ()
   (texture morning "assets/bg/street.morning.png")
   (texture black "assets/bg/black.png")
   (transition fade #f "assets/glsl/fade.transition.fs")
   (sound lawson "assets/sound/lawson.mp3")
-  (dialogue normal "assets/font/Xiaolai-Regular.ttf")
+  (dialogue normal "assets/font/zhanku.ttf")
   (sound plastic "assets/sound/plastic.mp3")
   (camera
     store-zoom
@@ -22,6 +23,14 @@
         2.0)))
   (sound street "assets/sound/street.mp3")
   (sound walking "assets/sound/walking.street.mp3")
+  (texture corn-on-air "assets/sd/corn-on-air.png")
+  (texture corn-try-catch "assets/sd/corn-try-catch.png")
+  (texture
+    corn-catch-successfull
+    "assets/sd/corn-catch-successful.png")
+  (texture corn-shy "assets/sd/corn-shy.png")
+  (texture corn-end "assets/sd/corn-end.png")
+  (texture xin "assets/picture/xin.png")
   (define masked-move
     (mask (store-move (background morning)) 1))
   (*actions*
@@ -37,15 +46,43 @@
           (normal "玉米三块，包子也三块，这也太贵了")))
       (make-animation
         (chain masked-move 1 (play walking) (normal "(应该买套餐的啊)")))
+      (make-animation (chain masked-move (normal "好烫！")))
       (make-animation
-        (chain masked-move (stop walking) (normal "好烫！")))
-      (make-animation (chain masked-move (normal "呼呼……")))
+        (chain masked-move (stop walking) (normal "呼呼……")))
       (make-animation (chain masked-move (normal "(感觉，好久没吃早餐了)")))
       (make-animation
         (chain masked-move (normal "(难得被吵醒一次，还是有点好处的)")))
       (make-animation (chain masked-move (normal "哈哈")))
       (make-animation
+        (chain masked-move (color 92 127 238 255 (normal "班长？"))))
+      (make-animation (chain masked-move (normal "诶？……好烫！")))
+      (make-animation
         (chain
-          masked-move
-          (color 92 127 238 175 (normal "诶？是班长吗？")))))))
+          (fade (background corn-on-air) 2)
+          2
+          (normal "啊，玉米……！")))
+      (make-animation
+        (chain
+          (fade (background corn-try-catch) 0.5)
+          1
+          (normal "…………！")))
+      (make-animation
+        (chain
+          (fade (background corn-catch-successfull) 0.5)
+          1
+          (normal "还好还好")))
+      (make-animation
+        (chain (fade (background corn-shy) 0.5) 1 (normal "……啊")))
+      (make-animation
+        (chain
+          (background corn-shy)
+          (color 92 127 238 255 (normal "班长！好厉害啊！"))))
+      (make-animation
+        (chain (fade (background corn-end) 1) 1 (normal "啊哈哈")))
+      (make-animation
+        (chain
+          (fade (background corn-end) 1)
+          1
+          (normal "(已经……完了)")))
+      (make-animation (chain (fade (background xin) 2))))))
 

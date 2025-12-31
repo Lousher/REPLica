@@ -25,11 +25,12 @@
 
 (chain
  masked-move
- (stop walking)
+
  (normal "好烫！"))
 
 (chain
  masked-move
+ (stop walking)
  (normal "呼呼……"))
 
 (chain
@@ -46,7 +47,44 @@
 
 (chain
  masked-move
- (color 92 127 238 175
-  (normal "诶？是班长吗？")))
+ (color
+  92 127 238 255
+  (normal "班长？")))
 
+(chain
+ masked-move
+ (normal "诶？……好烫！"))
 
+(chain
+ (fade (background corn-on-air) 2)
+ 2 (normal "啊，玉米……！"))
+
+(chain
+ (fade (background corn-try-catch) 0.5)
+ 1 (normal "…………！")
+ )
+
+(chain
+ (fade (background corn-catch-successfull) 0.5)
+ 1 (normal "还好还好"))
+
+(chain
+ (fade (background corn-shy) 0.5)
+ 1 (normal "……啊"))
+
+(chain
+ (background corn-shy)
+ (color
+  92 127 238 255
+  (normal "班长！好厉害啊！")))
+
+(chain
+ (fade (background corn-end) 1)
+ 1 (normal "啊哈哈"))
+
+(chain
+ (fade (background corn-end) 1)
+ 1 (normal "(已经……完了)"))
+
+(chain
+ (fade (background xin) 2))
