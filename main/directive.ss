@@ -3,6 +3,7 @@
   (import (chezscheme)
 	  (state)
 	  (loader)
+	  (tool)
 	  (raylib ffi)
 	  (raylib constant))
   
@@ -20,6 +21,7 @@
     (lambda (animator)
       (lambda (state)
 	(let animating ([s state])
+	  (for-each UpdateMusicStream (*musics*))
 	  (BeginDrawing)
 	  (ClearBackground BLACK)
 	  (animator s)
@@ -67,12 +69,17 @@
 	       (DrawText "Loading ..." 0 0 20 WHITE)]
 	      [(ram-ready)
 	       (TraceLog LOG_INFO "Async: Uploading Image to VRAM ...\n")
-	       (ImageResize current-data (GetScreenWidth) (GetScreenHeight))
+;	       (ImageResize current-data (GetScreenWidth) (GetScreenHeight))
 	       (let ([tex (LoadTextureFromImage current-data)])
 		 (resource-guardian tex)
+;		 (GenTextureMipmaps tex)
+		 (SetTextureFilter tex 2)
 		 (with-mutex (resource-lock res)
 		   (resource-data-set! res tex)
-		   (resource-status-set! res 'gpu-ready)))]
+		   (resource-status-set! res 'gpu-ready)
+		   (UnloadImage current-data)
+		   (TraceLog LOG_INFO "Optimization: Image freed manually.")
+		   ))]
 	      [(gpu-ready)
 	       (unless src
 		 (set! src (texture->Rectangle current-data)))
@@ -95,30 +102,91 @@
 	       (TraceLog LOG_INFO "Async: Uploading Image to VRAM ...\n")
 	       (let ([tex (LoadTextureFromImage current-data)])
 		 (resource-guardian tex)
+;		 (GenTextureMipmaps tex)
+		 (SetTextureFilter tex 2)
 		 (with-mutex (resource-lock res)
 		   (resource-data-set! res tex)
-		   (resource-status-set! res 'gpu-ready)))]
+		   (resource-status-set! res 'gpu-ready)
+		   ))]
 	      [(gpu-ready)
 	       (DrawTexture current-data
 			    (round (exact (window-x win)))
 			    (round (exact (window-y win))) WHITE)])))))
-
+  
   (define play
-    (lambda (so)
-      (let ([played #f])
-	(lambda (s)
-	  (unless played
-	    (PlaySound so)
-	    (set! played #t))))))
+    (lambda (res . args)
+      (let ([fade-time (if (null? args) 0.0 (car args))]
+            [played #f]
+            [start-time #f]
+            ;; 【关键】判断资源类型
+            [is-music (eq? (ftype-pointer->ftype-symbol res) 'Music)]) 
+        (lambda (s)
+          ;; --- 1. 首次执行：开始播放 ---
+          (unless played
+            (let ([start-vol (if (> fade-time 0.0) 0.0 1.0)])
+              ;; 设置初始音量
+              (if is-music
+                  (SetMusicVolume res start-vol)
+                  (SetSoundVolume res start-vol)))
+            ;; 执行播放指令
+            (if is-music
+                (begin
+                  (PlayMusicStream res)
+                  ;; 【关键】如果是音乐，必须注册到活跃列表，否则没有声音
+                  ;; 注意：*active-musics* 是我们在 loader.ss 里新加的 parameter
+                  (let ([current-list (*musics*)])
+                    (unless (member res current-list)
+                      (*musics* (cons res current-list)))))
+                ;; 如果是音效，直接播放
+                (PlaySound res))
+            
+            (set! played #t)
+            (when (> fade-time 0.0)
+              (set! start-time (state-time s))))
+
+          ;; --- 2. 后续帧：处理淡入效果 ---
+          (when (and start-time (> fade-time 0.0))
+            (let* ([elapsed (- (state-time s) start-time)]
+                   [vol (if (>= elapsed fade-time) 1.0 (/ elapsed fade-time))])
+              
+              ;; 实时更新音量
+              (if is-music
+                  (SetMusicVolume res (inexact vol))
+                  (SetSoundVolume res (inexact vol)))
+                  
+              (when (>= elapsed fade-time) 
+                (set! start-time #f))))))))
 
   (define stop
-    (lambda (so)
-      (let ([stopped #f])
-	(lambda (s)
-	  (unless stopped
-	    (StopSound so)
-	    (set! stopped #t))))))
-	
+    (lambda (res . args)
+      (let ([fade-time (if (null? args) 0.0 (car args))]
+            [start-time #f]
+            [stopped #f]
+            [is-music (eq? (ftype-pointer->ftype-symbol res) 'Music)])
+        (lambda (s)
+          (unless stopped
+            (unless start-time (set! start-time (state-time s)))
+            (let ([elapsed (- (state-time s) start-time)])
+              
+              (if (>= elapsed fade-time)
+                  ;; --- 停止 ---
+                  (begin
+                    (if is-music
+                        (begin
+                          (StopMusicStream res)
+                          ;; 【关键】从活跃列表中移除
+                          (*musics* (remove res (*musics*)))
+                          (SetMusicVolume res 1.0))
+                        (begin
+                          (StopSound res)
+                          (SetSoundVolume res 1.0)))
+                    (set! stopped #t))
+                  
+                  ;; --- 淡出 ---
+                  (let ([vol (- 1.0 (/ elapsed fade-time))])
+                    (if is-music
+                        (SetMusicVolume res (inexact (max 0.0 vol)))
+                        (SetSoundVolume res (inexact (max 0.0 vol))))))))))))
 
   (define above
     (lambda (ani-a ani-b factor)

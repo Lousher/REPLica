@@ -1,0 +1,7 @@
+(texture avenue-morning "assets/bg/avenue.morning.png")
+(texture black "assets/bg/black.png")
+(transition fade #f "assets/glsl/fade.transition.fs")
+(dialogue normal "assets/font/Xiaolai-Regular.ttf")
+(music avenue-bgm "assets/sound/avenue.mp3")
+(texture classroom-afternoon "assets/bg/classroom.afternoon.png")
+(texture entrance "assets/bg/apartment.entrance.jpg")

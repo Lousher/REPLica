@@ -28,6 +28,7 @@
     (and (pair? x)
          (memq (car x) 
                '(include
+		 music
 		 load
 		 texture 
                  sound 

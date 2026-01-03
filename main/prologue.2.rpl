@@ -1,22 +1,21 @@
 (load "prologue.2.def")
 
-(static black)
-
-(chain
-(static black) 0.5
-(fade (store-zoom (background morning)) 2)
-(play street)
-(play lawson)
-2 (play plastic)
-1 (normal "哈……"))
-
-(chain
- (store-zoom (background morning))
- (play plastic)
- (normal "玉米三块，包子也三块，这也太贵了"))
-
+(define street-morning (background morning))
 (define masked-move
   (mask (store-move (background morning)) 1))
+
+(chain
+ (static black) 0.5
+ (fade (store-zoom street-morning) 2)
+ (play street)
+ (play lawson)
+ 2 (play plastic)
+ 1 (normal "哈……"))
+
+(chain
+ (store-zoom street-morning)
+ (play plastic)
+ (normal "玉米三块，包子也三块，这也太贵了"))
 
 (chain
  masked-move 1
@@ -25,7 +24,6 @@
 
 (chain
  masked-move
-
  (normal "好烫！"))
 
 (chain
@@ -45,11 +43,15 @@
  masked-move
  (normal "哈哈"))
 
+(define me-say
+  (lambda (text)
+    (color
+     92 127 238 255
+     (normal text))))
+
 (chain
  masked-move
- (color
-  92 127 238 255
-  (normal "班长？")))
+ (me-say "……班长？"))
 
 (chain
  masked-move
@@ -57,7 +59,8 @@
 
 (chain
  (fade (background corn-on-air) 2)
- 2 (normal "啊，玉米……！"))
+ (stop street 2)
+ 2 (normal "啊，玉米！"))
 
 (chain
  (fade (background corn-try-catch) 0.5)
@@ -74,9 +77,7 @@
 
 (chain
  (background corn-shy)
- (color
-  92 127 238 255
-  (normal "班长！好厉害啊！")))
+ (me-say "还好接住了，这可三块钱呢"))
 
 (chain
  (fade (background corn-end) 1)
@@ -86,5 +87,322 @@
  (fade (background corn-end) 1)
  1 (normal "(已经……完了)"))
 
+(define park-bg-mor (background park-morning))
+
 (chain
- (fade (background xin) 2))
+ (fade park-bg-mor 2)
+ 2 (play park 2))
+
+(define chair-zoom (park-zoom park-bg-mor))
+
+(chain
+ (fade chair-zoom 2)
+ 2 (me-say "哎呀，之前从没在附近看见过班长你啊，是最近刚搬来吗？"))
+
+(chain
+ chair-zoom
+ (normal "不是，我住很久了"))
+
+(chain
+ chair-zoom
+ (me-say "是吗"))
+
+(chain
+ chair-zoom
+ (me-say "我休息日早上都会到这里"))
+
+(chain
+ chair-zoom
+ (me-say "有绿植的地方，会让人很放松啊"))
+
+(chain
+ chair-zoom
+ (normal "是啊……"))
+
+(chain
+ chair-zoom
+ (normal "…………"))
+
+(chain
+ chair-zoom
+ (normal "(要死了，社会意义上)"))
+
+(chain
+ chair-zoom
+ (normal "(不仅素颜被看到了，还做了个莫名奇妙的杂耍)"))
+
+(chain
+ chair-zoom
+ (me-say "那个啊班长，虽然不好意思开口"))
+
+(chain
+ chair-zoom
+ (normal "啊……？"))
+
+(chain
+ chair-zoom
+ (me-say "这里没桌子，你介意我端着过早不？"))
+
+(chain
+ chair-zoom
+ (normal "啊，好，好啊"))
+
+(chain
+ chair-zoom
+ (normal "(吓死我了！)"))
+
+(chain
+ chair-zoom
+ (me-say "已经放了有一会儿了，面都开始坨了"))
+
+(define masked-chair-zoom (mask (park-zoom-move (background park-morning)) 1))
+
+(chain
+ masked-chair-zoom
+ (stop park 1)
+ (normal "…………"))
+
+(chain
+ masked-chair-zoom
+ (normal "(感觉……)"))
+
+(chain
+ masked-chair-zoom
+ (me-say "哈哈，感觉高中时经常在你旁边过早来着"))
+
+(chain
+ masked-chair-zoom
+ (me-say "每天早上先直奔食堂，刷卡后直接拿碗热干面回教室"))
+
+(chain
+ masked-chair-zoom
+ (normal "…………"))
+
+(chain
+ masked-chair-zoom
+ (me-say "然后趁着早读前，老师还没来的几分钟吃完"))
+
+(chain
+ masked-chair-zoom
+ (normal "呵呵"))
+
+(chain
+ masked-chair-zoom
+ (normal "(明明早点来就不用那么赶)"))
+
+(chain
+ masked-chair-zoom
+ (me-say "不过学校的热干面是真的难吃"))
+
+(chain
+ masked-chair-zoom
+ (me-say "芝麻酱只给一点，面条吃起来却粘粘的"))
+
+(chain
+ masked-chair-zoom
+ (me-say "不像这碗，我还特地让老板多给了些黑芝麻酱"))
+
+(chain
+ masked-chair-zoom
+ (normal "黑芝麻酱？"))
+
+(chain
+ masked-chair-zoom
+ (me-say "对啊，你看看"))
+
+(chain
+ masked-chair-zoom
+ (normal "哇哦"))
+
+(chain
+ masked-chair-zoom
+ (normal "(真的是黑的)"))
+
+(chain
+ masked-chair-zoom
+ (me-say "就从刚才路过的楚熊商区买的，班长你猜猜是哪家店？"))
+
+(chain
+ masked-chair-zoom
+ (normal "不知道"))
+
+(chain
+ masked-chair-zoom
+ (normal "(完全没仔细逛过那里)"))
+
+(chain
+ masked-chair-zoom
+ (me-say "那下次有机会带你逛逛"))
+
+(chain
+ masked-chair-zoom
+ (normal "啊"))
+
+(chain
+ masked-chair-zoom
+ (normal "(有机会吗)"))
+
+(chain
+ (fade chair-zoom 1)
+ 1 (me-say "对了班长，你要不要尝一下这个酱？"))
+
+(chain
+ chair-zoom
+ (normal "哈？"))
+
+(chain
+ chair-zoom
+ (normal "(诶？筷子就一双吧？)"))
+
+(chain
+ chair-zoom
+ (normal "(难道要这样喂给我吗？)"))
+
+(chain
+ chair-zoom
+ (me-say "用你的包子，撕点皮沾点酱试试？"))
+
+(chain
+ chair-zoom
+ (normal "啊，这样……"))
+
+(chain
+ chair-zoom
+ (normal "(我在想些什么)"))
+
+(chain
+ chair-zoom
+ (normal "你还是留着自己吃吧"))
+
+(chain
+ chair-zoom
+ (normal "我吃这些就够了"))
+
+(chain
+ chair-zoom
+ (me-say "还是一样吃得少啊"))
+
+(chain
+ chair-zoom
+ (normal "要你管"))
+
+(chain
+ chair-zoom
+ (me-say "哈哈"))
+
+(chain
+ chair-zoom
+ (normal "(真是和以前一样没心没肺)"))
+
+(chain
+ chair-zoom
+ (me-say "班长，你看天上"))
+
+(chain
+ chair-zoom
+ (normal "怎么了？"))
+
+(chain
+ chair-zoom
+ (normal "(是飞机或者鸟吗？)"))
+
+(chain
+ (lookup (background sky) 2.5)
+ 3 (me-say "觉不觉得上面那块有点像个人"))
+
+(chain
+ (background sky)
+ (normal "哪有"))
+
+(chain
+ (background sky)
+ (me-say "就那一大片云上面，有个直角，就是弯腰的姿势"))
+
+(chain
+ (background sky)
+ (normal "(还真有点像)"))
+
+(chain
+ (background sky)
+ (me-say "然后最上面的那一块小的，就是头部，甚至连鼻子都突出来了"))
+
+(chain
+ (background sky)
+ (normal "好标准的鹰钩鼻"))
+
+(chain
+ (background sky)
+ (me-say "还有后面那块，就是握紧的拳头"))
+
+(chain
+ (background sky)
+ (normal "那后面突出来的部分是什么？"))
+
+(chain
+ (background sky)
+ (me-say "是不是尾巴啊，他鼻子那么大，也不像个普通人"))
+
+(chain
+ (background sky)
+ (normal "有道理啊"))
+
+(chain
+ (fade chair-zoom 1)
+ 1 (normal "(真是，太傻了点吧)"))
+
+(chain
+ chair-zoom
+ (me-say "这整个看起来就像在跳远啊"))
+
+(chain
+ chair-zoom
+ (normal "(啊，嘴边还粘着芝麻酱)"))
+
+(chain
+ chair-zoom
+ (me-say "但是有尾巴的生物跳远很奇怪啊"))
+
+(chain
+ chair-zoom
+ (normal "(明明头发长长了，胡子也明显了)"))
+
+(chain
+ chair-zoom
+ (me-say "班长你怎么想"))
+
+(chain
+ chair-zoom
+ (normal "(却还是在叫我“班长”啊)"))
+
+(chain
+ chair-zoom
+ (normal "嗯……"))
+
+(chain
+ chair-zoom
+ (normal "你要不先把芝麻酱擦擦？"))
+
+(chain
+ chair-zoom
+ (me-say "啊，不好意思"))
+
+(chain
+ chair-zoom
+ (me-say "一个人的时候没太注意"))
+
+(chain
+ chair-zoom
+ (normal "没事"))
+
+(chain
+ chair-zoom
+ (normal "(一个人啊)"))
+
+(chain
+ (fade (background sky) 2)
+ 2 (normal "我都习惯了"))
+
+(fade (background xin) 2)
+(fade (static black) 1)
+
+(jump "prologue.3")

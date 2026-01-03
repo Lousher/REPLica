@@ -1,10 +1,35 @@
 (library (loader)
-  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color)
+  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color music *musics*)
   (import (chezscheme)
 	  (state)
 	  (tool)
 	  (raylib ffi)
 	  (raylib constant))
+
+  (define *max-concurrent-loads* 3) 
+  
+  (define *active-loads* 0)
+  (define *load-mutex* (make-mutex))
+  (define *load-condition* (make-condition))
+
+  (define acquire-load-slot
+    (lambda ()
+      (with-mutex *load-mutex*
+        (let loop ()
+          (if (>= *active-loads* *max-concurrent-loads*)
+              (begin
+                ;; 如果名额已满，线程在此沉睡等待，不消耗 CPU 和 内存
+                (condition-wait *load-condition* *load-mutex*)
+                (loop))
+              ;; 获得名额
+	      (set! *active-loads* (+ *active-loads* 1)))))))
+
+  (define release-load-slot
+    (lambda ()
+      (with-mutex *load-mutex*
+        (set! *active-loads* (- *active-loads* 1))
+        ;; 唤醒下一个等待的线程
+        (condition-signal *load-condition*))))
   
   (define resource-guardian (make-guardian))
   
@@ -13,12 +38,16 @@
       (cond
        [(ftype-pointer? res)
 	(case (ftype-pointer->ftype-symbol res)
+	  [(Music)
+	   (UnloadMusicStream res)
+	   (TraceLog LOG_INFO (format-green "Unload Music Resurce ~a" res))]
 	  [(Font)
 	   (UnloadFont res)
 	   (TraceLog LOG_INFO (format-green "Unload Font Resurce ~a" res))]
 	  [(Image)
-	   (UnloadImage res)
-	   (TraceLog LOG_INFO (format-green "Unload Image Resurce ~a" res))]
+	   (when (IsImageValid res)
+             (UnloadImage res))
+           (TraceLog LOG_INFO (format-green "Unload Image Resurce ~a" res))]
 	  [(Texture Texture2D)
 	   (UnloadTexture res)
 	   (TraceLog LOG_INFO (format-green "Unload Texture Resurce ~a" res))]
@@ -27,8 +56,7 @@
 	   (TraceLog LOG_INFO (format-green "Unload Shader Resurce ~a" res))]
 	  [(RenderTexture RenderTexture2D)
 	   (UnloadRenderTexture res)
-	   (TraceLog LOG_INFO (format-green "Unload RenderTexture Resurce ~a" res))
-	   ]
+	   (TraceLog LOG_INFO (format-green "Unload RenderTexture Resurce ~a" res))]
 	  [(Sound)
 	   (UnloadSound res)
 	   (TraceLog LOG_INFO (format-green "Unload Sound Resurce ~a" res))]
@@ -60,12 +88,14 @@
       (let ([future (make-resource (make-mutex) 'loading #f)])
 	(fork-thread
 	 (lambda ()
+	   (acquire-load-slot)
 	   (let ([img (LoadImage path)])
-	     (resource-guardian img)
+;	     (resource-guardian img)
 	     (with-mutex (resource-lock future)
 	       (resource-data-set! future img)
 	       (resource-status-set! future 'ram-ready))
-	     (TraceLog LOG_INFO (format-green "Async: RAM loaded for ~a\n" path)))))
+	     (TraceLog LOG_INFO (format-green "Async: RAM loaded for ~a\n" path))
+	     (release-load-slot))))
 	future)))
 
   (define-syntax texture
@@ -80,6 +110,17 @@
 	 (let ([so (LoadSound path)])
 	   (resource-guardian so)
 	   so))]))
+
+  (define *musics* (make-parameter '()))
+  
+  (define-syntax music
+    (syntax-rules ()
+      [(_ name path)
+       (define name
+	 (let ([mus (LoadMusicStream path)])
+	   (ftype-set! Music (looping) mus #t)
+	   (resource-guardian mus)
+	   mus))]))
   
   (define-syntax transition
     (syntax-rules ()
@@ -116,7 +157,8 @@
 		 (BeginShaderMode sh)
 		 (when (< progress 1.0)
 		   (set! progress (/ (- (state-time s) started) duration))
-		   (SetShaderValueTexture sh texture1-location prev)
+		   (when prev
+		     (SetShaderValueTexture sh texture1-location prev))
 		   (ftype-set! float () progress-fptr progress)
 		   (SetShaderValue sh progress-location progress-ptr SHADER_UNIFORM_FLOAT))
 		 (DrawTextureRec (RenderTexture-texture rt) src origin WHITE)
@@ -154,7 +196,9 @@
 		 (EndTextureMode)
 		 (BeginShaderMode sh)
 		 (when (< progress 1.0)
-		   (set! progress (/ (- (state-time s) started) duration))
+		   (if (eqv? #t duration)
+		       (set! progress 1.0)
+		       (set! progress (/ (- (state-time s) started) duration)))
 		   (ftype-set! float () progress-fptr progress)
 		   (SetShaderValue sh progress-location progress-ptr SHADER_UNIFORM_FLOAT))
 		 (DrawTextureRec (RenderTexture-texture rt) src origin  WHITE)
@@ -166,9 +210,11 @@
   (define *color* (make-parameter WHITE))
   (define color
     (lambda (r g b a ani)
-      (lambda (s)
-	(let ([color (make-Color r g b a)])
-	  (resource-guardian color)
+      (let ([color #f])
+	(lambda (s)
+	  (unless color
+	    (set! color (make-Color r g b a))
+	    (resource-guardian color))
 	  (parameterize ([*color* color])
 	    (ani s))))))
   (define-syntax dialogue
@@ -255,14 +301,15 @@
 		      (resource-guardian tex)
 		      (with-mutex (resource-lock res)
 			(resource-data-set! res tex)
-			(resource-status-set! res 'gpu-ready)))]
+			(resource-status-set! res 'gpu-ready)
+			(UnloadImage current-data)
+			(TraceLog LOG_INFO "Optimization: Phone Image freed manually.")))]
 		   [(gpu-ready)
 		    (unless src
 		      (set! src (make-Rectangle 0.0 0.0 (inexact (Texture-width current-data)) (inexact (Texture-height current-data))))
 		      (resource-guardian src))
 		    (DrawRectangleRounded round-rec 0.25 8 BLACK)
 		    (DrawTexturePro current-data src round-rec origin 0.0 WHITE)
-
 		    (DrawRectangleRoundedLinesEx round-rec 0.25 8 6.0 LIGHTGRAY)
 		    ])))))))]))
 
