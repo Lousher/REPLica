@@ -303,7 +303,8 @@
 			(resource-data-set! res tex)
 			(resource-status-set! res 'gpu-ready)
 			(UnloadImage current-data)
-			(TraceLog LOG_INFO "Optimization: Phone Image freed manually.")))]
+			(TraceLog LOG_INFO "Optimization: Phone Image freed manually.")
+			))]
 		   [(gpu-ready)
 		    (unless src
 		      (set! src (make-Rectangle 0.0 0.0 (inexact (Texture-width current-data)) (inexact (Texture-height current-data))))

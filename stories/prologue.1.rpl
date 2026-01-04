@@ -1,4 +1,4 @@
-(load "prologue.1.def")
+(load "stories/prologue.1.def")
 
 (parallel
  (play rightone)
@@ -163,4 +163,4 @@ on-bed
 (fade (background yuan) 2)
 (fade (static black) 1)
 
-(jump "prologue.2")
+(jump "stories/prologue.2")

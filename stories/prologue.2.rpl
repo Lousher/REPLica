@@ -1,4 +1,4 @@
-(load "prologue.2.def")
+(load "stories/prologue.2.def")
 
 (define street-morning (background morning))
 (define masked-move
@@ -405,4 +405,4 @@
 (fade (background xin) 2)
 (fade (static black) 1)
 
-(jump "prologue.3")
+(jump "stories/prologue.3")

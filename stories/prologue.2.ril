@@ -23,7 +23,7 @@
    "这整个看起来就像在跳远啊" "(啊，嘴边还粘着芝麻酱)" "但是有尾巴的生物跳远很奇怪啊"
    "(明明头发长长了，胡子也明显了)" "班长你怎么想" "(却还是在叫我“班长”啊)" "嗯……"
    "你要不先把芝麻酱擦擦？" "啊，不好意思" "一个人的时候没太注意" "没事" "(一个人啊)" "我都习惯了"
-   "prologue.3"))
+   "stories/prologue.3"))
 
 (let ()
   (texture morning "assets/bg/street.morning.png")
@@ -242,5 +242,5 @@
        (chain (fade (background sky) 2) 2 (normal "我都习惯了")))
      (make-animation (fade (background xin) 2))
      (make-animation (fade (static black) 1))
-     (jump "prologue.3"))))
+     (jump "stories/prologue.3"))))
 

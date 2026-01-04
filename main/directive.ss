@@ -78,7 +78,7 @@
 		   (resource-data-set! res tex)
 		   (resource-status-set! res 'gpu-ready)
 		   (UnloadImage current-data)
-		   (TraceLog LOG_INFO "Optimization: Image freed manually.")
+		   (TraceLog LOG_INFO "Optimization: Background Image freed manually.")
 		   ))]
 	      [(gpu-ready)
 	       (unless src

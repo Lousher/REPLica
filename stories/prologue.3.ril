@@ -218,11 +218,9 @@
      (make-animation
        (chain (background avenue-morning) (normal "好啊")))
      (make-animation
-       (chain
-         (fade (background entrance) 2)
-         (stop avenue-bgm 1)
-         2.5
-         (me-say "卧…………不行")))
+       (chain (fade (background entrance) 2) (stop avenue-bgm 1)))
+     (make-animation
+       (chain (background entrance) (me-say "卧…………不行")))
      (make-animation
        (chain (background entrance) (me-say "差点污染了这高雅的氛围")))
      (make-animation

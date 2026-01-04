@@ -9,7 +9,7 @@
    "那是你爸他……" "那你让他打电话来说，别让你传话" "…………" "…………" "……那就这样，我这周加班也累了"
    "还有，过年我会回去的。不用太担心" "等下……" "唉…………" "上学时不让，上班后开催。他们都精神分裂吗"
    "我一个人不也过的好好的……" "………………" "五年了啊……" "在想什么啊我" "…………去过早吧"
-   "prologue.2"))
+   "stories/prologue.2"))
 
 (let ()
   (texture black "assets/bg/black.png")
@@ -147,5 +147,5 @@
        (chain (static black) (play gulu) 3 (normal "…………去过早吧")))
      (make-animation (fade (background yuan) 2))
      (make-animation (fade (static black) 1))
-     (jump "prologue.2"))))
+     (jump "stories/prologue.2"))))
 
