@@ -1,4 +1,0 @@
-(texture mor "assets/bg/street.morning.png")
-(texture aft "assets/bg/street.afternoon.png")
-
-(beside (background mor) (background aft) 0.4)

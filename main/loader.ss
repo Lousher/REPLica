@@ -6,7 +6,7 @@
 	  (raylib ffi)
 	  (raylib constant))
 
-  (define *max-concurrent-loads* 3) 
+  (define *max-concurrent-loads* 3)
   
   (define *active-loads* 0)
   (define *load-mutex* (make-mutex))
@@ -88,14 +88,20 @@
       (let ([future (make-resource (make-mutex) 'loading #f)])
 	(fork-thread
 	 (lambda ()
-	   (acquire-load-slot)
-	   (let ([img (LoadImage path)])
+	   (guard (x [else 
+                    (display (format "Error in loader thread for ~a: ~a\n" path x))
+                    (TraceLog LOG_ERROR (format "Scheme Error: ~a" x))
+		    (with-mutex (resource-lock future)
+                      (resource-status-set! future 'error))
+		    (release-load-slot)])
+	     (acquire-load-slot)
+	     (let ([img (LoadImage path)])
 ;	     (resource-guardian img)
 	     (with-mutex (resource-lock future)
 	       (resource-data-set! future img)
 	       (resource-status-set! future 'ram-ready))
 	     (TraceLog LOG_INFO (format-green "Async: RAM loaded for ~a\n" path))
-	     (release-load-slot))))
+	     (release-load-slot)))))
 	future)))
 
   (define-syntax texture
@@ -293,6 +299,8 @@
 			     (eqv? current-status 'gpu-ready))
 		     (set! current-data (resource-data res))))
 		 (case current-status
+		   [(error)
+		    (DrawText "ERROR ..." 0 0 20 RED)]
 		   [(loading)
 		    (DrawText "Loading ..." 0 0 20 WHITE)]
 		   [(ram-ready)

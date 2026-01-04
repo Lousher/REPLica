@@ -67,6 +67,8 @@
 	    (case current-status
 	      [(loading)
 	       (DrawText "Loading ..." 0 0 20 WHITE)]
+	      [(error)
+	       (DrawText "ERROR ..." 0 0 20 RED)]
 	      [(ram-ready)
 	       (TraceLog LOG_INFO "Async: Uploading Image to VRAM ...\n")
 ;	       (ImageResize current-data (GetScreenWidth) (GetScreenHeight))
@@ -95,7 +97,9 @@
 	    (when (or (eqv? current-status 'ram-ready)
 		      (eqv? current-status 'gpu-ready))
 	      (set! current-data (resource-data res))))
-	    (case current-status
+	  (case current-status
+	    [(error)
+	     (DrawText "ERROR ..." 0 0 20 RED)]
 	      [(loading)
 	       (DrawText "Loading ..." 0 0 20 WHITE)]
 	      [(ram-ready)
