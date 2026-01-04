@@ -12,7 +12,7 @@
   (define state-init
     (lambda ()
       (make-state
-       (make-window 0.0 0.0 (inexact (GetScreenWidth)) (inexact (GetScreenHeight)))
+       (make-window 0.0 0.0 1920.0 1080.0)
        0.0 #f)))
 
   (define replica-collect
@@ -54,7 +54,8 @@
   
   (define replica
     (lambda (entry)
-      (InitWindow (GetScreenWidth) (GetScreenHeight) "Test")
+      (SetConfigFlags 8192)
+      (InitWindow 1920 1080 "Test")
       (InitAudioDevice)
       (SetTargetFPS 60)
       (call/cc
