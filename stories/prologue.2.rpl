@@ -55,6 +55,14 @@
 
 (chain
  masked-move
+ (normal "(好甜啊)"))
+
+(chain
+ masked-move
+ (normal "(好甜啊)"))
+
+(chain
+ masked-move
  (normal "诶？……好烫！"))
 
 (chain
@@ -64,12 +72,11 @@
 
 (chain
  (fade (background corn-try-catch) 0.5)
- 1 (normal "…………！")
- )
+ 1 (normal "…………！"))
 
 (chain
  (fade (background corn-catch-successfull) 0.5)
- 1 (normal "还好还好"))
+ 1 (normal "(还好还好)"))
 
 (chain
  (fade (background corn-shy) 0.5)
@@ -77,7 +84,7 @@
 
 (chain
  (background corn-shy)
- (me-say "还好接住了，这可三块钱呢"))
+ (me-say "还好接住了啊，这可三块钱呢"))
 
 (chain
  (fade (background corn-end) 1)

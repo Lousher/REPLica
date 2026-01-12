@@ -810,7 +810,7 @@
 
 (chain
  (background entrance)
- (normal "你高中说过想被包养"))
+ (normal "你说过想被包养"))
 
 (chain
  (background entrance)

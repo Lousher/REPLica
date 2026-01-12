@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
 
   Sbuild_heap(argv[0], 0);
 
-  Sscheme_program("replica.boot", argc, (const char **)argv);
+  Sscheme_program("replica.mac.boot", argc, (const char **)argv);
 
   Sscheme_deinit();
   return 0;

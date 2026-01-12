@@ -1,6 +1,6 @@
 (import (chezscheme))
 
-(make-boot-file "replica.boot"
+(make-boot-file "replica.mac.boot"
 		'("petite" "scheme")
 		"main/tool.ss"
 		"main/state.ss"
