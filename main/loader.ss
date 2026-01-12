@@ -135,12 +135,16 @@
 	 (let* ([sh (LoadShader vs fs)] [rt #f]
 		[origin (make-Vector2 0.0 0.0)]
 		[src (make-Rectangle 0.0 0.0 0.0 0.0)]
+		[dest (make-Rectangle 0.0 0.0 0.0 0.0)]
+		[cam (make-Camera2D '(0.0 . 0.0) '(0.0 . 0.0) 0.0 1.0)]
 		[texture1-location (GetShaderLocation sh "texture1")]
 		[progress-location (GetShaderLocation sh "progress")]
 		[progress-ptr (foreign-alloc (ftype-sizeof float))]
 		[progress-fptr (make-ftype-pointer float progress-ptr)])
 	   (resource-guardian origin)
 	   (resource-guardian src)
+	   (resource-guardian dest)
+	   (resource-guardian cam)
 	   (resource-guardian sh)
 	   (resource-guardian progress-fptr)
 	   (lambda (ani duration)
@@ -151,15 +155,32 @@
 		 (unless prev
 		   (set! prev (state-previous s)))
 		 (unless rt
-		   (let ([win (state-window s)])
-		     (set! rt (LoadRenderTexture (exact (window-width win)) (exact (window-height win))))
-		     (Rectangle-width-set! src (inexact (window-width win)))
-		     (Rectangle-height-set! src (* -1.0 (window-height win)))
+		   (let* ([win (state-window s)]
+			  [scale (GetWindowScaleDPI)]
+			  [scale-x (Vector2-x scale)]
+			  [scale-y (Vector2-y scale)]
+			  [logic-w (window-width win)]
+			  [logic-h (window-height win)]
+			  [phys-w (* logic-w scale-x)]
+			  [phys-h (* logic-h scale-y)])
+		     (set! rt (LoadRenderTexture (exact phys-w) (exact phys-h)))
+		     (SetTextureFilter (RenderTexture-texture rt) 1)
+		     (Rectangle-width-set! src (inexact phys-w))
+		     (Rectangle-height-set! src (* -1.0 phys-h))
+
+		     (Rectangle-width-set! dest (inexact logic-w))
+		     (Rectangle-height-set! dest (inexact logic-h))
+
+		     (Camera2D-zoom-set! cam scale-x)
+
 		     (resource-guardian rt)))
 		 (BeginTextureMode rt)
 		 (ClearBackground BLANK)
+		 (BeginMode2D cam)
 		 (ani s)
+		 (EndMode2D)
 		 (EndTextureMode)
+		 
 		 (BeginShaderMode sh)
 		 (when (< progress 1.0)
 		   (set! progress (/ (- (state-time s) started) duration))
@@ -167,7 +188,7 @@
 		     (SetShaderValueTexture sh texture1-location prev))
 		   (ftype-set! float () progress-fptr progress)
 		   (SetShaderValue sh progress-location progress-ptr SHADER_UNIFORM_FLOAT))
-		 (DrawTextureRec (RenderTexture-texture rt) src origin WHITE)
+		 (DrawTexturePro (RenderTexture-texture rt) src dest origin 0.0 WHITE)
 		 (EndShaderMode))
 	       ))))]))
 

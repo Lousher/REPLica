@@ -75,7 +75,7 @@
 	       (let ([tex (LoadTextureFromImage current-data)])
 		 (resource-guardian tex)
 ;		 (GenTextureMipmaps tex)
-		 (SetTextureFilter tex 2)
+;		 (SetTextureFilter tex 2)
 		 (with-mutex (resource-lock res)
 		   (resource-data-set! res tex)
 		   (resource-status-set! res 'gpu-ready)
