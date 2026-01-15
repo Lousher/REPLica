@@ -3,9 +3,10 @@
 (*text*
   (string-append "哈……" "玉米三块，包子也三块，这也太贵了" "(应该买套餐的啊)" "好烫！"
    "呼呼……" "(感觉，好久没吃早餐了)" "(难得被吵醒一次，还是有点好处的)" "哈哈" "……班长？"
-   "诶？……好烫！" "啊，玉米！" "…………！" "还好还好" "……啊" "还好接住了，这可三块钱呢" "啊哈哈"
-   "(已经……完了)" "哎呀，之前从没在附近看见过班长你啊，是最近刚搬来吗？" "不是，我住很久了" "是吗"
-   "我休息日早上都会到这里" "有绿植的地方，会让人很放松啊" "是啊……" "…………" "(要死了，社会意义上)"
+   "(好甜啊)" "(好甜啊)" "诶？……好烫！" "啊，玉米！" "…………！" "(还好还好)" "……啊"
+   "还好接住了啊，这可三块钱呢" "啊哈哈" "(已经……完了)"
+   "哎呀，之前从没在附近看见过班长你啊，是最近刚搬来吗？" "不是，我住很久了" "是吗" "我休息日早上都会到这里"
+   "有绿植的地方，会让人很放松啊" "是啊……" "…………" "(要死了，社会意义上)"
    "(不仅素颜被看到了，还做了个莫名奇妙的杂耍)" "那个啊班长，虽然不好意思开口" "啊……？"
    "这里没桌子，你介意我端着过早不？" "啊，好，好啊" "(吓死我了！)" "已经放了有一会儿了，面都开始坨了"
    "…………" "(感觉……)" "哈哈，感觉高中时经常在你旁边过早来着"
@@ -92,6 +93,8 @@
        (chain masked-move (normal "(难得被吵醒一次，还是有点好处的)")))
      (make-animation (chain masked-move (normal "哈哈")))
      (make-animation (chain masked-move (me-say "……班长？")))
+     (make-animation (chain masked-move (normal "(好甜啊)")))
+     (make-animation (chain masked-move (normal "(好甜啊)")))
      (make-animation (chain masked-move (normal "诶？……好烫！")))
      (make-animation
        (chain
@@ -108,11 +111,11 @@
        (chain
          (fade (background corn-catch-successfull) 0.5)
          1
-         (normal "还好还好")))
+         (normal "(还好还好)")))
      (make-animation
        (chain (fade (background corn-shy) 0.5) 1 (normal "……啊")))
      (make-animation
-       (chain (background corn-shy) (me-say "还好接住了，这可三块钱呢")))
+       (chain (background corn-shy) (me-say "还好接住了啊，这可三块钱呢")))
      (make-animation
        (chain (fade (background corn-end) 1) 1 (normal "啊哈哈")))
      (make-animation

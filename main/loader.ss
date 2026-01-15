@@ -6,6 +6,8 @@
 	  (raylib ffi)
 	  (raylib constant))
 
+  (define *scale* (make-parameter 1.0))
+
   (define *max-concurrent-loads* 3)
   
   (define *active-loads* 0)
@@ -148,12 +150,14 @@
 	   (resource-guardian sh)
 	   (resource-guardian progress-fptr)
 	   (lambda (ani duration)
-	     (let ([started #f] [progress 0.0] [prev #f])
+	     (let ([started #f] [progress 0.0] [prev #f] [ratio #f])
 	       (lambda (s)
 		 (unless started
 		   (set! started (state-time s)))
 		 (unless prev
 		   (set! prev (state-previous s)))
+		 (unless ratio
+		   (set! ratio (Vector2-x (GetWindowScaleDPI))))
 		 (unless rt
 		   (let* ([win (state-window s)]
 			  [scale (GetWindowScaleDPI)]
@@ -164,6 +168,7 @@
 			  [phys-w (* logic-w scale-x)]
 			  [phys-h (* logic-h scale-y)])
 		     (set! rt (LoadRenderTexture (exact phys-w) (exact phys-h)))
+
 		     (SetTextureFilter (RenderTexture-texture rt) 1)
 		     (Rectangle-width-set! src (inexact phys-w))
 		     (Rectangle-height-set! src (* -1.0 phys-h))
@@ -176,9 +181,10 @@
 		     (resource-guardian rt)))
 		 (BeginTextureMode rt)
 		 (ClearBackground BLANK)
-		 (BeginMode2D cam)
-		 (ani s)
-		 (EndMode2D)
+		 (parameterize ([*scale* ratio])
+		   (BeginMode2D cam)
+		   (ani s)
+		   (EndMode2D))
 		 (EndTextureMode)
 		 
 		 (BeginShaderMode sh)
@@ -348,23 +354,24 @@
       [(_ name movment)
        (define name
 	 (lambda (ani)
-	   (let ([started #f]
-		 [ca (init-Camera2D)])
+	   (let* ([started #f]
+		  [ca (init-Camera2D)])
 	     (resource-guardian ca)
 	     (lambda (s)
 	       (unless started
 		 (set! started (state-time s)))
-	       (call-with-values
+	       (let ([ratio (*scale*)])
+		 (call-with-values
 		   (lambda () (movment (- (state-time s) started)))
 		 (lambda (off-x off-y tar-x tar-y ro zo)
-		   (ftype-set! Camera2D (offset x) ca off-x)
-                   (ftype-set! Camera2D (offset y) ca off-y)
+		   (ftype-set! Camera2D (offset x) ca (* ratio off-x))
+                   (ftype-set! Camera2D (offset y) ca (* ratio off-y))
                    (ftype-set! Camera2D (target x) ca tar-x)
                    (ftype-set! Camera2D (target y) ca tar-y)
                    (Camera2D-rotation-set! ca ro)
-                   (Camera2D-zoom-set! ca zo)))
+                   (Camera2D-zoom-set! ca (* ratio zo))))
 	       (BeginMode2D ca)
 	       (ani s)
 	       (EndMode2D)
-	       ))))]))
+	       )))))]))
   )

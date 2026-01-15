@@ -51,7 +51,7 @@
    "契约的主体很简单" "你现在的房屋、水电，还有其他的所有账单，都由我来付"
    "然后作为交换，你下班后和周末的时间，归我支配" "……啥？" "也就是说" "我要买断你工作之外的所有时间"
    "(毕竟，“腊肉”放太久了可是会发霉的)" "……不是说我没听懂啦，只是这不就是——" "啊啊，你想的没错"
-   "(从一开始就很简单)" "你高中说过想被包养" "(如果这就是“缘”的话)" "所以现在，我来包养你了"
+   "(从一开始就很简单)" "你说过想被包养" "(如果这就是“缘”的话)" "所以现在，我来包养你了"
    "(那我就来补上“分”吧)"))
 
 (let ()
@@ -529,7 +529,7 @@
      (make-animation
        (chain (background entrance) (normal "(从一开始就很简单)")))
      (make-animation
-       (chain (background entrance) (normal "你高中说过想被包养")))
+       (chain (background entrance) (normal "你说过想被包养")))
      (make-animation
        (chain (background entrance) (normal "(如果这就是“缘”的话)")))
      (make-animation
