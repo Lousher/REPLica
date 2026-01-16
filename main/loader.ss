@@ -250,61 +250,47 @@
 	    (resource-guardian color))
 	  (parameterize ([*color* color])
 	    (ani s))))))
+  
   (define-syntax dialogue
     (syntax-rules ()
       [(_ name path)
        (define name
 	 (let* ([codepoints-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int)))]
 		[codepoints (LoadCodepoints (*text*) codepoints-count)]
-		[font (LoadFontEx path 50 codepoints (ftype-ref int () codepoints-count))]
-		[sh (LoadShader #f "assets/glsl/outline.fs")]
-		[color-location (GetShaderLocation sh "color")]
-		[width-location (GetShaderLocation sh "width")]
-		[width-ptr (foreign-alloc (ftype-sizeof float))]
-		[color-ptr (foreign-alloc (* 4 (ftype-sizeof float)))])
+		[font (LoadFontEx path 50 codepoints (ftype-ref int () codepoints-count))])
 	   (resource-guardian font)
-	   (resource-guardian sh)
 	   (UnloadCodepoints codepoints)
 	   (foreign-free (ftype-pointer-address codepoints-count))
-	   (foreign-set! 'float width-ptr 0 2.0)
-	   (SetShaderValue sh width-location width-ptr SHADER_UNIFORM_FLOAT)
-	   (foreign-set! 'float color-ptr 0 0.0)
-	   (foreign-set! 'float color-ptr 4 0.0)
-	   (foreign-set! 'float color-ptr 8 0.0)
-	   (foreign-set! 'float color-ptr 12 1.0)
-	   (SetShaderValue sh color-location color-ptr SHADER_UNIFORM_VEC4)
-	   (foreign-free color-ptr)
-	   (foreign-free width-ptr)
+	   (let* ([sh (LoadShader #f "assets/glsl/wipe.text.fs")]
+		  [limit-loc (GetShaderLocation sh "limit")]
+		  [limit-ptr (foreign-alloc (ftype-sizeof float))])
+	     (resource-guardian sh)
 	   (lambda (text)
 	     (let* ([position (make-Vector2 0.0 0.0)]
-		    [origin (make-Vector2 0.0 0.0)]
+		    [measured-vec (MeasureTextEx font text 50.0 0.0)]
 		    [len (string-length text)]
 		    [subtexts (map (lambda (index) (substring text 0 index)) (map (lambda (x) (+ x 1)) (iota len)))]
-		    [measured-vecs (map (lambda (t) (MeasureTextEx font t 50.0 0.0)) subtexts)]
-		    [origin-xs (map (lambda (v) (/ (Vector2-x v) 2.0)) measured-vecs)]
-		    [origin-y (/ (Vector2-y (car measured-vecs)) 2.0)]
+		    [origin-x (/ (Vector2-x measured-vec) 2.0)]
+		    [origin-y (/ (Vector2-y measured-vec) 2.0)]
+		    [origin (make-Vector2 origin-x origin-y)]
 		    [started #f] [color #f])
-	       (Vector2-y-set! origin origin-y)
 	       (resource-guardian position origin)
 	       (lambda (s)
-		 (unless started
-		   (set! started (state-time s)))
-		 (unless color
-		   (set! color (*color*)))
+		 (unless started (set! started (state-time s)))
+		 (unless color (set! color (*color*)))
 		 (let* ([win (state-window s)]
 			[win-width (window-width win)]
-			[win-height (window-height win)])
+			[win-height (window-height win)]
+			[passed (- (state-time s) started)]
+			[start-x (- (* 0.5 win-width) origin-x)]
+			[current-limit (+ start-x (* 3000 passed))])
+		   (foreign-set! 'float limit-ptr 0 (exact->inexact current-limit))
+		   (SetShaderValue sh limit-loc limit-ptr SHADER_UNIFORM_FLOAT)
 		   (Vector2-x-set! position (* win-width 0.5))
 		   (Vector2-y-set! position (* win-height 0.8)))
-		 (BeginShaderMode sh)
-		 (let* ([passed (- (state-time s) started)]
-			[index (min (exact (round (/ passed 0.05))) (- len 1))]
-			[sub (list-ref subtexts index)] [origin-x (list-ref origin-xs index)])
-		   (Vector2-x-set! origin origin-x)
-		   (DrawTextPro font sub position origin 0.0 50.0 0.0 color))
-		 (EndShaderMode)
-		 )))
-	   ))]))
+		   (BeginShaderMode sh)
+		   (DrawTextPro font text position origin 0.0 50.0 0.0 color)
+		   (EndShaderMode)))))))]))
 
   (define-syntax phone
     (syntax-rules ()
