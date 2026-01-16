@@ -43,15 +43,9 @@
  masked-move
  (normal "哈哈"))
 
-(define me-say
-  (lambda (text)
-    (color
-     92 127 238 255
-     (normal text))))
-
 (chain
  masked-move
- (me-say "……班长？"))
+ (normal "……班长？"))
 
 (chain
  masked-move
@@ -84,7 +78,7 @@
 
 (chain
  (background corn-shy)
- (me-say "还好接住了啊，这可三块钱呢"))
+ (normal "还好接住了啊，这可三块钱呢"))
 
 (chain
  (fade (background corn-end) 1)
@@ -104,7 +98,7 @@
 
 (chain
  (fade chair-zoom 2)
- 2 (me-say "哎呀，之前从没在附近看见过班长你啊，是最近刚搬来吗？"))
+ 2 (normal "哎呀，之前从没在附近看见过班长你啊，是最近刚搬来吗？"))
 
 (chain
  chair-zoom
@@ -112,15 +106,15 @@
 
 (chain
  chair-zoom
- (me-say "是吗"))
+ (normal "是吗"))
 
 (chain
  chair-zoom
- (me-say "我休息日早上都会到这里"))
+ (normal "我休息日早上都会到这里"))
 
 (chain
  chair-zoom
- (me-say "有绿植的地方，会让人很放松啊"))
+ (normal "有绿植的地方，会让人很放松啊"))
 
 (chain
  chair-zoom
@@ -140,7 +134,7 @@
 
 (chain
  chair-zoom
- (me-say "那个啊班长，虽然不好意思开口"))
+ (normal "那个啊班长，虽然不好意思开口"))
 
 (chain
  chair-zoom
@@ -148,7 +142,7 @@
 
 (chain
  chair-zoom
- (me-say "这里没桌子，你介意我端着过早不？"))
+ (normal "这里没桌子，你介意我端着过早不？"))
 
 (chain
  chair-zoom
@@ -160,7 +154,7 @@
 
 (chain
  chair-zoom
- (me-say "已经放了有一会儿了，面都开始坨了"))
+ (normal "已经放了有一会儿了，面都开始坨了"))
 
 (define masked-chair-zoom (mask (park-zoom-move (background park-morning)) 1))
 
@@ -175,11 +169,11 @@
 
 (chain
  masked-chair-zoom
- (me-say "哈哈，感觉高中时经常在你旁边过早来着"))
+ (normal "哈哈，感觉高中时经常在你旁边过早来着"))
 
 (chain
  masked-chair-zoom
- (me-say "每天早上先直奔食堂，刷卡后直接拿碗热干面回教室"))
+ (normal "每天早上先直奔食堂，刷卡后直接拿碗热干面回教室"))
 
 (chain
  masked-chair-zoom
@@ -187,7 +181,7 @@
 
 (chain
  masked-chair-zoom
- (me-say "然后趁着早读前，老师还没来的几分钟吃完"))
+ (normal "然后趁着早读前，老师还没来的几分钟吃完"))
 
 (chain
  masked-chair-zoom
@@ -199,15 +193,15 @@
 
 (chain
  masked-chair-zoom
- (me-say "不过学校的热干面是真的难吃"))
+ (normal "不过学校的热干面是真的难吃"))
 
 (chain
  masked-chair-zoom
- (me-say "芝麻酱只给一点，面条吃起来却粘粘的"))
+ (normal "芝麻酱只给一点，面条吃起来却粘粘的"))
 
 (chain
  masked-chair-zoom
- (me-say "不像这碗，我还特地让老板多给了些黑芝麻酱"))
+ (normal "不像这碗，我还特地让老板多给了些黑芝麻酱"))
 
 (chain
  masked-chair-zoom
@@ -215,7 +209,7 @@
 
 (chain
  masked-chair-zoom
- (me-say "对啊，你看看"))
+ (normal "对啊，你看看"))
 
 (chain
  masked-chair-zoom
@@ -227,7 +221,7 @@
 
 (chain
  masked-chair-zoom
- (me-say "就从刚才路过的楚熊商区买的，班长你猜猜是哪家店？"))
+ (normal "就从刚才路过的楚熊商区买的，班长你猜猜是哪家店？"))
 
 (chain
  masked-chair-zoom
@@ -239,7 +233,7 @@
 
 (chain
  masked-chair-zoom
- (me-say "那下次有机会带你逛逛"))
+ (normal "那下次有机会带你逛逛"))
 
 (chain
  masked-chair-zoom
@@ -251,7 +245,7 @@
 
 (chain
  (fade chair-zoom 1)
- 1 (me-say "对了班长，你要不要尝一下这个酱？"))
+ 1 (normal "对了班长，你要不要尝一下这个酱？"))
 
 (chain
  chair-zoom
@@ -267,7 +261,7 @@
 
 (chain
  chair-zoom
- (me-say "用你的包子，撕点皮沾点酱试试？"))
+ (normal "用你的包子，撕点皮沾点酱试试？"))
 
 (chain
  chair-zoom
@@ -287,7 +281,7 @@
 
 (chain
  chair-zoom
- (me-say "还是一样吃得少啊"))
+ (normal "还是一样吃得少啊"))
 
 (chain
  chair-zoom
@@ -295,7 +289,7 @@
 
 (chain
  chair-zoom
- (me-say "哈哈"))
+ (normal "哈哈"))
 
 (chain
  chair-zoom
@@ -303,7 +297,7 @@
 
 (chain
  chair-zoom
- (me-say "班长，你看天上"))
+ (normal "班长，你看天上"))
 
 (chain
  chair-zoom
@@ -315,7 +309,7 @@
 
 (chain
  (lookup (background sky) 2.5)
- 3 (me-say "觉不觉得上面那块有点像个人"))
+ 3 (normal "觉不觉得上面那块有点像个人"))
 
 (chain
  (background sky)
@@ -323,7 +317,7 @@
 
 (chain
  (background sky)
- (me-say "就那一大片云上面，有个直角，就是弯腰的姿势"))
+ (normal "就那一大片云上面，有个直角，就是弯腰的姿势"))
 
 (chain
  (background sky)
@@ -331,7 +325,7 @@
 
 (chain
  (background sky)
- (me-say "然后最上面的那一块小的，就是头部，甚至连鼻子都突出来了"))
+ (normal "然后最上面的那一块小的，就是头部，甚至连鼻子都突出来了"))
 
 (chain
  (background sky)
@@ -339,7 +333,7 @@
 
 (chain
  (background sky)
- (me-say "还有后面那块，就是握紧的拳头"))
+ (normal "还有后面那块，就是握紧的拳头"))
 
 (chain
  (background sky)
@@ -347,7 +341,7 @@
 
 (chain
  (background sky)
- (me-say "是不是尾巴啊，他鼻子那么大，也不像个普通人"))
+ (normal "是不是尾巴啊，他鼻子那么大，也不像个普通人"))
 
 (chain
  (background sky)
@@ -359,7 +353,7 @@
 
 (chain
  chair-zoom
- (me-say "这整个看起来就像在跳远啊"))
+ (normal "这整个看起来就像在跳远啊"))
 
 (chain
  chair-zoom
@@ -367,7 +361,7 @@
 
 (chain
  chair-zoom
- (me-say "但是有尾巴的生物跳远很奇怪啊"))
+ (normal "但是有尾巴的生物跳远很奇怪啊"))
 
 (chain
  chair-zoom
@@ -375,7 +369,7 @@
 
 (chain
  chair-zoom
- (me-say "班长你怎么想"))
+ (normal "班长你怎么想"))
 
 (chain
  chair-zoom
@@ -391,11 +385,11 @@
 
 (chain
  chair-zoom
- (me-say "啊，不好意思"))
+ (normal "啊，不好意思"))
 
 (chain
  chair-zoom
- (me-say "一个人的时候没太注意"))
+ (normal "一个人的时候没太注意"))
 
 (chain
  chair-zoom

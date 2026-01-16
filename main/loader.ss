@@ -261,36 +261,41 @@
 	   (resource-guardian font)
 	   (UnloadCodepoints codepoints)
 	   (foreign-free (ftype-pointer-address codepoints-count))
-	   (let* ([sh (LoadShader #f "assets/glsl/wipe.text.fs")]
-		  [limit-loc (GetShaderLocation sh "limit")]
-		  [limit-ptr (foreign-alloc (ftype-sizeof float))])
-	     (resource-guardian sh)
 	   (lambda (text)
 	     (let* ([position (make-Vector2 0.0 0.0)]
 		    [measured-vec (MeasureTextEx font text 50.0 0.0)]
-		    [len (string-length text)]
-		    [subtexts (map (lambda (index) (substring text 0 index)) (map (lambda (x) (+ x 1)) (iota len)))]
-		    [origin-x (/ (Vector2-x measured-vec) 2.0)]
-		    [origin-y (/ (Vector2-y measured-vec) 2.0)]
+		    [measured-x (Vector2-x measured-vec)]
+		    [measured-y (Vector2-y measured-vec)]
+		    [origin-x (/ measured-x 2.0)]
+		    [origin-y (/ measured-y 2.0)]
 		    [origin (make-Vector2 origin-x origin-y)]
-		    [started #f] [color #f])
-	       (resource-guardian position origin)
+		    [started #f] [color #f] [bg-box (make-Rectangle 0.0 0.0 0.0 0.0)]
+		    [bg-color (make-Color 0 0 0 100)])
+	       (resource-guardian position)
+	       (resource-guardian origin)
+	       (resource-guardian bg-box)
+	       (resource-guardian bg-color)
 	       (lambda (s)
 		 (unless started (set! started (state-time s)))
 		 (unless color (set! color (*color*)))
 		 (let* ([win (state-window s)]
 			[win-width (window-width win)]
 			[win-height (window-height win)]
-			[passed (- (state-time s) started)]
-			[start-x (- (* 0.5 win-width) origin-x)]
-			[current-limit (+ start-x (* 3000 passed))])
-		   (foreign-set! 'float limit-ptr 0 (exact->inexact current-limit))
-		   (SetShaderValue sh limit-loc limit-ptr SHADER_UNIFORM_FLOAT)
-		   (Vector2-x-set! position (* win-width 0.5))
-		   (Vector2-y-set! position (* win-height 0.8)))
-		   (BeginShaderMode sh)
-		   (DrawTextPro font text position origin 0.0 50.0 0.0 color)
-		   (EndShaderMode)))))))]))
+			[center-x (* win-width 0.5)]
+			[center-y (* win-height 0.8)]
+			[start-x (- center-x origin-x)]
+			[start-y (- center-y origin-y)]
+			[passed (- (state-time s) started)])
+		   (when (< passed 2.0)
+		   (Vector2-x-set! position center-x)
+		   (Vector2-y-set! position center-y)
+		   (Rectangle-x-set! bg-box (- start-x 5))
+		   (Rectangle-y-set! bg-box (- start-y 5))
+		   (Rectangle-width-set! bg-box (+ measured-x 10))
+		   (Rectangle-height-set! bg-box (+ measured-y 10))
+		   (DrawRectangleRounded bg-box 0.3 10 bg-color)
+		   (DrawTextPro font text position origin 0.0 50.0 0.0 color)))
+		   )))))]))
 
   (define-syntax phone
     (syntax-rules ()

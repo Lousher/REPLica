@@ -6,15 +6,9 @@
  (fade (background avenue-morning) 2)
  2 (play avenue-bgm))
 
-(define me-say
-  (lambda (text)
-    (color
-     92 127 238 255
-     (normal text))))
-
 (chain
  (background avenue-morning)
- (me-say "诶～原来班长你在银帝中心啊"))
+ (normal "诶～原来班长你在银帝中心啊"))
 
 (chain
  (background avenue-morning)
@@ -26,11 +20,11 @@
 
 (chain
  (background avenue-morning)
- (me-say "哈哈，我就住在便宜的老破小里，保安的确很摸鱼"))
+ (normal "哈哈，我就住在便宜的老破小里，保安的确很摸鱼"))
 
 (chain
  (background avenue-morning)
- (me-say "不过就价格来说，比附近能便宜一半"))
+ (normal "不过就价格来说，比附近能便宜一半"))
 
 (chain
  (background avenue-morning)
@@ -38,7 +32,7 @@
 
 (chain
  (background avenue-morning)
- (me-say "可不是吗，工资不高就得省着点用啊"))
+ (normal "可不是吗，工资不高就得省着点用啊"))
 
 (chain
  (background avenue-morning)
@@ -50,11 +44,11 @@
 
 (chain
  (background avenue-morning)
- (me-say "不仅离公司远，小区环境也不太行"))
+ (normal "不仅离公司远，小区环境也不太行"))
 
 (chain
  (background avenue-morning)
- (me-say "不过房子空间还挺大的，我稍微打扮了下就好多了"))
+ (normal "不过房子空间还挺大的，我稍微打扮了下就好多了"))
 
 (chain
  (background avenue-morning)
@@ -62,7 +56,7 @@
 
 (chain
  (background avenue-morning)
- (me-say "嘛嘛，班长你懂就行，不要在意细节"))
+ (normal "嘛嘛，班长你懂就行，不要在意细节"))
 
 (chain
  (background avenue-morning)
@@ -70,7 +64,7 @@
 
 (chain
  (background avenue-morning)
- (me-say "我觉得这也算“不忘初心”"))
+ (normal "我觉得这也算“不忘初心”"))
 
 (chain
  (background avenue-morning)
@@ -90,7 +84,7 @@
 
 (chain
  (background avenue-morning)
- (me-say "想象什么？"))
+ (normal "想象什么？"))
 
 (chain
  (background avenue-morning)
@@ -98,7 +92,7 @@
 
 (chain
  (background avenue-morning)
- (me-say "好过分啊班长，明明我现在也是和你一样的劳动分子"))
+ (normal "好过分啊班长，明明我现在也是和你一样的劳动分子"))
 
 (chain
  (background avenue-morning)
@@ -118,19 +112,19 @@
 
 (chain
  (background avenue-morning)
- (me-say "啊——那个啊"))
+ (normal "啊——那个啊"))
 
 (chain
  (background avenue-morning)
- (me-say "是年少时不懂事，以为自己真能当小白脸呢"))
+ (normal "是年少时不懂事，以为自己真能当小白脸呢"))
 
 (chain
  (background avenue-morning)
- (me-say "虽然也是，别人虽然死鱼眼但好歹还是个帅哥"))
+ (normal "虽然也是，别人虽然死鱼眼但好歹还是个帅哥"))
 
 (chain
  (background avenue-morning)
- (me-say "可像我这样不高不帅还不舔的，上完大学就变成腊肉了……"))
+ (normal "可像我这样不高不帅还不舔的，上完大学就变成腊肉了……"))
 
 (chain
  (background avenue-morning)
@@ -150,7 +144,7 @@
 
 (chain
  (background avenue-morning)
- (me-say "………………"))
+ (normal "………………"))
 
 (chain
  (background avenue-morning)
@@ -158,7 +152,7 @@
 
 (chain
  (background avenue-morning)
- (me-say "好过分"))
+ (normal "好过分"))
 
 (chain
  (background avenue-morning)
@@ -170,7 +164,7 @@
 
 (chain
  (background avenue-morning)
- (me-say "明明我是真的要哭了"))
+ (normal "明明我是真的要哭了"))
 
 (chain
  (background avenue-morning)
@@ -178,7 +172,7 @@
 
 (chain
  (background avenue-morning)
- (me-say "对自嘲有抗性不等于对他嘲也有啊"))
+ (normal "对自嘲有抗性不等于对他嘲也有啊"))
 
 (chain
  (background avenue-morning)
@@ -190,7 +184,7 @@
 
 (chain
  (background avenue-morning)
- (me-say "哇～虽然之前有路过，可从没近距离看过啊"))
+ (normal "哇～虽然之前有路过，可从没近距离看过啊"))
 
 (chain
  (background avenue-morning)
@@ -198,7 +192,7 @@
 
 (chain
  (background avenue-morning)
- (me-say "只是偶尔啦"))
+ (normal "只是偶尔啦"))
 
 (chain
  (background avenue-morning)
@@ -206,7 +200,7 @@
 
 (chain
  (background avenue-morning)
- (me-say "诶，可以吗？"))
+ (normal "诶，可以吗？"))
 
 (chain
  (background avenue-morning)
@@ -234,11 +228,11 @@
 
  (chain
   (background entrance)
-  (me-say "卧…………不行"))
+  (normal "卧…………不行"))
 
 (chain
  (background entrance)
- (me-say "差点污染了这高雅的氛围"))
+ (normal "差点污染了这高雅的氛围"))
 
 (chain
  (background entrance)
@@ -250,7 +244,7 @@
 
 (chain
  (background entrance)
- (me-say "诶，可以吗……没什么服饰要求之类的？"))
+ (normal "诶，可以吗……没什么服饰要求之类的？"))
 
 (chain
  (background entrance)
@@ -258,7 +252,7 @@
 
 (chain
  (background entrance)
- (me-say "说的也是，那就……"))
+ (normal "说的也是，那就……"))
 
 (chain
  (background entrance)
@@ -266,11 +260,11 @@
 
 (chain
  (background entrance)
- (me-say "毕竟我是第一次见有接待厅的公寓啊"))
+ (normal "毕竟我是第一次见有接待厅的公寓啊"))
 
 (chain
  (background entrance)
- (me-say "而且这里是不是还喷了香氛啊"))
+ (normal "而且这里是不是还喷了香氛啊"))
 
 (chain
  (background entrance)
@@ -278,7 +272,7 @@
 
 (chain
  (background entrance)
- (me-say "……留着热干面味的我已经是异端了"))
+ (normal "……留着热干面味的我已经是异端了"))
 
 (chain
  (background entrance)
@@ -286,7 +280,7 @@
 
 (chain
  (background entrance)
- (me-say "感觉在靠近的时候就会被工作人员拦着"))
+ (normal "感觉在靠近的时候就会被工作人员拦着"))
 
 (chain
  (background entrance)
@@ -294,11 +288,11 @@
 
 (chain
  (background entrance)
- (me-say "还是坐在这里，安静地装有钱人最稳"))
+ (normal "还是坐在这里，安静地装有钱人最稳"))
 
 (chain
  (background entrance)
- (me-say "不过班长还是厉害啊，能住在这么高级的公寓里"))
+ (normal "不过班长还是厉害啊，能住在这么高级的公寓里"))
 
 (chain
  (background entrance)
@@ -310,7 +304,7 @@
 
 (chain
  (background entrance)
- (me-say "这里的房租说不定比我一个月总支出都贵啊"))
+ (normal "这里的房租说不定比我一个月总支出都贵啊"))
 
 (chain
  (background entrance)
@@ -318,7 +312,7 @@
 
 (chain
  (background entrance)
- (me-say "嗯，我算算啊"))
+ (normal "嗯，我算算啊"))
 
 (chain
  (background entrance)
@@ -326,7 +320,7 @@
 
 (chain
  (background entrance)
- (me-say "一千八……两千八……两千九"))
+ (normal "一千八……两千八……两千九"))
 
 (chain
  (background entrance)
@@ -334,7 +328,7 @@
 
 (chain
  (background entrance)
- (me-say "……游戏均摊到月的话，应该算五十？……"))
+ (normal "……游戏均摊到月的话，应该算五十？……"))
 
 (chain
  (background entrance)
@@ -342,7 +336,7 @@
 
 (chain
  (background entrance)
- (me-say "班长，差不多这个数吧"))
+ (normal "班长，差不多这个数吧"))
 
 (chain
  (background entrance)
@@ -358,11 +352,11 @@
 
 (chain
  (background entrance)
- (me-say "果然吗！"))
+ (normal "果然吗！"))
 
 (chain
  (background entrance)
- (me-say "而且居然还要再贵点，妈耶"))
+ (normal "而且居然还要再贵点，妈耶"))
 
 (chain
  (background entrance)
@@ -378,7 +372,7 @@
 
 (chain
  (background entrance)
- (me-say "可现实总是能突破我脆弱的心理防线"))
+ (normal "可现实总是能突破我脆弱的心理防线"))
 
 (chain
  (background entrance)
@@ -386,7 +380,7 @@
 
 (chain
  (background entrance)
- (me-say "我尽力"))
+ (normal "我尽力"))
 
 (chain
  (background entrance)
@@ -398,7 +392,7 @@
 
 (chain
  (background entrance)
- (me-say "啊班长，稍微等等"))
+ (normal "啊班长，稍微等等"))
 
 (chain
  (background entrance)
@@ -406,11 +400,11 @@
 
 (chain
  (background entrance)
- (me-say  "等下哈，我记得口袋里还剩几包来着"))
+ (normal  "等下哈，我记得口袋里还剩几包来着"))
 
 (chain
  (background entrance)
- (me-say  "找到了，给"))
+ (normal  "找到了，给"))
 
 (chain
  (background entrance)
@@ -422,11 +416,11 @@
 
 (chain
  (background entrance)
- (me-say  "哎呀，就是碰巧剩下的"))
+ (normal  "哎呀，就是碰巧剩下的"))
 
 (chain
  (background entrance)
- (me-say  "感觉在这么高级的地方有点拿不出手，你伸手接一下"))
+ (normal  "感觉在这么高级的地方有点拿不出手，你伸手接一下"))
 
 (chain
  (background entrance)
@@ -434,11 +428,11 @@
 
 (chain
  (background entrance)
- (me-say  "倒也没有那么夸张"))
+ (normal  "倒也没有那么夸张"))
 
 (chain
  (background entrance)
- (me-say  "给"))
+ (normal  "给"))
 
 (chain
  (background entrance)
@@ -450,7 +444,7 @@
 
 (chain
  (background entrance)
- (me-say  "原来班长你知道啊"))
+ (normal  "原来班长你知道啊"))
 
 (chain
  (background entrance)
@@ -466,7 +460,7 @@
 
 (chain
  (background entrance)
- (me-say "所以说，是刚好碰巧剩了几包"))
+ (normal "所以说，是刚好碰巧剩了几包"))
 
 (chain
  (background entrance)
@@ -474,7 +468,7 @@
 
 (chain
  (background entrance)
- (me-say "……随你怎么想，反正已经给你了"))
+ (normal "……随你怎么想，反正已经给你了"))
 
 (chain
  (background entrance)
@@ -482,15 +476,15 @@
 
 (chain
  (background entrance)
- (me-say "………………"))
+ (normal "………………"))
 
 (chain
  (background entrance)
- (me-say "那班长，这次真的不耽误你时间了"))
+ (normal "那班长，这次真的不耽误你时间了"))
 
 (chain
  (background entrance)
- (me-say "我也得趁被同化前赶紧开溜"))
+ (normal "我也得趁被同化前赶紧开溜"))
 
 (chain
  (background entrance)
@@ -518,11 +512,11 @@
 
 (chain
  (background entrance)
- (me-say "那班长，以后有缘再见啦"))
+ (normal "那班长，以后有缘再见啦"))
 
 (chain
  (background classroom-afternoon)
- (me-say "班长，以后江湖上有缘再相见！"))
+ (normal "班长，以后江湖上有缘再相见！"))
 
 (chain
  (background entrance)
@@ -530,7 +524,7 @@
 
 (chain
  (background entrance)
- (me-say "嗯？"))
+ (normal "嗯？"))
 
 (chain
  (background entrance)
@@ -538,7 +532,7 @@
 
 (chain
  (background entrance)
- (me-say "班长？怎么了？"))
+ (normal "班长？怎么了？"))
 
 (chain
  (background entrance)
@@ -550,11 +544,11 @@
 
 (chain
  (background entrance)
- (me-say "诶，干啥"))
+ (normal "诶，干啥"))
 
 (chain
  (background entrance)
- (me-say "你别一直拉着衣服不说话啊，我害怕"))
+ (normal "你别一直拉着衣服不说话啊，我害怕"))
 
 (chain
  (background entrance)
@@ -562,7 +556,7 @@
 
 (chain
  (background entrance)
- (me-say "那个……班长？"))
+ (normal "那个……班长？"))
 
 (chain
  (background entrance)
@@ -574,7 +568,7 @@
 
 (chain
  (background entrance)
- (me-say "你是想再要点糖——"))
+ (normal "你是想再要点糖——"))
 
 (chain
  (background entrance)
@@ -582,7 +576,7 @@
 
 (chain
  (background entrance)
- (me-say "诶？这也太突然……"))
+ (normal "诶？这也太突然……"))
 
 (chain
  (background entrance)
@@ -590,7 +584,7 @@
 
 (chain
  (background entrance)
- (me-say "不是，要我在这里主动承认也太难受了吧"))
+ (normal "不是，要我在这里主动承认也太难受了吧"))
 
 (chain
  (background entrance)
@@ -602,7 +596,7 @@
 
 (chain
  (background entrance)
- (me-say "班长你是要逼供什么啊"))
+ (normal "班长你是要逼供什么啊"))
 
 (chain
  (background entrance)
@@ -610,7 +604,7 @@
 
 (chain
  (background entrance)
- (me-say "好好，我是一个人孤独地蜗居在公寓里"))
+ (normal "好好，我是一个人孤独地蜗居在公寓里"))
 
 (chain
  (background entrance)
@@ -618,7 +612,7 @@
 
 (chain
  (background entrance)
- (me-say "这到底是要……"))
+ (normal "这到底是要……"))
 
 (chain
  (background entrance)
@@ -626,7 +620,7 @@
 
 (chain
  (background entrance)
- (me-say "就是普通的打游戏刷手机啊，然后偶尔出来散个步"))
+ (normal "就是普通的打游戏刷手机啊，然后偶尔出来散个步"))
 
 (chain
  (background entrance)
@@ -642,7 +636,7 @@
 
 (chain
  (background entrance)
- (me-say "当然有啊"))
+ (normal "当然有啊"))
 
 (chain
  (background entrance)
@@ -658,7 +652,7 @@
 
 (chain
  (background entrance)
- (me-say "我妈每两周都会来一次，每次都嫌弃我没打扫房间"))
+ (normal "我妈每两周都会来一次，每次都嫌弃我没打扫房间"))
 
 (chain
  (background entrance)
@@ -666,7 +660,7 @@
 
 (chain
  (background entrance)
- (me-say "还有小罗在这边工作的时候，会来我这住会儿"))
+ (normal "还有小罗在这边工作的时候，会来我这住会儿"))
 
 (chain
  (background entrance)
@@ -674,7 +668,7 @@
 
 (chain
  (background entrance)
- (me-say "就是团支书啊，有点胖胖的那个"))
+ (normal "就是团支书啊，有点胖胖的那个"))
 
 (chain
  (background entrance)
@@ -694,11 +688,11 @@
 
 (chain
  (background entrance)
- (me-say "其他人？"))
+ (normal "其他人？"))
 
 (chain
  (background entrance)
- (me-say "也没其他人了吧"))
+ (normal "也没其他人了吧"))
 
 (chain
  (background entrance)
@@ -710,15 +704,15 @@
 
 (chain
  (background entrance)
- (me-say "…………"))
+ (normal "…………"))
 
 (chain
  (background entrance)
- (me-say "所以"))
+ (normal "所以"))
 
 (chain
  (background entrance)
- (me-say "让我认清自己没钱没兴趣还没朋友的悲惨世界后，班长你想干啥"))
+ (normal "让我认清自己没钱没兴趣还没朋友的悲惨世界后，班长你想干啥"))
 
 (chain
  (background entrance)
@@ -734,7 +728,7 @@
 
 (chain
  (background entrance)
- (me-say "确认？"))
+ (normal "确认？"))
 
 (chain
  (background entrance)
@@ -746,11 +740,11 @@
 
 (chain
  (background entrance)
- (me-say "诶，所以才嘲笑————嗯……？"))
+ (normal "诶，所以才嘲笑————嗯……？"))
 
 (chain
  (background entrance)
- (me-say "甲方是什么意思？"))
+ (normal "甲方是什么意思？"))
 
 (chain
  (background entrance)
@@ -758,7 +752,7 @@
 
 (chain
  (background entrance)
- (me-say "不是这方面——"))
+ (normal "不是这方面——"))
 
 (chain
  (background entrance)
@@ -782,7 +776,7 @@
 
 (chain
  (background entrance)
- (me-say "……啥？"))
+ (normal "……啥？"))
 
 (chain
  (background entrance)
@@ -798,7 +792,7 @@
 
 (chain
  (background entrance)
- (me-say "……不是说我没听懂啦，只是这不就是——"))
+ (normal "……不是说我没听懂啦，只是这不就是——"))
 
 (chain
  (background entrance)
