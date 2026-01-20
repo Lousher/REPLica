@@ -1,0 +1,23 @@
+(import (replica) (loader) (directive))
+
+(*text* (string-append "然后这里是餐厅？"))
+
+(let ()
+  (texture menu "assets/picture/menu.png")
+  (texture morning "assets/bg/yuwen.bedroom.morning.png")
+  (texture yuwen "assets/yuwen/yuwen.date.png")
+  (texture \x34;dspace "assets/bg/4dspace.png")
+  (texture yuki "assets/ch-yuki/0896.png")
+  (texture lehayuan "assets/bg/lehuayuan.png")
+  (dialogue normal "assets/font/Xiaolai-Regular.ttf")
+  (inspector inspect)
+  (*actions*
+    (list
+      (make-animation
+        (inspect (parallel (background \x34;dspace))))
+      (make-animation
+        (parallel
+          (background lehayuan)
+          (character yuwen)
+          (normal "然后这里是餐厅？"))))))
+

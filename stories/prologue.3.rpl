@@ -1,225 +1,283 @@
 (load "stories/prologue.3.def")
+(texture yuwen "assets/yuwen/yuwen.date.png")
 
 (background black)
 
 (chain
- (fade (background avenue-morning) 2)
+ (fade
+ (parallel
+ 	(background avenue-morning) 
+(character yuwen)) 2)
  2 (play avenue-bgm))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "诶～原来班长你在银帝中心啊"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+ (character yuwen)
  (normal "对啊"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "家里不让我住环境太差的小区"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "哈哈，我就住在便宜的老破小里，保安的确很摸鱼"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "不过就价格来说，比附近能便宜一半"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "差距这么大吗"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "可不是吗，工资不高就得省着点用啊"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "原来如此"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "(工资不高啊)"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "不仅离公司远，小区环境也不太行"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "不过房子空间还挺大的，我稍微打扮了下就好多了"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "“打扮”是什么啦"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "嘛嘛，班长你懂就行，不要在意细节"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "还是一样，不仅嘴瓢还嘴贫"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "我觉得这也算“不忘初心”"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "说不过你"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "(虽然绕了个圈，但马上也要到了啊)"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "(都记不清听多少傻话了)"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "……还是想象不出来啊"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "想象什么？"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "你工作的样子"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "好过分啊班长，明明我现在也是和你一样的劳动分子"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "所以才难想象啊"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "(和我一样什么的)"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "你高中不是还说过“想当个家庭主夫”吗"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "(虽然只是个玩笑)"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "啊——那个啊"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "是年少时不懂事，以为自己真能当小白脸呢"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "虽然也是，别人虽然死鱼眼但好歹还是个帅哥"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "可像我这样不高不帅还不舔的，上完大学就变成腊肉了……"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "(都分不清是装的还是真心话了)"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "(不过)"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "腊肉啊……"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "(要被风干、保存，还得被挂在家里……)"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "………………"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "的确有点像"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "好过分"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "(这绝对是假的)"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "好啦好啦，别装了"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "明明我是真的要哭了"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "可这不是你自己先说的吗"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "对自嘲有抗性不等于对他嘲也有啊"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "又在瞎嘴瓢……啊"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "(已经到了啊)"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "哇～虽然之前有路过，可从没近距离看过啊"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "你有路过啊"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "只是偶尔啦"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "那要不要进去看看"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "诶，可以吗？"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "门口只是接待处"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "和我在一起就没事"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "那我就好好跟着班长你了！"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+(character yuwen)
  (normal "(两眼放光啊)"))
 
 (chain
- (background avenue-morning)
+ (background avenue-morning) 
+ (character yuwen)
  (normal "好啊"))
 
 (chain

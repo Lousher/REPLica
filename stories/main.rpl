@@ -1,0 +1,18 @@
+(texture menu "assets/picture/menu.png")
+(texture morning "assets/bg/yuwen.bedroom.morning.png")
+(texture yuwen "assets/yuwen/yuwen.date.png")
+(texture 4dspace "assets/bg/4dspace.png")
+(texture yuki "assets/ch-yuki/0896.png")
+(texture lehayuan "assets/bg/lehuayuan.png")
+(dialogue normal "assets/font/Xiaolai-Regular.ttf")
+
+(inspector inspect)
+
+ (inspect
+  (parallel	
+  (background 4dspace)))
+
+(parallel
+ (background lehayuan)
+ (character yuwen)
+ (normal "然后这里是餐厅？"))

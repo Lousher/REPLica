@@ -67,7 +67,6 @@
 	   (load (string-append current-story ".so"))
 	   (let stepper ([rest (*actions*)] [step-state story-state])
 	     (*actions* #f)
-;	     (sleep (make-time 'time-duration 10000000 0))
 	     (cond
 	      [(null? rest) (exit)]
 	      [(list? (car rest))

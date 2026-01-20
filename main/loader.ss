@@ -1,5 +1,5 @@
 (library (loader)
-  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color music *musics*)
+  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color music *musics* inspector)
   (import (chezscheme)
 	  (state)
 	  (tool)
@@ -282,18 +282,18 @@
 			[win-width (window-width win)]
 			[win-height (window-height win)]
 			[center-x (* win-width 0.5)]
-			[center-y (* win-height 0.8)]
+			[center-y (* win-height 0.9)]
 			[start-x (- center-x origin-x)]
 			[start-y (- center-y origin-y)]
 			[passed (- (state-time s) started)])
 		   (when (< passed 2.0)
 		   (Vector2-x-set! position center-x)
 		   (Vector2-y-set! position center-y)
-		   (Rectangle-x-set! bg-box (- start-x 5))
-		   (Rectangle-y-set! bg-box (- start-y 5))
-		   (Rectangle-width-set! bg-box (+ measured-x 10))
-		   (Rectangle-height-set! bg-box (+ measured-y 10))
-		   (DrawRectangleRounded bg-box 0.3 10 bg-color)
+		   (Rectangle-x-set! bg-box (- start-x 10))
+		   (Rectangle-y-set! bg-box (- start-y 10))
+		   (Rectangle-width-set! bg-box (+ measured-x 20))
+		   (Rectangle-height-set! bg-box (+ measured-y 20))
+		   (DrawRectangleRounded bg-box 0.5 10 bg-color)
 		   (DrawTextPro font text position origin 0.0 50.0 0.0 color)))
 		   )))))]))
 
@@ -322,7 +322,7 @@
 		   [(loading)
 		    (DrawText "Loading ..." 0 0 20 WHITE)]
 		   [(ram-ready)
-		    (TraceLog LOG_INFO "Async: Uploading Image to VRAM ...\n")
+		    (TraceLog LOG_INFO "Async: Uploading Image to VRAM ...")
 		    (let ([tex (LoadTextureFromImage current-data)])
 		      (resource-guardian tex)
 		      (with-mutex (resource-lock res)
@@ -339,6 +339,52 @@
 		    (DrawTexturePro current-data src round-rec origin 0.0 WHITE)
 		    (DrawRectangleRoundedLinesEx round-rec 0.25 8 6.0 LIGHTGRAY)
 		    ])))))))]))
+
+  (define-syntax inspector
+    (syntax-rules ()
+      [(_ name)
+       (define name
+         (let ([start-x 0] 
+               [start-y 0] 
+               [is-dragging #f])
+           (lambda (ani)
+             (lambda (s)
+               ;; 1. 先绘制原本的游戏画面
+               (ani s)
+
+               ;; 2. 获取鼠标数据 (使用 Raylib 基础函数)
+               (let ([mx (GetMouseX)]
+                     [my (GetMouseY)])
+
+                 ;; --- 逻辑：鼠标状态机 ---
+                 ;; A. 按下瞬间：记录起点
+                 (when (IsMouseButtonPressed 0) ;; 0 = MOUSE_BUTTON_LEFT
+                   (set! start-x mx)
+                   (set! start-y my)
+                   (set! is-dragging #t))
+
+                 ;; B. 松开瞬间：停止拖拽
+                 (when (IsMouseButtonReleased 0)
+                   (set! is-dragging #f))
+
+                 ;; --- 绘制：实时坐标 (绿色) ---
+                 ;; 在鼠标旁边显示 X,Y，方便随时看点
+                 (DrawText (format "POS: ~a, ~a" mx my) (+ mx 15) my 20 GREEN)
+
+                 ;; --- 绘制：拖拽产生的矩形 (红色) ---
+                 (when (and is-dragging (IsMouseButtonDown 0))
+                   (let* ([rx (min start-x mx)]           ;; 左上角 X
+                          [ry (min start-y my)]           ;; 左上角 Y
+                          [rw (abs (- mx start-x))]       ;; 宽度
+                          [rh (abs (- my start-y))])      ;; 高度
+                     
+                     ;; 画红框
+                     (DrawRectangleLines rx ry rw rh RED)
+                     ;; 在框下面显示详细数据，可以直接抄写到代码里
+                     ;; 格式: X Y W H
+                     (DrawText (format "RECT: ~a ~a ~a ~a" rx ry rw rh) rx (+ ry rh 10) 20 RED)
+                     ))
+                 )))))]))
 
   (define-syntax camera
     (syntax-rules ()

@@ -1,5 +1,5 @@
 (library (directive)
-  (export make-animation static background jump above beside play parallel locate duration stop trigger chain)
+  (export make-animation static background jump above beside play parallel locate duration stop trigger chain character)
   (import (chezscheme)
 	  (state)
 	  (loader)
@@ -71,11 +71,9 @@
 	       (DrawText "ERROR ..." 0 0 20 RED)]
 	      [(ram-ready)
 	       (TraceLog LOG_INFO "Async: Uploading Image to VRAM ...\n")
-;	       (ImageResize current-data (GetScreenWidth) (GetScreenHeight))
 	       (let ([tex (LoadTextureFromImage current-data)])
+		 (SetTextureFilter tex 1)
 		 (resource-guardian tex)
-;		 (GenTextureMipmaps tex)
-;		 (SetTextureFilter tex 2)
 		 (with-mutex (resource-lock res)
 		   (resource-data-set! res tex)
 		   (resource-status-set! res 'gpu-ready)
@@ -83,6 +81,51 @@
 		   (TraceLog LOG_INFO "Optimization: Background Image freed manually.")
 		   ))]
 	      [(gpu-ready)
+	       (unless src
+		 (set! src (texture->Rectangle current-data)))
+	       (DrawTexturePro current-data src dest origin 0.0 WHITE)])
+	    )))))
+
+  (define character
+    (lambda (res)
+      (let ([src #f] [dest #f]
+	    [origin (make-Vector2 0.0 0.0)])
+	(resource-guardian origin)
+	(lambda (s)
+	  (let ([current-status #f] [current-data #f])
+	    (with-mutex (resource-lock res)
+	      (set! current-status (resource-status res))
+	      (when (or (eqv? current-status 'ram-ready)
+			(eqv? current-status 'gpu-ready))
+		(set! current-data (resource-data res))))
+	    (case current-status
+	      [(loading)
+	       (DrawText "Loading ..." 0 0 20 WHITE)]
+	      [(error)
+	       (DrawText "ERROR ..." 0 0 20 RED)]
+	      [(ram-ready)
+	       (TraceLog LOG_INFO "Async: Uploading Image to VRAM ...")
+	       (let ([tex (LoadTextureFromImage current-data)])
+		 (SetTextureFilter tex 1)
+		 (resource-guardian tex)
+		 (with-mutex (resource-lock res)
+		   (resource-data-set! res tex)
+		   (resource-status-set! res 'gpu-ready)
+		   (UnloadImage current-data)
+		   (TraceLog LOG_INFO "Optimization: Background Image freed manually.")
+		   ))]
+	      [(gpu-ready)
+	       (unless dest
+		 (let* ([win (state-window s)]
+			[logic-w (window-width win)]
+			[logic-h (window-height win)]
+			[tex-w (Texture-width current-data)]
+			[tex-h (Texture-height current-data)]
+			[scale-factor (/ logic-w tex-w)]
+			[final-h (* tex-h scale-factor)]
+			[pos-y (- logic-h final-h)])
+		   (set! dest
+			 (make-Rectangle 0.0 0.0 (inexact logic-w) (inexact final-h)))))
 	       (unless src
 		 (set! src (texture->Rectangle current-data)))
 	       (DrawTexturePro current-data src dest origin 0.0 WHITE)])

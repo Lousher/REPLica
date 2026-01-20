@@ -38,7 +38,8 @@
 		 camera
                  phone
                  define
-		 define-syntax))))
+		 define-syntax
+		 inspector))))
 
   (define directive?
     (lambda (x)
