@@ -6,7 +6,7 @@
 (chain
  (fade
  (parallel
- 	(background avenue-morning) 
+  	(background avenue-morning) 
 (character yuwen)) 2)
  2 (play avenue-bgm))
 
@@ -88,22 +88,17 @@
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "说不过你"))
+ (normal "唉，说不过你"))
 
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "(虽然绕了个圈，但马上也要到了啊)"))
+ (normal "(高中以来就一直如此)"))
 
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "(都记不清听多少傻话了)"))
-
-(chain
- (background avenue-morning) 
-(character yuwen)
- (normal "……还是想象不出来啊"))
+ (normal "不过，有点难想象啊"))
 
 (chain
  (background avenue-morning) 
@@ -118,7 +113,12 @@
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "好过分啊班长，明明我现在也是和你一样的劳动分子"))
+ (normal "好过分啊班长"))
+
+(chain
+ (background avenue-morning) 
+(character yuwen)
+ (normal "明明我现在也是和你一样光荣的劳动分子"))
 
 (chain
  (background avenue-morning) 
@@ -133,12 +133,12 @@
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "你高中不是还说过“想当个家庭主夫”吗"))
+ (normal "你不是说过“想当个家庭主夫”吗"))
 
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "(虽然只是个玩笑)"))
+ (normal "还说“不劳而获的饭最好吃了”"))
 
 (chain
  (background avenue-morning) 
@@ -148,7 +148,7 @@
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "是年少时不懂事，以为自己真能当小白脸呢"))
+ (normal "年少时不懂事，以为自己真能当小白脸呢"))
 
 (chain
  (background avenue-morning) 
@@ -163,7 +163,7 @@
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "(都分不清是装的还是真心话了)"))
+ (normal "(都分不清是装的还是真心的)"))
 
 (chain
  (background avenue-morning) 
@@ -198,7 +198,7 @@
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "(这绝对是假的)"))
+ (normal "(啊，这绝对是假的)"))
 
 (chain
  (background avenue-morning) 
@@ -233,7 +233,12 @@
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "哇～虽然之前有路过，可从没近距离看过啊"))
+ (normal "哇，真够厉害的"))
+
+(chain
+ (background avenue-morning) 
+(character yuwen)
+ (normal "虽然之前有路过，可近距离看还是不一样啊"))
 
 (chain
  (background avenue-morning) 
@@ -248,7 +253,22 @@
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "那要不要进去看看"))
+ (normal "毕竟是附近最好的小区，住不起也能过过眼瘾嘛"))
+
+(chain
+ (background avenue-morning) 
+(character yuwen)
+ (normal "这样啊"))
+
+(chain
+ (background avenue-morning) 
+(character yuwen)
+ (normal "(住不起……嘛)"))
+
+(chain
+ (background avenue-morning) 
+(character yuwen)
+ (normal "要不要进去看看"))
 
 (chain
  (background avenue-morning) 
@@ -258,27 +278,27 @@
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "门口只是接待处"))
-
-(chain
- (background avenue-morning) 
-(character yuwen)
- (normal "和我在一起就没事"))
-
-(chain
- (background avenue-morning) 
-(character yuwen)
- (normal "那我就好好跟着班长你了！"))
-
-(chain
- (background avenue-morning) 
-(character yuwen)
  (normal "(两眼放光啊)"))
 
 (chain
  (background avenue-morning) 
+(character yuwen)
+ (normal "一楼只是接待处，所有人都能进"))
+
+(chain
+ (background avenue-morning) 
+(character yuwen)
+ (normal "不过以防万一，你最好还是跟着我吧"))
+
+(chain
+ (background avenue-morning) 
  (character yuwen)
- (normal "好啊"))
+ (normal "好啊好啊，那我就好好跟着班长你了！"))
+
+(chain
+ (background avenue-morning) 
+ (character yuwen)
+ (normal "(呵呵)"))
 
 (chain
  (fade (background entrance) 2)
@@ -306,7 +326,7 @@
 
 (chain
  (background entrance)
- (normal "你看我这身像Dress Code吗"))
+ (normal "你看我这身，像有吗？"))
 
 (chain
  (background entrance)
@@ -314,7 +334,19 @@
 
 (chain
  (background entrance)
- (normal "你居然也会战战兢兢啊"))
+ (normal "没必要坐那么正吧"))
+
+(chain
+ (background entrance)
+ (normal "啊啊，说的对"))
+
+(chain
+ (background entrance)
+ (normal "呵呵"))
+
+(chain
+ (background entrance)
+ (normal "没想到你居然也会战战兢兢的啊"))
 
 (chain
  (background entrance)
@@ -326,7 +358,11 @@
 
 (chain
  (background entrance)
- (normal "应该是从通风管道里一起出来的"))
+ (normal "应该，是从通风管道里一起出来的"))
+
+(chain
+ (background entrance)
+ (normal "哇，果然"))
 
 (chain
  (background entrance)
@@ -334,19 +370,139 @@
 
 (chain
  (background entrance)
- (normal "那你要过去被同化一下吗？"))
+ (normal "(说是“芝麻酱”味才更准确吧)"))
 
 (chain
  (background entrance)
- (normal "感觉在靠近的时候就会被工作人员拦着"))
+ (normal "那你要过去被香气同化一下吗？"))
 
 (chain
  (background entrance)
- (normal "你能理解就好"))
+ (normal "嗯……"))
 
 (chain
  (background entrance)
- (normal "还是坐在这里，安静地装有钱人最稳"))
+ (normal "感觉会被人拍下来然后出现在小蓝书的明日头条上"))
+
+(chain
+ (background entrance)
+ (normal "因为你站在通风管下面？"))
+
+(chain
+ (background entrance)
+ (normal "因为我像个蹦蹦僵尸一样一跳一跳地想更靠近香氛出口"))
+
+(chain
+ (background entrance)
+ (normal "…………"))
+
+(chain
+ (background entrance)
+ (normal "你还是坐正经点吧"))
+
+(chain
+ (background entrance)
+ (normal "好过分"))
+
+(chain
+ (background entrance)
+ (normal "因为有种你真干得出来的感觉"))
+
+(chain
+ (background entrance)
+ (normal "诶，怎么会呢，肯定是开玩笑的啊"))
+
+(chain
+ (background entrance)
+ (normal "只是好久不见了，才想给你留下点深刻印象"))
+
+(chain
+ (background entrance)
+ (normal "啊，是吗"))
+
+(chain
+ (background entrance)
+ (normal "对啊"))
+
+(chain
+ (background entrance)
+ (normal "而且跳啊跳的也太没效率了，用梯子站在出风口才更好"))
+
+(chain
+ (background entrance)
+ (normal "……啊，是吗"))
+
+(chain
+ (background entrance)
+ (normal "那你可真厉害啊"))
+
+(chain
+ (background entrance)
+ (normal "…………"))
+
+(chain
+ (background entrance)
+ (normal "………………"))
+
+(chain
+ (background entrance)
+ (normal "……我不开玩笑了，班长你能不能别那样看我了"))
+
+(chain
+ (background entrance)
+ (normal "……唉……"))
+
+(chain
+ (background entrance)
+ (normal "(一直装不正经)"))
+
+(chain
+ (background entrance)
+ (normal "……所以才想象不出你工作的样子啊"))
+
+(chain
+ (background entrance)
+ (normal "有那么难想象吗，我上班的样子就和现在差不多啊"))
+
+(chain
+ (background entrance)
+ (normal "骗人"))
+
+(chain
+ (background entrance)
+ (normal "(意思是说陪我就像在工作一样吗)"))
+
+(chain
+ (background entrance)
+ (normal "是真的啊班长，我可是专门奔着不加班的工作找的"))
+
+(chain
+ (background entrance)
+ (normal "再加上我独特的摸鱼技巧，平时上班很轻松的"))
+
+(chain
+ (background entrance)
+ (normal "所以是“上班像现在一样轻松”，而不是“现在和上班一样难受”？"))
+
+(chain
+ (background entrance)
+ (normal "虽然是的，但为啥要说的这么拗口？"))
+
+(chain
+ (background entrance)
+ (normal "因为你没把话说清楚啊"))
+
+(chain
+ (background entrance)
+ (normal "有吗？"))
+
+(chain
+ (background entrance)
+ (normal "有的啊，唉……"))
+
+(chain
+ (background entrance)
+ (normal "(……我到底在生什么气啊)"))
 
 (chain
  (background entrance)
@@ -354,35 +510,39 @@
 
 (chain
  (background entrance)
- (normal "是吗"))
+ (normal "你这么觉得啊"))
 
 (chain
  (background entrance)
- (normal "(明明就像个笼子一样)"))
+ (normal "(明明像个笼子一样)"))
 
 (chain
  (background entrance)
- (normal "这里的房租说不定比我一个月总支出都贵啊"))
+ (normal "有接待所还有湖景"))
 
 (chain
  (background entrance)
- (normal "那你现在一个月花多少？"))
+ (normal "说不定光房租都够我一个月总花销了"))
 
 (chain
  (background entrance)
- (normal "嗯，我算算啊"))
+ (normal "(总花销啊)"))
 
 (chain
  (background entrance)
- (normal "(差不多该结束了)"))
+ (normal "那你现在每月花多少"))
 
 (chain
  (background entrance)
- (normal "一千八……两千八……两千九"))
+ (normal "嗯？我算算啊"))
 
 (chain
  (background entrance)
- (normal "(没想到要用钱的话题收尾)"))
+ (normal "一千八……两千六……两千九"))
+
+(chain
+ (background entrance)
+ (normal "(居然念出声啊)"))
 
 (chain
  (background entrance)
@@ -390,7 +550,7 @@
 
 (chain
  (background entrance)
- (normal "(好讨厌啊)"))
+ (normal "(游戏啊，果然是男生)"))
 
 (chain
  (background entrance)
@@ -402,11 +562,11 @@
 
 (chain
  (background entrance)
- (normal "(三千五吗)"))
+ (normal "(三千吗)"))
 
 (chain
  (background entrance)
- (normal "再加点就差不多了"))
+ (normal "再加七成吧"))
 
 (chain
  (background entrance)
@@ -414,11 +574,15 @@
 
 (chain
  (background entrance)
- (normal "而且居然还要再贵点，妈耶"))
+ (normal "……再加七成的话就是1.7倍，三千的1.7倍……哈哈……"))
 
 (chain
  (background entrance)
- (normal "(结果还是说脏话了啊)"))
+ (normal "……妈耶，这还只是房租啊……"))
+
+(chain
+ (background entrance)
+ (normal "(啊，结果还是说脏话了)"))
 
 (chain
  (background entrance)
@@ -426,7 +590,23 @@
 
 (chain
  (background entrance)
- (normal "你之前不早有预期了吗"))
+ (normal "……班长，我能认为你在挑衅吗？"))
+
+(chain
+ (background entrance)
+ (normal "抱歉抱歉，不是那个意思"))
+
+(chain
+ (background entrance)
+ (normal "(开始装凶了啊)"))
+
+(chain
+ (background entrance)
+ (normal "而且你之前不就有预期了吗"))
+
+(chain
+ (background entrance)
+ (normal "啊，是啊，是有预期了啊……"))
 
 (chain
  (background entrance)
@@ -434,63 +614,131 @@
 
 (chain
  (background entrance)
- (normal "那你可别抽在我面前"))
+ (normal "之前的防线是？"))
 
 (chain
  (background entrance)
- (normal "我尽力"))
+ (normal "一点三的无限循环小数"))
 
 (chain
  (background entrance)
- (normal "(这样就挺好的吧)"))
+ (normal "一点三的…………你说三分之四不就行了"))
 
 (chain
  (background entrance)
- (normal "那就这样吧，我得在你晕之前先撤"))
+ (normal "无限循环听上去更帅一点"))
 
 (chain
  (background entrance)
- (normal "啊班长，稍微等等"))
+ (normal "啊哈……"))
 
 (chain
  (background entrance)
- (normal  "怎么了？"))
+ (normal "(又是莫名其妙的傻话)"))
 
 (chain
  (background entrance)
- (normal  "等下哈，我记得口袋里还剩几包来着"))
+ (normal "所以，防线被打破后有什么想法吗？"))
 
 (chain
  (background entrance)
- (normal  "找到了，给"))
+ (normal "啊啊……"))
 
 (chain
  (background entrance)
- (normal  "什么东西啊"))
+ (normal "……大考的时候，每当班长你考的比我高，你就会这么问我啊"))
 
 (chain
  (background entrance)
- (normal  "(神神秘秘的，还握着拳不让看)"))
+ (normal "诶，有吗"))
 
 (chain
  (background entrance)
- (normal  "哎呀，就是碰巧剩下的"))
+ (normal "哇，嘲讽完就装不记得，太耍赖了"))
 
 (chain
  (background entrance)
- (normal  "感觉在这么高级的地方有点拿不出手，你伸手接一下"))
+ (normal "有次我还把我最喜欢的铅笔给了你啊"))
 
 (chain
  (background entrance)
- (normal  "要我顺便闭上眼吗？"))
+ (normal "……啊！"))
 
 (chain
  (background entrance)
- (normal  "倒也没有那么夸张"))
+ (normal "(有印象了)"))
 
 (chain
  (background entrance)
- (normal  "给"))
+ (normal "是那个五颜六色拼在一起的，一点都不好用的铅笔？"))
+
+(chain
+ (background entrance)
+ (normal "啊啊，正式名称好像叫“积木笔”来着"))
+
+(chain
+ (background entrance)
+ (normal "(居然会承认不好用啊)"))
+
+(chain
+ (background entrance)
+ (normal "所以算是惯例了吧，输家会给赢家一些东西"))
+
+(chain
+ (background entrance)
+ (normal "这样……"))
+
+(chain
+ (background entrance)
+ (normal "诶，所以意思是"))
+ 
+(chain
+ (background entrance)
+ (normal "对对对，班长你先闭眼让我准备一下"))
+
+(chain
+ (background entrance)
+ (normal "啊，好"))
+
+(chain
+ (background entrance)
+ (normal "(居然还有惊喜啊)"))
+
+(chain
+ (background entrance)
+ (normal "等下哈，我记得有的来着……"))
+
+(chain
+ (background entrance)
+ (normal  "找到了！班长你把手伸出来，啊不许睁眼"))
+
+(chain
+ (background entrance)
+ (normal  "什么东西啊，神神秘秘的"))
+
+(chain
+ (background entrance)
+ (normal  "哎呀，不是什么值钱的东西"))
+
+(chain
+ (background entrance)
+ (normal  "没事，我没期待你能送钻石出来"))
+
+(chain
+ (background entrance)
+ (normal  "……班长你想的也太美了点"))
+
+(chain
+ (background entrance)
+ (normal  "等等，让我调整一下角度再放……好！"))
+
+(chain
+ (background entrance)
+ (normal  "可以了班长，看到实物后不要太失望啊"))
+
+(chain
+ (background entrance)
+ (normal  "诶～"))
 
 (chain
  (background entrance)
@@ -514,6 +762,10 @@
 
 (chain
  (background entrance)
+ (normal  "(虽然没有失望啦，不过……)"))
+
+(chain
+ (background entrance)
  (normal  "你都多大了，还在吃这些玩意"))
 
 (chain
@@ -522,7 +774,7 @@
 
 (chain
  (background entrance)
- (normal "呵呵，那可真是太巧了啊"))
+ (normal "诶，那可真是太巧了啊"))
 
 (chain
  (background entrance)
@@ -538,39 +790,51 @@
 
 (chain
  (background entrance)
- (normal "那班长，这次真的不耽误你时间了"))
+ (normal "那，班长"))
 
 (chain
  (background entrance)
- (normal "我也得趁被同化前赶紧开溜"))
+ (normal "嗯"))
 
 (chain
  (background entrance)
- (normal "……嗯"))
+ (normal "(……要走了啊)"))
 
 (chain
  (background entrance)
- (normal "(要走了啊)"))
+ (normal "看到你出人头地变富婆，之前那么辛苦的日子都值得了啊"))
 
 (chain
  (background entrance)
- (normal "(小礼物，还真是意料之外)"))
+ (normal "啊啊"))
 
 (chain
  (background entrance)
- (normal "(二、四、八、十)"))
+ (normal "(值得……嘛)"))
 
 (chain
  (background entrance)
- (normal "(每天一包的话，能撑十天)"))
-
-(chain
- (background black)
- (normal "(有点短啊)"))
+ (normal "还有咱俩住的这么近，记得已富贵勿相忘啊"))
 
 (chain
  (background entrance)
- (normal "那班长，以后有缘再见啦"))
+ (normal "噗……"))
+
+(chain
+ (background entrance)
+ (normal "(又在乱说)"))
+
+(chain
+ (background entrance)
+ (normal "那班长"))
+
+(chain
+ (background entrance)
+ (normal "嗯"))
+
+(chain
+ (background entrance)
+ (normal "以后有缘再见！"))
 
 (chain
  (background classroom-afternoon)
@@ -598,7 +862,7 @@
 
 (chain
  (background entrance)
- (normal "(放开的话，又会是几年呢)"))
+ (normal "(住的地方，确实很近啊)"))
 
 (chain
  (background entrance)
@@ -618,11 +882,7 @@
 
 (chain
  (background entrance)
- (normal "…………"))
-
-(chain
- (background entrance)
- (normal "(…………不能放)"))
+ (normal "(可放开的话，又会是几年呢……)"))
 
 (chain
  (background entrance)
@@ -630,11 +890,11 @@
 
 (chain
  (background entrance)
- (normal "……你说你工资不高，对吗？"))
+ (normal "……你说你工资不高？"))
 
 (chain
  (background entrance)
- (normal "诶？这也太突然……"))
+ (normal "诶？怎么突然……"))
 
 (chain
  (background entrance)
@@ -646,7 +906,7 @@
 
 (chain
  (background entrance)
- (normal "(——所以，并不是不在乎钱)"))
+ (normal "(所以并不是不在乎钱)"))
 
 (chain
  (background entrance)

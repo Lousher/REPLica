@@ -5,12 +5,20 @@
 (texture yuki "assets/ch-yuki/0896.png")
 (texture lehayuan "assets/bg/lehuayuan.png")
 (dialogue normal "assets/font/Xiaolai-Regular.ttf")
-
+(camera zoom-in (lambda (t) (values 0.0 0.0 500.0 100.0 0.0 2.0)))
+(transition fade #f "assets/glsl/fade.transition.fs")
 (inspector inspect)
+
+(parallel	
+  (background 4dspace)
+   (character yuwen)
+   (normal "诶，这就是桌游厅啊"))
 
  (inspect
   (parallel	
-  (background 4dspace)))
+  (background 4dspace)
+   (zoom-in (character yuwen))
+   (normal "诶，这就是桌游厅啊")))
 
 (parallel
  (background lehayuan)

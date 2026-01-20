@@ -145,9 +145,9 @@ on-bed
 
 (chain
 on-bed
-(appear (yuwen-phone bye-chat) 2)
-3
-(normal "五年了啊……"))
+(appear (yuwen-phone bye-chat) 1)
+1
+(normal "…………"))
 
 (chain
  (fade (static black) 1)

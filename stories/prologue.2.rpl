@@ -49,14 +49,6 @@
 
 (chain
  masked-move
- (normal "(好甜啊)"))
-
-(chain
- masked-move
- (normal "(好甜啊)"))
-
-(chain
- masked-move
  (normal "诶？……好烫！"))
 
 (chain
@@ -75,6 +67,10 @@
 (chain
  (fade (background corn-shy) 0.5)
  1 (normal "……啊"))
+
+(chain
+ (background corn-shy)
+ (normal "哟，班长"))
 
 (chain
  (background corn-shy)
@@ -98,7 +94,7 @@
 
 (chain
  (fade chair-zoom 2)
- 2 (normal "哎呀，之前从没在附近看见过班长你啊，是最近刚搬来吗？"))
+ 2 (normal "之前从没在附近看见过班长你啊，是最近刚搬来吗？"))
 
 (chain
  chair-zoom
@@ -265,15 +261,15 @@
 
 (chain
  chair-zoom
- (normal "啊，这样……"))
+ (normal "啊，这样"))
 
 (chain
  chair-zoom
- (normal "(我在想些什么)"))
+ (normal "(我在想些什么……)"))
 
 (chain
  chair-zoom
- (normal "你还是留着自己吃吧"))
+ (normal "你留着自己吃吧"))
 
 (chain
  chair-zoom
@@ -297,7 +293,11 @@
 
 (chain
  chair-zoom
- (normal "班长，你看天上"))
+ (normal "…………"))
+
+(chain
+ chair-zoom
+ (normal "呐，班长，你看天上"))
 
 (chain
  chair-zoom
@@ -309,7 +309,7 @@
 
 (chain
  (lookup (background sky) 2.5)
- 3 (normal "觉不觉得上面那块有点像个人"))
+ 3 (normal "你看上面那块，像不像个人的样子"))
 
 (chain
  (background sky)
@@ -317,7 +317,11 @@
 
 (chain
  (background sky)
- (normal "就那一大片云上面，有个直角，就是弯腰的姿势"))
+ (normal "就那一大片云上面，有个直角，不就是弯腰的姿势嘛"))
+
+(chain
+ (background sky)
+ (normal "诶～"))
 
 (chain
  (background sky)
@@ -325,7 +329,7 @@
 
 (chain
  (background sky)
- (normal "然后最上面的那一块小的，就是头部，甚至连鼻子都突出来了"))
+ (normal "然后最上面的那一块小的，就是头部，突出的那部分就是鼻子"))
 
 (chain
  (background sky)
@@ -349,7 +353,7 @@
 
 (chain
  (fade chair-zoom 1)
- 1 (normal "(真是，太傻了点吧)"))
+ 1 (normal "(真是太傻了点)"))
 
 (chain
  chair-zoom
