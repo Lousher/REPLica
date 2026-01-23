@@ -2,4 +2,4 @@
 (library-directories "main/")
 (import (replica))
 ;(replica "stories/main")
-(replica "stories/prologue.3")
+(replica "stories/prologue.1")

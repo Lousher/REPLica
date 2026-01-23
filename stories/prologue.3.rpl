@@ -93,7 +93,7 @@
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "(高中以来就一直如此)"))
+ (normal "(高中以来一直如此)"))
 
 (chain
  (background avenue-morning) 
@@ -178,6 +178,11 @@
 (chain
  (background avenue-morning) 
 (character yuwen)
+ (normal "怎么啊"))
+
+(chain
+ (background avenue-morning) 
+(character yuwen)
  (normal "(要被风干、保存，还得被挂在家里……)"))
 
 (chain
@@ -233,7 +238,7 @@
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "哇，真够厉害的"))
+ (normal "哇，仔细看可真够厉害的"))
 
 (chain
  (background avenue-morning) 
@@ -263,12 +268,12 @@
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "(住不起……嘛)"))
+ (normal "(住不起嘛)"))
 
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "要不要进去看看"))
+ (normal "那，要不要进去看看"))
 
 (chain
  (background avenue-morning) 
@@ -288,7 +293,7 @@
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "不过以防万一，你最好还是跟着我吧"))
+ (normal "不过以防万一，你还是跟紧我吧"))
 
 (chain
  (background avenue-morning) 
@@ -326,7 +331,7 @@
 
 (chain
  (background entrance)
- (normal "你看我这身，像有吗？"))
+ (normal "你看我这身，像有的样子吗？"))
 
 (chain
  (background entrance)
@@ -370,7 +375,7 @@
 
 (chain
  (background entrance)
- (normal "(说是“芝麻酱”味才更准确吧)"))
+ (normal "(应该是“芝麻酱”味吧)"))
 
 (chain
  (background entrance)
@@ -378,11 +383,11 @@
 
 (chain
  (background entrance)
- (normal "嗯……"))
+ (normal "诶——"))
 
 (chain
  (background entrance)
- (normal "感觉会被人拍下来然后出现在小蓝书的明日头条上"))
+ (normal "感觉会被人拍下来，然后出现在小蓝书的明日头条上"))
 
 (chain
  (background entrance)
@@ -406,7 +411,7 @@
 
 (chain
  (background entrance)
- (normal "因为有种你真干得出来的感觉"))
+ (normal "有种你真干得出来的感觉"))
 
 (chain
  (background entrance)
@@ -414,7 +419,7 @@
 
 (chain
  (background entrance)
- (normal "只是好久不见了，才想给你留下点深刻印象"))
+ (normal "只是好久不见了，才想给你留点深刻印象"))
 
 (chain
  (background entrance)
@@ -434,10 +439,6 @@
 
 (chain
  (background entrance)
- (normal "那你可真厉害啊"))
-
-(chain
- (background entrance)
  (normal "…………"))
 
 (chain
@@ -446,7 +447,7 @@
 
 (chain
  (background entrance)
- (normal "……我不开玩笑了，班长你能不能别那样看我了"))
+ (normal "我不开玩笑了，班长你能不能别那样看我了"))
 
 (chain
  (background entrance)
@@ -458,11 +459,15 @@
 
 (chain
  (background entrance)
- (normal "……所以才想象不出你工作的样子啊"))
+ (normal "所以才想象不出你工作的样子啊"))
 
 (chain
  (background entrance)
- (normal "有那么难想象吗，我上班的样子就和现在差不多啊"))
+ (normal "有那么难想象吗"))
+
+(chain
+ (background entrance)
+ (normal "就和现在差不多啊"))
 
 (chain
  (background entrance)
@@ -470,39 +475,59 @@
 
 (chain
  (background entrance)
- (normal "(意思是说陪我就像在工作一样吗)"))
+ (normal "(意思是陪我就像工作吗)"))
 
 (chain
  (background entrance)
- (normal "是真的啊班长，我可是专门奔着不加班的工作找的"))
+ (normal "是真的啊班长，我也学不会上班一套下班一套啊"))
 
 (chain
  (background entrance)
- (normal "再加上我独特的摸鱼技巧，平时上班很轻松的"))
+ (normal "你是在内涵些什么吗？"))
 
 (chain
  (background entrance)
- (normal "所以是“上班像现在一样轻松”，而不是“现在和上班一样难受”？"))
+ (normal "没有没有，纯粹的说者无意"))
 
 (chain
  (background entrance)
- (normal "虽然是的，但为啥要说的这么拗口？"))
+ (normal "哼——"))
 
 (chain
  (background entrance)
- (normal "因为你没把话说清楚啊"))
+ (normal "(那就是听者有心啊)"))
 
 (chain
  (background entrance)
- (normal "有吗？"))
+ (normal "啊，不过严格比起来，现在肯定比上班要开心得多"))
 
 (chain
  (background entrance)
- (normal "有的啊，唉……"))
+ (normal "哼——～"))
 
 (chain
  (background entrance)
- (normal "(……我到底在生什么气啊)"))
+ (normal "能在班长的荣光下在这湖景边聊天，可比沉闷的办公室好太多了"))
+
+(chain
+ (background entrance)
+ (normal "…………"))
+
+(chain
+ (background entrance)
+ (normal "故意的？"))
+
+(chain
+ (background entrance)
+ (normal "什么意思？"))
+
+(chain
+ (background entrance)
+ (normal "哼……没什么"))
+
+(chain
+ (background entrance)
+ (normal "(真是……)"))
 
 (chain
  (background entrance)
@@ -510,23 +535,23 @@
 
 (chain
  (background entrance)
- (normal "你这么觉得啊"))
+ (normal "诶，这样啊"))
 
 (chain
  (background entrance)
- (normal "(明明像个笼子一样)"))
+ (normal "(明明就像个笼子一样)"))
 
 (chain
  (background entrance)
- (normal "有接待所还有湖景"))
+ (normal "肯定的啊"))
 
 (chain
  (background entrance)
- (normal "说不定光房租都够我一个月总花销了"))
+ (normal "有接待所还有湖景，说不定光房租都够我一个月总花销了"))
 
 (chain
  (background entrance)
- (normal "(总花销啊)"))
+ (normal "(总花销……)"))
 
 (chain
  (background entrance)
@@ -542,15 +567,15 @@
 
 (chain
  (background entrance)
- (normal "(居然念出声啊)"))
+ (normal "(真就开始算了啊)"))
 
 (chain
  (background entrance)
- (normal "……游戏均摊到月的话，应该算五十？……"))
+ (normal "……游戏均摊到月的话，算个五十？……"))
 
 (chain
  (background entrance)
- (normal "(游戏啊，果然是男生)"))
+ (normal "(不觉得是隐私信息吗)"))
 
 (chain
  (background entrance)
@@ -558,11 +583,15 @@
 
 (chain
  (background entrance)
- (normal "嗯……"))
+ (normal "啊，嗯……"))
 
 (chain
  (background entrance)
- (normal "(三千吗)"))
+ (normal "(OK的手势)"))
+
+(chain
+ (background entrance)
+ (normal "(一个月三千啊)"))
 
 (chain
  (background entrance)
@@ -582,7 +611,7 @@
 
 (chain
  (background entrance)
- (normal "(啊，结果还是说脏话了)"))
+ (normal "(啊，还是说脏话了)"))
 
 (chain
  (background entrance)
@@ -590,7 +619,7 @@
 
 (chain
  (background entrance)
- (normal "……班长，我能认为你在挑衅吗？"))
+ (normal "……班长，你这是在挑衅吗？"))
 
 (chain
  (background entrance)
@@ -598,15 +627,19 @@
 
 (chain
  (background entrance)
- (normal "(开始装凶了啊)"))
+ (normal "(开始装凶了)"))
 
 (chain
  (background entrance)
- (normal "而且你之前不就有预期了吗"))
+ (normal "(得收敛一些)"))
 
 (chain
  (background entrance)
- (normal "啊，是啊，是有预期了啊……"))
+ (normal "咳咳……你之前不就有预期了吗"))
+
+(chain
+ (background entrance)
+ (normal "啊，是啊，是有预期了啊"))
 
 (chain
  (background entrance)
@@ -614,7 +647,7 @@
 
 (chain
  (background entrance)
- (normal "之前的防线是？"))
+ (normal "诶，那之前的防线是？"))
 
 (chain
  (background entrance)
@@ -638,19 +671,31 @@
 
 (chain
  (background entrance)
- (normal "所以，防线被打破后有什么想法吗？"))
+ (normal "所以，有什么想法吗？"))
 
 (chain
  (background entrance)
- (normal "啊啊……"))
+ (normal "呵呵……要来征收败者的战利品了吗"))
 
 (chain
  (background entrance)
- (normal "……大考的时候，每当班长你考的比我高，你就会这么问我啊"))
+ (normal "哪有这么过分……"))
 
 (chain
  (background entrance)
- (normal "诶，有吗"))
+ (normal "不过没事，幸亏我有些准备"))
+
+(chain
+ (background entrance)
+ (normal "……准备什么？"))
+
+(chain
+ (background entrance)
+ (normal "大考的时候，每当班长你考的比我高，你就会一样地问我啊"))
+
+(chain
+ (background entrance)
+ (normal "诶～有吗"))
 
 (chain
  (background entrance)
@@ -662,7 +707,7 @@
 
 (chain
  (background entrance)
- (normal "……啊！"))
+ (normal "…………啊！"))
 
 (chain
  (background entrance)
@@ -674,11 +719,11 @@
 
 (chain
  (background entrance)
- (normal "啊啊，正式名称好像叫“积木笔”来着"))
+ (normal "正式名称好像叫“积木笔”来着"))
 
 (chain
  (background entrance)
- (normal "(居然会承认不好用啊)"))
+ (normal "(居然没否定不好用啊)"))
 
 (chain
  (background entrance)
@@ -686,59 +731,139 @@
 
 (chain
  (background entrance)
- (normal "这样……"))
+ (normal "……虽然我基本没赢过就是，呵呵……"))
 
 (chain
  (background entrance)
- (normal "诶，所以意思是"))
+ (normal "(怨气好重！)"))
+
+(chain
+ (background entrance)
+ (normal "(不过)"))
+
+(chain
+ (background entrance)
+ (normal "……这样啊，你还记得啊"))
+
+(chain
+ (background entrance)
+ (normal "唉，不可能忘记的吧"))
+
+(chain
+ (background entrance)
+ (normal "诶？"))
+
+(chain
+ (background entrance)
+ (normal "因为……"))
+
+(chain
+ (background entrance)
+ (normal "(咽口水)……"))
+
+(chain
+ (background entrance)
+ (normal "……我的爆丸小子，闪卡小樱和指尖陀螺，全都给了你啊……"))
+
+(chain
+ (background entrance)
+ (normal "啊，这样"))
+
+(chain
+ (background entrance)
+ (normal "(……第二次了……)"))
+
+(chain
+ (background entrance)
+ (normal "唉————"))
+
+(chain
+ (background entrance)
+ (normal "所以，这次你也准备给我小学生的玩具吗？"))
  
 (chain
  (background entrance)
- (normal "对对对，班长你先闭眼让我准备一下"))
+ (normal "呀，我现在也不会随身带玩具的好吗"))
 
 (chain
  (background entrance)
- (normal "啊，好"))
+ (normal "诶？不是吗？"))
 
 (chain
  (background entrance)
- (normal "(居然还有惊喜啊)"))
+ (normal "就算你这么反问，唉"))
 
 (chain
  (background entrance)
- (normal "等下哈，我记得有的来着……"))
+ (normal "总之，虽然不是玩具，但也不是什么特别好的东西"))
 
 (chain
  (background entrance)
- (normal  "找到了！班长你把手伸出来，啊不许睁眼"))
+ (normal "班长你把手伸出来接一下吧，顺便闭上眼"))
 
 (chain
  (background entrance)
- (normal  "什么东西啊，神神秘秘的"))
+ (normal "弄这么神秘啊"))
 
 (chain
  (background entrance)
- (normal  "哎呀，不是什么值钱的东西"))
+ (normal  "唉，因为东西本身不行，就得靠仪式感补一下了"))
 
 (chain
  (background entrance)
- (normal  "没事，我没期待你能送钻石出来"))
+ (normal  "啊，快闭眼快闭眼"))
 
 (chain
  (background entrance)
- (normal  "……班长你想的也太美了点"))
+ (normal  "好好～"))
 
 (chain
  (background entrance)
- (normal  "等等，让我调整一下角度再放……好！"))
+ (normal  "(还挺讲究的)"))
 
 (chain
  (background entrance)
- (normal  "可以了班长，看到实物后不要太失望啊"))
+ (normal  "……我记得在口袋里，好，在这"))
 
 (chain
  (background entrance)
- (normal  "诶～"))
+ (normal  "(会是什么呢)"))
+
+(chain
+ (background entrance)
+ (normal  "手别动啊班长，我正在摆盘呢"))
+
+(chain
+ (background entrance)
+ (normal  "好好，不过我的手可不是盘子啊"))
+
+(chain
+ (background entrance)
+ (normal  "哎呀，班长你知道意思就行"))
+
+(chain
+ (background entrance)
+ (normal  "呵呵"))
+
+(chain
+ (background entrance)
+ (normal  "(……感觉，是一堆很小的东西)"))
+
+(chain
+ (background entrance)
+ (normal  "可以了班长，勉强摆了个金字塔形"))
+
+(chain
+ (background entrance)
+ (normal  "不过再提醒一下，看到实物后不要太失望啊"))
+
+(chain
+ (background entrance)
+ (normal  "我哪有那么坏心眼啊"))
+
+(chain
+ (background entrance)
+ (normal  "诶————"))
 
 (chain
  (background entrance)
@@ -754,7 +879,7 @@
 
 (chain
  (background entrance)
- (normal  "(这是把我当成什么了)"))
+ (normal  "(这是把我当什么了)"))
 
 (chain
  (background entrance)
@@ -762,23 +887,51 @@
 
 (chain
  (background entrance)
- (normal  "(虽然没有失望啦，不过……)"))
+ (normal  "……我有说过不是什么值钱玩意的"))
 
 (chain
  (background entrance)
- (normal  "你都多大了，还在吃这些玩意"))
+ (normal  "(啊——)"))
 
 (chain
  (background entrance)
- (normal "所以说，是刚好碰巧剩了几包"))
+ (normal  "不对不对，没有失望啦"))
 
 (chain
  (background entrance)
- (normal "诶，那可真是太巧了啊"))
+ (normal  "只是，该怎么说呢"))
 
 (chain
  (background entrance)
- (normal "……随你怎么想，反正已经给你了"))
+ (normal  "(真的是——)"))
+
+(chain
+ (background entrance)
+ (normal  "你都多大了，还在吃这些玩意啊"))
+
+(chain
+ (background entrance)
+ (normal  "……也没人规定公司牛马就不能吃跳跳糖了吧"))
+
+(chain
+ (background entrance)
+ (normal  "确实，你说的很有道理～"))
+
+(chain
+ (background entrance)
+ (normal  "好敷衍……"))
+
+(chain
+ (background entrance)
+ (normal  "呵呵——"))
+
+(chain
+ (background entrance)
+ (normal  "(算是，情理之中吧)"))
+
+(chain
+ (background entrance)
+ (normal "……不管班长你咋想吧，反正这次的东西已经给你了"))
 
 (chain
  (background entrance)
@@ -786,7 +939,27 @@
 
 (chain
  (background entrance)
- (normal "………………"))
+ (normal "这确实不算纯“玩具”啊"))
+
+(chain
+ (background entrance)
+ (normal "……啰嗦"))
+
+(chain
+ (background entrance)
+ (normal "哈哈～"))
+
+(chain
+ (background entrance)
+ (normal "(二、四、八、十二……)"))
+
+(chain
+ (background entrance)
+ (normal "(十三袋啊)"))
+
+(chain
+ (background entrance)
+ (normal "(两周，会很快吧)"))
 
 (chain
  (background entrance)
@@ -794,7 +967,7 @@
 
 (chain
  (background entrance)
- (normal "嗯"))
+ (normal "啊……"))
 
 (chain
  (background entrance)
@@ -802,7 +975,7 @@
 
 (chain
  (background entrance)
- (normal "看到你出人头地变富婆，之前那么辛苦的日子都值得了啊"))
+ (normal "看到你出人头地变富婆，高中时那么辛苦也算没白费了啊"))
 
 (chain
  (background entrance)
@@ -810,31 +983,59 @@
 
 (chain
  (background entrance)
- (normal "(值得……嘛)"))
+ (normal "(白费……)"))
 
 (chain
  (background entrance)
- (normal "还有咱俩住的这么近，记得已富贵勿相忘啊"))
+ (normal "不过你都变富婆了，应该也不用再像之前那么拼命了"))
 
 (chain
  (background entrance)
- (normal "噗……"))
+ (normal "诶——？"))
 
 (chain
  (background entrance)
- (normal "(又在乱说)"))
+ (normal "(我——拼命吗？)"))
 
 (chain
  (background entrance)
- (normal "那班长"))
+ (normal "还有，趁现在我才告诉你哦班长"))
 
 (chain
  (background entrance)
- (normal "嗯"))
+ (normal "你的黑眼圈，像熊猫一样好明显的"))
 
 (chain
  (background entrance)
- (normal "以后有缘再见！"))
+ (normal "诶——！"))
+
+(chain
+ (background entrance)
+ (normal "(哇啊啊啊啊——骗人，究竟什么时候看到的)"))
+
+(chain
+ (background entrance)
+ (normal "呜呜……"))
+
+(chain
+ (background entrance)
+ (normal "哈哈，赶紧上去补觉吧班长，耽误你这么久不好意思啊"))
+
+(chain
+ (background entrance)
+ (normal "啊……嗯……"))
+
+(chain
+ (background entrance)
+ (normal "(真的要走了——)"))
+
+(chain
+ (background entrance)
+ (normal "(可转头的话，素颜就会被看见……！)"))
+
+(chain
+ (background entrance)
+ (normal "那班长，已富贵勿相忘，以后有缘再见！"))
 
 (chain
  (background classroom-afternoon)
@@ -850,6 +1051,10 @@
 
 (chain
  (background entrance)
+ (normal "诶？啊……这是"))
+
+(chain
+ (background entrance)
  (normal "(……抓住了啊……)"))
 
 (chain
@@ -862,7 +1067,7 @@
 
 (chain
  (background entrance)
- (normal "(住的地方，确实很近啊)"))
+ (normal "(……别看现在的我……！)"))
 
 (chain
  (background entrance)
@@ -870,7 +1075,7 @@
 
 (chain
  (background entrance)
- (normal "你别一直拉着衣服不说话啊，我害怕"))
+ (normal "别一直拉着衣服不说话啊，我害怕"))
 
 (chain
  (background entrance)
@@ -882,15 +1087,15 @@
 
 (chain
  (background entrance)
- (normal "(可放开的话，又会是几年呢……)"))
+ (normal "(可，放开的话……)"))
 
 (chain
  (background entrance)
- (normal "你是想再要点糖——"))
+ (normal "啊，你是想再要点糖——"))
 
 (chain
  (background entrance)
- (normal "……你说你工资不高？"))
+ (normal "……你刚才说，我现在，算是富婆了对吧"))
 
 (chain
  (background entrance)
@@ -898,127 +1103,127 @@
 
 (chain
  (background entrance)
- (normal "好了快说"))
+ (normal "好啦"))
 
 (chain
  (background entrance)
- (normal "不是，要我在这里主动承认也太难受了吧"))
+ (normal "诶，嘛，当然是啊？"))
 
 (chain
  (background entrance)
- (normal "(所以并不是不在乎钱)"))
+ (normal "然后……黑眼圈也……"))
 
 (chain
  (background entrance)
- (normal "那你现在是一个人住吗？"))
+ (normal "啊啊，和高三冲刺那时简直一模一样"))
 
 (chain
  (background entrance)
- (normal "班长你是要逼供什么啊"))
+ (normal "这样……"))
 
 (chain
  (background entrance)
- (normal "好了，快点"))
+ (normal "(果然看到了……！)"))
 
 (chain
  (background entrance)
- (normal "好好，我是一个人孤独地蜗居在公寓里"))
+ (normal "所以那个，该怎么说呢……"))
 
 (chain
  (background entrance)
- (normal "休息日的安排？"))
+ (normal "就像你说的"))
 
 (chain
  (background entrance)
- (normal "这到底是要……"))
+ (normal "我现在，好像也很拼命的样子"))
 
 (chain
  (background entrance)
- (normal "快点"))
+ (normal "啊啊"))
 
 (chain
  (background entrance)
- (normal "就是普通的打游戏刷手机啊，然后偶尔出来散个步"))
+ (normal "本以为毕业了，工作了就会变好些……"))
 
 (chain
  (background entrance)
- (normal "(和想象中差不多)"))
+ (normal "可最后似乎，还是被困在同样的循环里"))
 
 (chain
  (background entrance)
- (normal "那……"))
+ (normal "没有的事……"))
 
 (chain
  (background entrance)
- (normal "会有人去你公寓过夜吗？"))
+ (normal "所以说，为了打破现状"))
 
 (chain
  (background entrance)
- (normal "当然有啊"))
+ (normal "(下定决心吧)"))
 
 (chain
  (background entrance)
- (normal "(啊……)"))
+ (normal "我想，买断你的时间"))
 
 (chain
  (background entrance)
- (normal "是吗"))
+ (normal "…………哈？"))
 
 (chain
  (background entrance)
- (normal "(也是啊，怎么可能有这么好的事)"))
+ (normal "不用辞掉你现在的工作，当作是兼职就行"))
 
 (chain
  (background entrance)
- (normal "我妈每两周都会来一次，每次都嫌弃我没打扫房间"))
+ (normal "底薪先按照你的月开支划定，之后看情况还有额外加成"))
 
 (chain
  (background entrance)
- (normal "……诶？"))
+ (normal "不是班长，你等……"))
 
 (chain
  (background entrance)
- (normal "还有小罗在这边工作的时候，会来我这住会儿"))
+ (normal "没有KPI或OKR的指标，也没有什么需要考核的绩效"))
 
 (chain
  (background entrance)
- (normal "……小罗？"))
+ (normal "只要……"))
 
 (chain
  (background entrance)
- (normal "就是团支书啊，有点胖胖的那个"))
+ (normal "……只要能陪着我就行"))
 
 (chain
  (background entrance)
- (normal "不是，我记得他呢"))
+ (normal "诶，可这不就是……"))
 
 (chain
  (background entrance)
- (normal "(你们俩居然还有联系啊)"))
+ (normal "啊啊，你想的没错"))
+
+(chain
+ (backgroundp entrance)
+ (normal "似乎……比起新鲜的，我更喜欢腊肉的风味啊，哈哈"))
 
 (chain
  (background entrance)
- (normal "(明明和我就……)"))
+ (normal "……不考虑下已经售罄的情况吗？"))
 
 (chain
  (background entrance)
- (normal "唉……那其他人呢"))
+ (normal "嗯……售罄……是啊"))
 
 (chain
  (background entrance)
- (normal "其他人？"))
+ (normal "(我还真是，一鼓作气冲到了这儿啊)"))
 
 (chain
  (background entrance)
- (normal "也没其他人了吧"))
+ (normal "……之前我连价格都没敢问，他就马上下架了"))
 
 (chain
  (background entrance)
- (normal "这样啊"))
-
-(chain
- (background entrance)
- (normal "(太好了……)"))
+ (normal "所以至少，在重新上架的现在，我想试着问一问啊"))
 
 (chain
  (background entrance)
@@ -1026,113 +1231,76 @@
 
 (chain
  (background entrance)
- (normal "所以"))
+ (normal "所以老板"))
 
 (chain
  (background entrance)
- (normal "让我认清自己没钱没兴趣还没朋友的悲惨世界后，班长你想干啥"))
+ (normal "你这儿还有存货吗？"))
 
 (chain
  (background entrance)
- (normal "啊哈哈，不是想嘲笑你啦"))
+ (normal "…………唉"))
 
 (chain
  (background entrance)
- (normal "(这是真的有点生气啊)"))
+ (normal "……要是承认滞销的话，价格不就会打折了吗……"))
 
 (chain
  (background entrance)
- (normal "刚才只是确认一下"))
+ (normal "哈哈，这样啊"))
 
 (chain
  (background entrance)
- (normal "确认？"))
+ (normal "(太好了)"))
 
 (chain
  (background entrance)
- (normal "(……没事的)"))
+ (normal "那作为你如实相告的奖励，之后会给你很多福利作为补偿的"))
 
 (chain
  (background entrance)
- (normal "……作为甲方，肯定要了解被雇佣者的经济、时间和人际关系的"))
+ (normal "……啊啊，请务必多给一些"))
 
 (chain
  (background entrance)
- (normal "诶，所以才嘲笑————嗯……？"))
+ (normal "呵呵，好敷衍啊"))
 
 (chain
  (background entrance)
- (normal "甲方是什么意思？"))
+ (normal "因为不仅被迫认清“滞销”的现实，还被人强买强卖……"))
 
 (chain
  (background entrance)
- (normal "就是你所理解的，契约关系的意思"))
+ (normal "喂，不要瞎说啊"))
 
 (chain
  (background entrance)
- (normal "不是这方面——"))
+ (normal "是你先说想被包养的吧"))
 
 (chain
  (background entrance)
- (normal "啊啊，我马上就告诉你"))
+ (normal "(对，从一开始就很简单)"))
 
 (chain
  (background entrance)
- (normal "(……抓住你了)"))
+ (normal "啊——你居然真把这两个字说出口了"))
 
 (chain
  (background entrance)
- (normal "契约的主体很简单"))
+ (normal "你之前那说法和“包养”有什么区别啊！"))
 
 (chain
  (background entrance)
- (normal "你现在的房屋、水电，还有其他的所有账单，都由我来付"))
+ (normal "(如果——这就是“缘”的话)"))
 
 (chain
  (background entrance)
- (normal "然后作为交换，你下班后和周末的时间，归我支配"))
+ (normal "至少……至少还留着那么层皮的啊"))
 
 (chain
  (background entrance)
- (normal "……啥？"))
+ (normal "那不就只剩层窗户纸了吗"))
 
 (chain
  (background entrance)
- (normal "也就是说"))
-
-(chain
- (background entrance)
- (normal "我要买断你工作之外的所有时间"))
-
-(chain
- (background entrance)
- (normal "(毕竟，“腊肉”放太久了可是会发霉的)"))
-
-(chain
- (background entrance)
- (normal "……不是说我没听懂啦，只是这不就是——"))
-
-(chain
- (background entrance)
- (normal "啊啊，你想的没错"))
-
-(chain
- (background entrance)
- (normal "(从一开始就很简单)"))
-
-(chain
- (background entrance)
- (normal "你说过想被包养"))
-
-(chain
- (background entrance)
- (normal "(如果这就是“缘”的话)"))
-
-(chain
- (background entrance)
- (normal "所以现在，我来包养你了"))
-
-(chain
- (background entrance)
-
- (normal "(那我就来补上“分”吧)"))
+ (normal "(我就来补上“分”吧)"))
