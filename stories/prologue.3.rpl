@@ -13,7 +13,7 @@
 (chain
  (background avenue-morning) 
 (character yuwen)
- (normal "诶～原来班长你在银帝中心啊"))
+ (normal "原来班长你在银帝中心啊"))
 
 (chain
  (background avenue-morning) 
@@ -303,7 +303,7 @@
 (chain
  (background avenue-morning) 
  (character yuwen)
- (normal "(呵呵)"))
+ (normal "呵呵"))
 
 (chain
  (fade (background entrance) 2)
@@ -511,11 +511,7 @@
 
 (chain
  (background entrance)
- (normal "…………"))
-
-(chain
- (background entrance)
- (normal "故意的？"))
+ (normal "……故意的？"))
 
 (chain
  (background entrance)
@@ -535,7 +531,7 @@
 
 (chain
  (background entrance)
- (normal "诶，这样啊"))
+ (normal "这样"))
 
 (chain
  (background entrance)
@@ -567,7 +563,7 @@
 
 (chain
  (background entrance)
- (normal "(真就开始算了啊)"))
+ (normal "(真开始算了)"))
 
 (chain
  (background entrance)
@@ -575,7 +571,7 @@
 
 (chain
  (background entrance)
- (normal "(不觉得是隐私信息吗)"))
+ (normal "(这不算个人隐私吗)"))
 
 (chain
  (background entrance)
@@ -667,11 +663,15 @@
 
 (chain
  (background entrance)
- (normal "(又是莫名其妙的傻话)"))
+ (normal "(又在说些傻话)"))
 
 (chain
  (background entrance)
- (normal "所以，有什么想法吗？"))
+ (normal "所以"))
+
+(chain
+ (background entrance)
+ (normal "知道结果后，有什么想法吗"))
 
 (chain
  (background entrance)
@@ -679,7 +679,7 @@
 
 (chain
  (background entrance)
- (normal "哪有这么过分……"))
+ (normal "哪有这么过分"))
 
 (chain
  (background entrance)
@@ -687,7 +687,7 @@
 
 (chain
  (background entrance)
- (normal "……准备什么？"))
+ (normal "准备什么？"))
 
 (chain
  (background entrance)
@@ -695,7 +695,7 @@
 
 (chain
  (background entrance)
- (normal "诶～有吗"))
+ (normal "诶……有吗"))
 
 (chain
  (background entrance)
@@ -707,7 +707,7 @@
 
 (chain
  (background entrance)
- (normal "…………啊！"))
+ (normal "…………啊"))
 
 (chain
  (background entrance)
@@ -723,7 +723,7 @@
 
 (chain
  (background entrance)
- (normal "(居然没否定不好用啊)"))
+ (normal "(不否定不好用啊)"))
 
 (chain
  (background entrance)
@@ -735,7 +735,7 @@
 
 (chain
  (background entrance)
- (normal "(怨气好重！)"))
+ (normal "(怨气好重)"))
 
 (chain
  (background entrance)
@@ -759,7 +759,7 @@
 
 (chain
  (background entrance)
- (normal "(咽口水)……"))
+ (normal "因为……？"))
 
 (chain
  (background entrance)
@@ -771,7 +771,7 @@
 
 (chain
  (background entrance)
- (normal "(……第二次了……)"))
+ (normal "(我到底……)"))
 
 (chain
  (background entrance)
@@ -779,11 +779,15 @@
 
 (chain
  (background entrance)
+ (normal "(……都第二次了……)"))
+
+(chain
+ (background entrance)
  (normal "所以，这次你也准备给我小学生的玩具吗？"))
  
 (chain
  (background entrance)
- (normal "呀，我现在也不会随身带玩具的好吗"))
+ (normal "就算是我，现在也不会随身带玩具的好吗"))
 
 (chain
  (background entrance)
@@ -791,11 +795,11 @@
 
 (chain
  (background entrance)
- (normal "就算你这么反问，唉"))
+ (normal "你这反问算什么啊"))
 
 (chain
  (background entrance)
- (normal "总之，虽然不是玩具，但也不是什么特别好的东西"))
+ (normal "总之，虽然不是玩具，但也不是什么特别的东西"))
 
 (chain
  (background entrance)
@@ -823,7 +827,7 @@
 
 (chain
  (background entrance)
- (normal  "……我记得在口袋里，好，在这"))
+ (normal  "……我记得在口袋里，好，在呢"))
 
 (chain
  (background entrance)
@@ -835,7 +839,7 @@
 
 (chain
  (background entrance)
- (normal  "好好，不过我的手可不是盘子啊"))
+ (normal  "我的手可不是盘子啊"))
 
 (chain
  (background entrance)
@@ -859,7 +863,7 @@
 
 (chain
  (background entrance)
- (normal  "我哪有那么坏心眼啊"))
+ (normal  "我哪有那么坏心眼"))
 
 (chain
  (background entrance)
@@ -915,11 +919,15 @@
 
 (chain
  (background entrance)
- (normal  "确实，你说的很有道理～"))
+ (normal  "……确实"))
 
 (chain
  (background entrance)
- (normal  "好敷衍……"))
+ (normal  "你说的有道理"))
+
+(chain
+ (background entrance)
+ (normal  "哇，好敷衍……"))
 
 (chain
  (background entrance)
@@ -927,7 +935,7 @@
 
 (chain
  (background entrance)
- (normal  "(算是，情理之中吧)"))
+ (normal  "(算是，情理之中)"))
 
 (chain
  (background entrance)
@@ -939,7 +947,7 @@
 
 (chain
  (background entrance)
- (normal "这确实不算纯“玩具”啊"))
+ (normal "这确实不算单纯的“玩具”啊"))
 
 (chain
  (background entrance)
@@ -955,11 +963,11 @@
 
 (chain
  (background entrance)
- (normal "(十三袋啊)"))
+ (normal "(十四袋啊)"))
 
 (chain
  (background entrance)
- (normal "(两周，会很快吧)"))
+ (normal "(两周的话，会很快吧)"))
 
 (chain
  (background entrance)
@@ -967,11 +975,11 @@
 
 (chain
  (background entrance)
- (normal "啊……"))
+ (normal "啊"))
 
 (chain
  (background entrance)
- (normal "(……要走了啊)"))
+ (normal "(要走了啊)"))
 
 (chain
  (background entrance)
@@ -983,7 +991,7 @@
 
 (chain
  (background entrance)
- (normal "(白费……)"))
+ (normal "(白费……啊)"))
 
 (chain
  (background entrance)
@@ -991,11 +999,11 @@
 
 (chain
  (background entrance)
- (normal "诶——？"))
+ (normal "诶？"))
 
 (chain
  (background entrance)
- (normal "(我——拼命吗？)"))
+ (normal "(我，拼命吗？)"))
 
 (chain
  (background entrance)
@@ -1007,11 +1015,15 @@
 
 (chain
  (background entrance)
- (normal "诶——！"))
+ (normal "诶——？！"))
 
 (chain
  (background entrance)
- (normal "(哇啊啊啊啊——骗人，究竟什么时候看到的)"))
+ (normal "(哇啊啊啊啊——骗人，什么时候看到的)"))
+
+(chain
+ (background entrance)
+ (normal "(难不成从一开始就——)"))
 
 (chain
  (background entrance)
@@ -1023,19 +1035,27 @@
 
 (chain
  (background entrance)
- (normal "啊……嗯……"))
+ (normal "啊……嗯"))
 
 (chain
  (background entrance)
- (normal "(真的要走了——)"))
+ (normal "(真的要走了)"))
 
 (chain
  (background entrance)
- (normal "(可转头的话，素颜就会被看见……！)"))
+ (normal "(可现在转头的话又会被看见……！)"))
 
 (chain
  (background entrance)
- (normal "那班长，已富贵勿相忘，以后有缘再见！"))
+ (normal "那班长，已富贵勿相忘"))
+
+(chain
+ (background entrance)
+ (normal "之后有缘再见啦"))
+
+(chain
+ (background entrance)
+ (normal "啊————"))
 
 (chain
  (background classroom-afternoon)
@@ -1043,7 +1063,7 @@
 
 (chain
  (background entrance)
- (normal "…………啊"))
+ (normal "………………"))
 
 (chain
  (background entrance)
@@ -1051,11 +1071,7 @@
 
 (chain
  (background entrance)
- (normal "诶？啊……这是"))
-
-(chain
- (background entrance)
- (normal "(……抓住了啊……)"))
+ (normal "诶……？"))
 
 (chain
  (background entrance)
@@ -1063,11 +1079,15 @@
 
 (chain
  (background entrance)
+ (normal "(……抓住了啊……我)"))
+
+(chain
+ (background entrance)
  (normal "啊……嗯……"))
 
 (chain
  (background entrance)
- (normal "(……别看现在的我……！)"))
+ (normal "(可黑眼圈……！)"))
 
 (chain
  (background entrance)
@@ -1087,7 +1107,11 @@
 
 (chain
  (background entrance)
- (normal "(可，放开的话……)"))
+ (normal "(不过，放开的话……)"))
+
+(chain
+ (background entrance)
+ (normal "(下次的“缘”，又会是几年呢……)"))
 
 (chain
  (background entrance)
@@ -1107,7 +1131,11 @@
 
 (chain
  (background entrance)
- (normal "诶，嘛，当然是啊？"))
+ (normal "诶，嘛，当然是啊"))
+
+(chain
+ (background entrance)
+ (normal "你都住在这么高级的公寓里了"))
 
 (chain
  (background entrance)
@@ -1123,7 +1151,7 @@
 
 (chain
  (background entrance)
- (normal "(果然看到了……！)"))
+ (normal "(果然看到了……)"))
 
 (chain
  (background entrance)
@@ -1143,11 +1171,11 @@
 
 (chain
  (background entrance)
- (normal "本以为毕业了，工作了就会变好些……"))
+ (normal "本以为毕业了，工作了就会变好些"))
 
 (chain
  (background entrance)
- (normal "可最后似乎，还是被困在同样的循环里"))
+ (normal "可结果似乎，还是被困在同样的日子里"))
 
 (chain
  (background entrance)
@@ -1155,15 +1183,15 @@
 
 (chain
  (background entrance)
- (normal "所以说，为了打破现状"))
+ (normal "所以说，为了打破这种现状……"))
 
 (chain
  (background entrance)
- (normal "(下定决心吧)"))
+ (normal "(……下定决心吧)"))
 
 (chain
  (background entrance)
- (normal "我想，买断你的时间"))
+ (normal "我想买断你的时间"))
 
 (chain
  (background entrance)
@@ -1179,7 +1207,7 @@
 
 (chain
  (background entrance)
- (normal "不是班长，你等……"))
+ (normal "不是班长，你等——"))
 
 (chain
  (background entrance)
@@ -1191,19 +1219,19 @@
 
 (chain
  (background entrance)
- (normal "……只要能陪着我就行"))
+ (normal "只要出勤率达标就行"))
 
 (chain
  (background entrance)
- (normal "诶，可这不就是……"))
+ (normal "诶，这不就是"))
 
 (chain
  (background entrance)
  (normal "啊啊，你想的没错"))
 
 (chain
- (backgroundp entrance)
- (normal "似乎……比起新鲜的，我更喜欢腊肉的风味啊，哈哈"))
+ (background entrance)
+ (normal "我似乎，更喜欢腊肉的风味啊，哈哈"))
 
 (chain
  (background entrance)
@@ -1215,15 +1243,15 @@
 
 (chain
  (background entrance)
- (normal "(我还真是，一鼓作气冲到了这儿啊)"))
+ (normal "(我还真是，一口气冲到了这儿啊)"))
 
 (chain
  (background entrance)
- (normal "……之前我连价格都没敢问，他就马上下架了"))
+ (normal "之前我连价格都没敢问，他就马上下架了"))
 
 (chain
  (background entrance)
- (normal "所以至少，在重新上架的现在，我想试着问一问啊"))
+ (normal "所以至少，在重新上架的现在，我想试着问一问"))
 
 (chain
  (background entrance)
@@ -1235,7 +1263,7 @@
 
 (chain
  (background entrance)
- (normal "你这儿还有存货吗？"))
+ (normal "说实话，你这儿还有存货吗？"))
 
 (chain
  (background entrance)
@@ -1287,7 +1315,7 @@
 
 (chain
  (background entrance)
- (normal "你之前那说法和“包养”有什么区别啊！"))
+ (normal "你之前那说法和“包养”也没区别吧"))
 
 (chain
  (background entrance)

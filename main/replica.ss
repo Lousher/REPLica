@@ -54,8 +54,12 @@
   
   (define replica
     (lambda (entry)
-      (SetConfigFlags 8192)
-      (InitWindow 1920 1080 "Test")
+      (SetConfigFlags
+       (logor
+	FLAG_WINDOW_HIGHDPI
+	FLAG_BORDERLESS_WINDOWED_MODE
+	FLAG_WINDOW_UNDECORATED))
+      (InitWindow 0 0 "Test")
       (InitAudioDevice)
       (SetTargetFPS 60)
       (call/cc
