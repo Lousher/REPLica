@@ -20,18 +20,46 @@
   (define make-animation
     (lambda (animator)
       (lambda (state)
-	(let animating ([s state])
-	  (for-each UpdateMusicStream (*musics*))
-	  (BeginDrawing)
-	  (ClearBackground BLACK)
-	  (animator s)
-	  (EndDrawing)
-	  (cond
-	   [(WindowShouldClose)
-	    (values `(exit) s)]
-	   [(IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-	    (values `(next) (state-save-previous s))]
-	   [else (animating (state-time-pass s (GetFrameTime)))])))))
+	(letrec ([run-frame (lambda (s current previous next)
+			      (for-each UpdateMusicStream (*musics*))
+			      (parameterize ([*current-viewport* current]
+					     [*previous-viewport* previous])
+				(BeginTextureMode current)
+				(ClearBackground BLACK)
+				(BeginMode2D (*viewport-camera*))
+				(animator s)
+				(EndMode2D)
+				(EndTextureMode))
+			      (let* ([sw (GetScreenWidth)] [sh (GetScreenHeight)]
+				     [scale (max (/ sw 1920.0) (/ sh 1080.0))]
+				     [dw (* 1920.0 scale)] [dh (* 1080.0 scale)]
+				     [dx (/ (- sw dw) 2.0)] [dy (/ (- sh dh) 2.0)])
+				(Rectangle-x-set! (*viewport-dest*) dx) (Rectangle-y-set! (*viewport-dest*) dy)
+				(Rectangle-width-set! (*viewport-dest*) dw) (Rectangle-height-set! (*viewport-dest*) dh)
+				(BeginDrawing)
+				(ClearBackground BLACK)
+				(DrawTexturePro (RenderTexture-texture current) 
+						(*viewport-src*) (*viewport-dest*) (*viewport-origin*) 0.0 WHITE)
+			      (EndDrawing))
+			      (next s))]
+		 [ping (lambda (s)
+			 (run-frame s (*current-rt*) (*previous-rt*) (lambda (s)
+								       (cond
+									[(WindowShouldClose)
+									 (values `(exit) s)]
+									[(IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+									 (values `(next) (state-save-previous s))]
+									[else (pong (state-time-pass s (GetFrameTime)))]))))]
+		 [pong (lambda (s)
+			 (run-frame s (*previous-rt*) (*current-rt*) (lambda (s)
+								       (cond
+									[(WindowShouldClose)
+									 (values `(exit) s)]
+									[(IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+									 (values `(next) (state-save-previous s))]
+									[else (ping (state-time-pass s (GetFrameTime)))]))))])
+	  (ping state)
+	))))
   
   (define jump
     (lambda (next)

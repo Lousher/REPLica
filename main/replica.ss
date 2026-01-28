@@ -59,7 +59,8 @@
 	FLAG_WINDOW_HIGHDPI
 	FLAG_BORDERLESS_WINDOWED_MODE
 	FLAG_WINDOW_UNDECORATED))
-      (InitWindow 0 0 "Test")
+      (InitWindow (GetScreenWidth) (GetScreenHeight) "Test")
+      (viewport-init)
       (InitAudioDevice)
       (SetTargetFPS 60)
       (call/cc
@@ -69,7 +70,7 @@
 	   (ensure-compiled current-story)
 	   (replica-collect)
 	   (load (string-append current-story ".so"))
-	   (let stepper ([rest (*actions*)] [step-state story-state])
+	   (let stepper ([rest (*actions*)] [step-state story-state] [frame-count 0])
 	     (*actions* #f)
 	     (cond
 	      [(null? rest) (exit)]
@@ -86,7 +87,7 @@
 		    (storying (cadr sig) new-state)]
 		   [else
 		    (replica-collect)
-		    (stepper (cdr rest) new-state)]
+		    (stepper (cdr rest) new-state (+ 1 frame-count))]
 		   ))])))))
       (replica-collect)
       (CloseAudioDevice)

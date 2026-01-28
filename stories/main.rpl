@@ -14,11 +14,10 @@
    (character yuwen)
    (normal "诶，这就是桌游厅啊"))
 
- (inspect
-  (parallel	
+ (parallel	
   (background 4dspace)
    (zoom-in (character yuwen))
-   (normal "诶，这就是桌游厅啊")))
+   (normal "诶，这就是桌游厅啊"))
 
 (parallel
  (background lehayuan)

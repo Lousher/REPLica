@@ -1,18 +1,56 @@
 (library (loader)
-  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color music *musics* inspector)
+  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color music *musics* inspector *current-viewport* *previous-viewport* *viewport-dest* *viewport-src* *viewport-origin* *current-rt* *previous-rt* *viewport-camera* viewport-init *viewport-scale*)
   (import (chezscheme)
 	  (state)
 	  (tool)
 	  (raylib ffi)
 	  (raylib constant))
 
-  (define *scale* (make-parameter 1.0))
+  (define *viewport-scale* (make-parameter 1.0))
 
   (define *max-concurrent-loads* 3)
   
   (define *active-loads* 0)
   (define *load-mutex* (make-mutex))
   (define *load-condition* (make-condition))
+
+  (define *current-viewport* (make-parameter #f))
+  (define *previous-viewport* (make-parameter #f))
+  (define *current-rt* (make-parameter #f))
+  (define *previous-rt* (make-parameter #f))
+  (define *viewport-dest* (make-parameter #f))
+  (define *viewport-src* (make-parameter #f))
+  (define *viewport-origin* (make-parameter #f))
+  (define *viewport-camera* (make-parameter #f))
+
+  (define load-rendertexture )
+  (define viewport-init
+    (lambda ()
+      (let* ([scale (GetWindowScaleDPI)]
+	     [scale-x (Vector2-x scale)]
+	     [scale-y (Vector2-y scale)])
+	(*viewport-scale* (max scale-x scale-y))
+	(let ([phys-w (flonum->fixnum (* 1920 scale-x))]
+	      [phys-h (flonum->fixnum (* 1080 scale-y))])
+	  (*viewport-src* (make-Rectangle 0.0 0.0 (inexact phys-w) (- (inexact phys-h))))
+	  (*current-rt*
+	   (LoadRenderTexture phys-w phys-h))
+	  (*previous-rt* (LoadRenderTexture phys-w phys-h))))
+      (SetTextureFilter (RenderTexture-texture (*current-rt*)) 1)
+      (SetTextureFilter (RenderTexture-texture (*previous-rt*)) 1)
+      (resource-guardian (*current-rt*))
+      (resource-guardian (*previous-rt*))
+
+      (*viewport-camera* (make-Camera2D '(0.0 . 0.0) '(0.0 . 0.0) 0.0 (*viewport-scale*)))
+      (resource-guardian (*viewport-camera*))
+      
+      (*viewport-dest* (make-Rectangle 0.0 0.0 0.0 0.0))
+
+      (*viewport-origin* (make-Vector2 0.0 0.0))
+
+      (resource-guardian (*viewport-src*))
+      (resource-guardian (*viewport-dest*))
+      (resource-guardian (*viewport-origin*))))
 
   (define acquire-load-slot
     (lambda ()
@@ -168,20 +206,16 @@
 			  [phys-w (* logic-w scale-x)]
 			  [phys-h (* logic-h scale-y)])
 		     (set! rt (LoadRenderTexture (exact phys-w) (exact phys-h)))
-
 		     (SetTextureFilter (RenderTexture-texture rt) 1)
 		     (Rectangle-width-set! src (inexact phys-w))
 		     (Rectangle-height-set! src (* -1.0 phys-h))
-
 		     (Rectangle-width-set! dest (inexact logic-w))
 		     (Rectangle-height-set! dest (inexact logic-h))
-
 		     (Camera2D-zoom-set! cam scale-x)
-
 		     (resource-guardian rt)))
 		 (BeginTextureMode rt)
 		 (ClearBackground BLANK)
-		 (parameterize ([*scale* ratio])
+		 (parameterize ([*viewport-scale* ratio])
 		   (BeginMode2D cam)
 		   (ani s)
 		   (EndMode2D))
@@ -397,7 +431,7 @@
 	     (lambda (s)
 	       (unless started
 		 (set! started (state-time s)))
-	       (let ([ratio (*scale*)])
+	       (let ([ratio (*viewport-scale*)])
 		 (call-with-values
 		     (lambda () (movment (- (state-time s) started)))
 		   (lambda (off-x off-y tar-x tar-y ro zo)
