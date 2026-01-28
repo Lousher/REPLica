@@ -6,16 +6,6 @@
 	  (tool)
 	  (raylib ffi)
 	  (raylib constant))
-  
-  (define state-save-previous
-    (lambda (s)
-      (let ([prev-img (LoadImageFromScreen)])
-	(ImageFlipVertical prev-img)
-	(let ([prev-tex (LoadTextureFromImage prev-img)])
-	  (UnloadImage prev-img)
-	  (resource-guardian prev-tex)
-	  (state-previous-set! s prev-tex)
-	  s))))
 
   (define make-animation
     (lambda (animator)
@@ -24,7 +14,7 @@
 			      (for-each UpdateMusicStream (*musics*))
 			      (parameterize ([*current-viewport* current]
 					     [*previous-viewport* previous])
-				(BeginTextureMode current)
+				(BeginTextureMode (*current-viewport*))
 				(ClearBackground BLACK)
 				(BeginMode2D (*viewport-camera*))
 				(animator s)
@@ -48,7 +38,7 @@
 									[(WindowShouldClose)
 									 (values `(exit) s)]
 									[(IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-									 (values `(next) (state-save-previous s))]
+									 (values `(next) s)]
 									[else (pong (state-time-pass s (GetFrameTime)))]))))]
 		 [pong (lambda (s)
 			 (run-frame s (*previous-rt*) (*current-rt*) (lambda (s)
@@ -56,10 +46,11 @@
 									[(WindowShouldClose)
 									 (values `(exit) s)]
 									[(IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-									 (values `(next) (state-save-previous s))]
+									 (values `(next) s)]
 									[else (ping (state-time-pass s (GetFrameTime)))]))))])
 	  (ping state)
-	))))
+	  ))))
+
   
   (define jump
     (lambda (next)
@@ -98,7 +89,7 @@
 	      [(error)
 	       (DrawText "ERROR ..." 0 0 20 RED)]
 	      [(ram-ready)
-	       (TraceLog LOG_INFO "Async: Uploading Image to VRAM ...\n")
+	       (TraceLog LOG_INFO "Async: Uploading Image to VRAM ...")
 	       (let ([tex (LoadTextureFromImage current-data)])
 		 (SetTextureFilter tex 1)
 		 (resource-guardian tex)

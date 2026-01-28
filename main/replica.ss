@@ -13,7 +13,7 @@
     (lambda ()
       (make-state
        (make-window 0.0 0.0 1920.0 1080.0)
-       0.0 #f)))
+       0.0)))
 
   (define replica-collect
     (lambda ()

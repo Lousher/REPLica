@@ -7,7 +7,7 @@
 (parallel
  (wakeup (background morning) 2)
  (chain
-  (play searching) 2.5
+  (play searching) 2
   (stop searching) 0.5
   (play thud) 1.0
   (normal "好痛！")))
@@ -84,7 +84,8 @@
  (background morning)
  (normal "上次你这么说，然后就把我拉去见了个男的"))
 
-(define on-table  (fade (zoom-table (background morning)) 1))
+(define on-table (fade (zoom-table (background morning)) 1))
+
 (chain
  on-table
  1

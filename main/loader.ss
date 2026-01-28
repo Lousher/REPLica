@@ -1,5 +1,5 @@
 (library (loader)
-  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color music *musics* inspector *current-viewport* *previous-viewport* *viewport-dest* *viewport-src* *viewport-origin* *current-rt* *previous-rt* *viewport-camera* viewport-init *viewport-scale*)
+  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color music *musics* inspector *current-viewport* *previous-viewport* *viewport-dest* *viewport-src* *viewport-origin* *current-rt* *previous-rt* *viewport-camera* viewport-init *viewport-scale* *viewport-buffer*)
   (import (chezscheme)
 	  (state)
 	  (tool)
@@ -16,6 +16,8 @@
 
   (define *current-viewport* (make-parameter #f))
   (define *previous-viewport* (make-parameter #f))
+  (define *transition-snapshot* (make-parameter #f))
+  (define *viewport-buffer* (make-parameter #f))
   (define *current-rt* (make-parameter #f))
   (define *previous-rt* (make-parameter #f))
   (define *viewport-dest* (make-parameter #f))
@@ -23,7 +25,6 @@
   (define *viewport-origin* (make-parameter #f))
   (define *viewport-camera* (make-parameter #f))
 
-  (define load-rendertexture )
   (define viewport-init
     (lambda ()
       (let* ([scale (GetWindowScaleDPI)]
@@ -33,13 +34,18 @@
 	(let ([phys-w (flonum->fixnum (* 1920 scale-x))]
 	      [phys-h (flonum->fixnum (* 1080 scale-y))])
 	  (*viewport-src* (make-Rectangle 0.0 0.0 (inexact phys-w) (- (inexact phys-h))))
-	  (*current-rt*
-	   (LoadRenderTexture phys-w phys-h))
-	  (*previous-rt* (LoadRenderTexture phys-w phys-h))))
+	  (*current-rt* (LoadRenderTexture phys-w phys-h))
+	  (*previous-rt* (LoadRenderTexture phys-w phys-h))
+	  (*viewport-buffer* (LoadRenderTexture phys-w phys-h))
+	  (*transition-snapshot* (LoadRenderTexture phys-w phys-h))))
       (SetTextureFilter (RenderTexture-texture (*current-rt*)) 1)
+      (SetTextureFilter (RenderTexture-texture (*viewport-buffer*)) 1)
       (SetTextureFilter (RenderTexture-texture (*previous-rt*)) 1)
+      (SetTextureFilter (RenderTexture-texture (*transition-snapshot*)) 1)
       (resource-guardian (*current-rt*))
+      (resource-guardian (*viewport-buffer*))
       (resource-guardian (*previous-rt*))
+      (resource-guardian (*transition-snapshot*))
 
       (*viewport-camera* (make-Camera2D '(0.0 . 0.0) '(0.0 . 0.0) 0.0 (*viewport-scale*)))
       (resource-guardian (*viewport-camera*))
@@ -172,78 +178,53 @@
     (syntax-rules ()
       [(_ name vs fs)
        (define name
-	 (let* ([sh (LoadShader vs fs)] [rt #f]
-		[origin (make-Vector2 0.0 0.0)]
-		[src (make-Rectangle 0.0 0.0 0.0 0.0)]
-		[dest (make-Rectangle 0.0 0.0 0.0 0.0)]
-		[cam (make-Camera2D '(0.0 . 0.0) '(0.0 . 0.0) 0.0 1.0)]
+	 (let* ([sh (LoadShader vs fs)] 
 		[texture1-location (GetShaderLocation sh "texture1")]
 		[progress-location (GetShaderLocation sh "progress")]
 		[progress-ptr (foreign-alloc (ftype-sizeof float))]
-		[progress-fptr (make-ftype-pointer float progress-ptr)])
-	   (resource-guardian origin)
-	   (resource-guardian src)
-	   (resource-guardian dest)
-	   (resource-guardian cam)
+		[progress-fptr (make-ftype-pointer float progress-ptr)]
+		)
 	   (resource-guardian sh)
 	   (resource-guardian progress-fptr)
 	   (lambda (ani duration)
-	     (let ([started #f] [progress 0.0] [prev #f] [ratio #f])
+	     (let ([started #f] [progress 0.0] [prev #f])
 	       (lambda (s)
+		 (unless prev
+		   (BeginTextureMode (*transition-snapshot*))
+		   (ClearBackground BLANK)
+		   (DrawTextureRec (RenderTexture-texture (*previous-viewport*)) (*viewport-src*) (*viewport-origin*) WHITE)
+		   (EndTextureMode)
+		   (BeginTextureMode (*current-viewport*))
+		   (set! prev (RenderTexture-texture (*transition-snapshot*))))
 		 (unless started
 		   (set! started (state-time s)))
-		 (unless prev
-		   (set! prev (state-previous s)))
-		 (unless ratio
-		   (set! ratio (Vector2-x (GetWindowScaleDPI))))
-		 (unless rt
-		   (let* ([win (state-window s)]
-			  [scale (GetWindowScaleDPI)]
-			  [scale-x (Vector2-x scale)]
-			  [scale-y (Vector2-y scale)]
-			  [logic-w (window-width win)]
-			  [logic-h (window-height win)]
-			  [phys-w (* logic-w scale-x)]
-			  [phys-h (* logic-h scale-y)])
-		     (set! rt (LoadRenderTexture (exact phys-w) (exact phys-h)))
-		     (SetTextureFilter (RenderTexture-texture rt) 1)
-		     (Rectangle-width-set! src (inexact phys-w))
-		     (Rectangle-height-set! src (* -1.0 phys-h))
-		     (Rectangle-width-set! dest (inexact logic-w))
-		     (Rectangle-height-set! dest (inexact logic-h))
-		     (Camera2D-zoom-set! cam scale-x)
-		     (resource-guardian rt)))
-		 (BeginTextureMode rt)
+
+		 (BeginTextureMode (*viewport-buffer*))
 		 (ClearBackground BLANK)
-		 (parameterize ([*viewport-scale* ratio])
-		   (BeginMode2D cam)
-		   (ani s)
-		   (EndMode2D))
+		 (BeginMode2D (*viewport-camera*))
+		 (ani s)
+		 (EndMode2D)
 		 (EndTextureMode)
-		 
+		 (BeginTextureMode (*current-viewport*))
+
 		 (BeginShaderMode sh)
 		 (when (< progress 1.0)
 		   (set! progress (/ (- (state-time s) started) duration))
-		   (when prev
-		     (SetShaderValueTexture sh texture1-location prev))
+		   (SetShaderValueTexture sh texture1-location prev)
 		   (ftype-set! float () progress-fptr progress)
 		   (SetShaderValue sh progress-location progress-ptr SHADER_UNIFORM_FLOAT))
-		 (DrawTexturePro (RenderTexture-texture rt) src dest origin 0.0 WHITE)
-		 (EndShaderMode))
+		   (DrawTextureRec (RenderTexture-texture (*viewport-buffer*)) (*viewport-src*) (*viewport-origin*) WHITE)
+		   (EndShaderMode))
 	       ))))]))
 
   (define-syntax effect
     (syntax-rules ()
       [(_ name vs fs)
        (define name
-	 (let* ([sh (LoadShader vs fs)] [rt #f]
-		[origin (make-Vector2 0.0 0.0)]
-		[src (make-Rectangle 0.0 0.0 0.0 0.0)]
+	 (let* ([sh (LoadShader vs fs)]
 		[progress-location (GetShaderLocation sh "progress")]
 		[progress-ptr (foreign-alloc (ftype-sizeof float))]
 		[progress-fptr (make-ftype-pointer float progress-ptr)])
-	   (resource-guardian origin)
-	   (resource-guardian src)
 	   (resource-guardian sh)
 	   (resource-guardian progress-fptr)
 	   (lambda (ani duration)
@@ -251,16 +232,13 @@
 	       (lambda (s)
 		 (unless started
 		   (set! started (state-time s)))
-		 (unless rt
-		   (let ([win (state-window s)])
-		     (set! rt (LoadRenderTexture (exact (window-width win)) (exact (window-height win))))
-		     (Rectangle-width-set! src (inexact (window-width win)))
-		     (Rectangle-height-set! src (* -1.0 (window-height win)))
-		     (resource-guardian rt)))
-		 (BeginTextureMode rt)
+
+		 (BeginTextureMode (*viewport-buffer*))
 		 (ClearBackground BLANK)
 		 (ani s)
 		 (EndTextureMode)
+		 (BeginTextureMode (*current-viewport*))
+		 
 		 (BeginShaderMode sh)
 		 (when (< progress 1.0)
 		   (if (eqv? #t duration)
@@ -268,7 +246,7 @@
 		       (set! progress (/ (- (state-time s) started) duration)))
 		   (ftype-set! float () progress-fptr progress)
 		   (SetShaderValue sh progress-location progress-ptr SHADER_UNIFORM_FLOAT))
-		 (DrawTextureRec (RenderTexture-texture rt) src origin  WHITE)
+		 (DrawTextureRec (RenderTexture-texture (*viewport-buffer*)) (*viewport-src*) (*viewport-origin*) WHITE)
 		 (EndShaderMode))
 	       ))))]))
 

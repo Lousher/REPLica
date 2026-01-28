@@ -1,11 +1,11 @@
 (library (state)
-  (export make-state state-copy state-window make-window window-x window-y window-width window-height state-time state-time-pass state-previous-set! state-previous window-x-set! window-y-set! window-width-set! window-height-set! make-resource resource-lock resource-status resource-status-set! resource-data resource-data-set!)
+  (export make-state state-copy state-window make-window window-x window-y window-width window-height state-time state-time-pass  window-x-set! window-y-set! window-width-set! window-height-set! make-resource resource-lock resource-status resource-status-set! resource-data resource-data-set!)
   (import (chezscheme))
   
   (define-record-type state
     (fields window
 	    (mutable time)
-	    (mutable previous)))
+	    ))
 
   (define-record-type resource
     (fields
@@ -32,7 +32,7 @@
     (lambda (s)
       (make-state (window-copy (state-window s))
 		  (state-time s)
-		  (state-previous s))))
+		  )))
 
   (define state-time-pass
     (lambda (s passed)
