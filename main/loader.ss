@@ -205,8 +205,8 @@
 		 (ani s)
 		 (EndMode2D)
 		 (EndTextureMode)
+		 
 		 (BeginTextureMode (*current-viewport*))
-
 		 (BeginShaderMode sh)
 		 (when (< progress 1.0)
 		   (set! progress (/ (- (state-time s) started) duration))
@@ -235,7 +235,9 @@
 
 		 (BeginTextureMode (*viewport-buffer*))
 		 (ClearBackground BLANK)
+		 (BeginMode2D (*viewport-camera*))
 		 (ani s)
+		 (EndMode2D)
 		 (EndTextureMode)
 		 (BeginTextureMode (*current-viewport*))
 		 
@@ -305,16 +307,21 @@
 		     (Rectangle-y-set! bg-box (- start-y 10))
 		     (Rectangle-width-set! bg-box (+ measured-x 20))
 		     (Rectangle-height-set! bg-box (+ measured-y 20))
+
+		     (BeginMode2D (*viewport-camera*))
 		     (DrawRectangleRounded bg-box 0.5 10 bg-color)
-		     (DrawTextPro font text position origin 0.0 50.0 0.0 color)))
+		     (DrawTextPro font text position origin 0.0 50.0 0.0 color)
+		     (EndMode2D)))
 		 )))))]))
 
   (define-syntax phone
     (syntax-rules ()
       [(_ name phone-w phone-h)
        (define name
-	 (let* ([w (GetScreenWidth)]
-		[h (GetScreenHeight)]
+         ;; 【改动 1】不要用 GetScreenWidth，直接锁定为设计分辨率 1920x1080
+         ;; 这样无论屏幕实际是 4K 还是 720p，逻辑位置永远是居中的
+	 (let* ([w 1920.0]
+		[h 1080.0]
 		[round-rec (make-Rectangle (- (/ w 2.0) (/ phone-w 2.0)) (- (/ h 2.0) (/ phone-h 2.0)) (inexact phone-w) (inexact phone-h))]
 		[src #f])
 	   (resource-guardian round-rec)
@@ -330,9 +337,14 @@
 		       (set! current-data (resource-data res))))
 		   (case current-status
 		     [(error)
-		      (DrawText "ERROR ..." 0 0 20 RED)]
+                      ;; 【建议】报错文字也可以包一下 Camera，不然也会很小
+                      (BeginMode2D (*viewport-camera*))
+		      (DrawText "ERROR ..." 0 0 20 RED)
+                      (EndMode2D)]
 		     [(loading)
-		      (DrawText "Loading ..." 0 0 20 WHITE)]
+                      (BeginMode2D (*viewport-camera*))
+		      (DrawText "Loading ..." 0 0 20 WHITE)
+                      (EndMode2D)]
 		     [(ram-ready)
 		      (TraceLog LOG_INFO "Async: Uploading Image to VRAM ...")
 		      (let ([tex (LoadTextureFromImage current-data)])
@@ -347,9 +359,14 @@
 		      (unless src
 			(set! src (make-Rectangle 0.0 0.0 (inexact (Texture-width current-data)) (inexact (Texture-height current-data))))
 			(resource-guardian src))
+                      
+                      ;; 【改动 2】关键修复：强制开启摄像机
+                      ;; 确保 1920x1080 的逻辑坐标能正确映射到高分屏画布上
+                      (BeginMode2D (*viewport-camera*))
 		      (DrawRectangleRounded round-rec 0.25 8 BLACK)
 		      (DrawTexturePro current-data src round-rec origin 0.0 WHITE)
 		      (DrawRectangleRoundedLinesEx round-rec 0.25 8 6.0 LIGHTGRAY)
+                      (EndMode2D) ;; 记得关闭
 		      ])))))))]))
 
   (define-syntax inspector

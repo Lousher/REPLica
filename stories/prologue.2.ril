@@ -1,0 +1,248 @@
+(import (replica) (loader) (directive))
+
+(*text*
+  (string-append "哈……" "玉米三块，包子也三块，这也太贵了" "(应该买套餐的啊)" "好烫！"
+   "呼呼……" "(感觉，好久没吃早餐了)" "(难得被吵醒一次，还是有点好处的)" "哈哈" "……班长？"
+   "诶？……好烫！" "啊，玉米！" "…………！" "(还好还好)" "……啊" "哟，班长"
+   "还好接住了啊，这可三块钱呢" "啊哈哈" "(已经……完了)" "之前从没在附近看见过班长你啊，是最近刚搬来吗？"
+   "不是，我住很久了" "是吗" "我休息日早上都会到这里" "有绿植的地方，会让人很放松啊" "是啊……" "…………"
+   "(要死了，社会意义上)" "(不仅素颜被看到了，还做了个莫名奇妙的杂耍)" "那个啊班长，虽然不好意思开口"
+   "啊……？" "这里没桌子，你介意我端着过早不？" "啊，好，好啊" "(吓死我了！)"
+   "已经放了有一会儿了，面都开始坨了" "…………" "(感觉……)" "哈哈，感觉高中时经常在你旁边过早来着"
+   "每天早上先直奔食堂，刷卡后直接拿碗热干面回教室" "…………" "然后趁着早读前，老师还没来的几分钟吃完" "呵呵"
+   "(明明早点来就不用那么赶)" "不过学校的热干面是真的难吃" "芝麻酱只给一点，面条吃起来却粘粘的"
+   "不像这碗，我还特地让老板多给了些黑芝麻酱" "黑芝麻酱？" "对啊，你看看" "哇哦" "(真的是黑的)"
+   "就从刚才路过的楚熊商区买的，班长你猜猜是哪家店？" "不知道" "(完全没仔细逛过那里)" "那下次有机会带你逛逛"
+   "啊" "(有机会吗)" "对了班长，你要不要尝一下这个酱？" "哈？" "(诶？筷子就一双吧？)"
+   "(难道要这样喂给我吗？)" "用你的包子，撕点皮沾点酱试试？" "啊，这样" "(我在想些什么……)"
+   "你留着自己吃吧" "我吃这些就够了" "还是一样吃得少啊" "要你管" "哈哈" "(真是和以前一样没心没肺)"
+   "…………" "呐，班长，你看天上" "怎么了？" "(是飞机或者鸟吗？)" "你看上面那块，像不像个人的样子"
+   "哪有" "就那一大片云上面，有个直角，不就是弯腰的姿势嘛" "诶～" "(还真有点像)"
+   "然后最上面的那一块小的，就是头部，突出的那部分就是鼻子" "好标准的鹰钩鼻" "还有后面那块，就是握紧的拳头"
+   "那后面突出来的部分是什么？" "是不是尾巴啊，他鼻子那么大，也不像个普通人" "有道理啊" "(真是太傻了点)"
+   "这整个看起来就像在跳远啊" "(啊，嘴边还粘着芝麻酱)" "但是有尾巴的生物跳远很奇怪啊"
+   "(明明头发长长了，胡子也明显了)" "班长你怎么想" "(却还是在叫我“班长”啊)" "嗯……"
+   "你要不先把芝麻酱擦擦？" "啊，不好意思" "一个人的时候没太注意" "没事" "(一个人啊)" "我都习惯了"
+   "stories/prologue.3"))
+
+(let ()
+  (texture morning "assets/bg/street.morning.png")
+  (texture black "assets/bg/black.png")
+  (transition fade #f "assets/glsl/fade.transition.fs")
+  (sound lawson "assets/sound/lawson.mp3")
+  (dialogue normal "assets/font/Xiaolai-Regular.ttf")
+  (sound plastic "assets/sound/plastic.mp3")
+  (camera
+    store-zoom
+    (lambda (t) (values 0.0 0.0 900.0 250.0 0.0 2.0)))
+  (effect mask #f "assets/glsl/mask.effect.fs")
+  (camera
+    store-move
+    (lambda (t)
+      (values 0.0 0.0 (max (- 900 (* t 10)) 850.0) 250.0 0.0
+        2.0)))
+  (music street "assets/sound/street.mp3")
+  (music walking "assets/sound/walking.street.mp3")
+  (texture corn-on-air "assets/sd/corn-on-air.png")
+  (texture corn-try-catch "assets/sd/corn-try-catch.png")
+  (texture
+    corn-catch-successfull
+    "assets/sd/corn-catch-successful.png")
+  (texture corn-shy "assets/sd/corn-shy.png")
+  (texture corn-end "assets/sd/corn-end.png")
+  (texture xin "assets/picture/xin.png")
+  (texture park-morning "assets/bg/park.morning.png")
+  (camera
+    park-zoom
+    (lambda (t) (values 0.0 0.0 0.0 500.0 0.0 3.0)))
+  (music park "assets/sound/park.mp3")
+  (camera
+    park-zoom-move
+    (lambda (t)
+      (values 0.0 0.0 (min (+ 0.0 (* 5 t)) 200.0) 500.0 0.0 3.0)))
+  (texture sky "assets/bg/sky.jpg")
+  (transition lookup #f "assets/glsl/lookup.transition.fs")
+  (define street-morning (background morning))
+  (define masked-move
+    (mask (store-move (background morning)) 1))
+  (define park-bg-mor (background park-morning))
+  (define chair-zoom (park-zoom park-bg-mor))
+  (define masked-chair-zoom
+    (mask (park-zoom-move (background park-morning)) 1))
+  (*actions*
+    (list
+     (make-animation
+       (chain (static black) 0.5 (fade (store-zoom street-morning) 2)
+         (play street) (play lawson) 2 (play plastic) 1
+         (normal "哈……")))
+     (make-animation
+       (chain
+         (store-zoom street-morning)
+         (play plastic)
+         (normal "玉米三块，包子也三块，这也太贵了")))
+     (make-animation
+       (chain masked-move 1 (play walking) (normal "(应该买套餐的啊)")))
+     (make-animation (chain masked-move (normal "好烫！")))
+     (make-animation
+       (chain masked-move (stop walking) (normal "呼呼……")))
+     (make-animation (chain masked-move (normal "(感觉，好久没吃早餐了)")))
+     (make-animation
+       (chain masked-move (normal "(难得被吵醒一次，还是有点好处的)")))
+     (make-animation (chain masked-move (normal "哈哈")))
+     (make-animation (chain masked-move (normal "……班长？")))
+     (make-animation (chain masked-move (normal "诶？……好烫！")))
+     (make-animation
+       (chain
+         (fade (background corn-on-air) 2)
+         (stop street 2)
+         2
+         (normal "啊，玉米！")))
+     (make-animation
+       (chain
+         (fade (background corn-try-catch) 0.5)
+         1
+         (normal "…………！")))
+     (make-animation
+       (chain
+         (fade (background corn-catch-successfull) 0.5)
+         1
+         (normal "(还好还好)")))
+     (make-animation
+       (chain (fade (background corn-shy) 0.5) 1 (normal "……啊")))
+     (make-animation
+       (chain (background corn-shy) (normal "哟，班长")))
+     (make-animation
+       (chain (background corn-shy) (normal "还好接住了啊，这可三块钱呢")))
+     (make-animation
+       (chain (fade (background corn-end) 1) 1 (normal "啊哈哈")))
+     (make-animation
+       (chain
+         (fade (background corn-end) 1)
+         1
+         (normal "(已经……完了)")))
+     (make-animation
+       (chain (fade park-bg-mor 2) 2 (play park 2)))
+     (make-animation
+       (chain
+         (fade chair-zoom 2)
+         2
+         (normal "之前从没在附近看见过班长你啊，是最近刚搬来吗？")))
+     (make-animation (chain chair-zoom (normal "不是，我住很久了")))
+     (make-animation (chain chair-zoom (normal "是吗")))
+     (make-animation (chain chair-zoom (normal "我休息日早上都会到这里")))
+     (make-animation
+       (chain chair-zoom (normal "有绿植的地方，会让人很放松啊")))
+     (make-animation (chain chair-zoom (normal "是啊……")))
+     (make-animation (chain chair-zoom (normal "…………")))
+     (make-animation (chain chair-zoom (normal "(要死了，社会意义上)")))
+     (make-animation
+       (chain chair-zoom (normal "(不仅素颜被看到了，还做了个莫名奇妙的杂耍)")))
+     (make-animation
+       (chain chair-zoom (normal "那个啊班长，虽然不好意思开口")))
+     (make-animation (chain chair-zoom (normal "啊……？")))
+     (make-animation
+       (chain chair-zoom (normal "这里没桌子，你介意我端着过早不？")))
+     (make-animation (chain chair-zoom (normal "啊，好，好啊")))
+     (make-animation (chain chair-zoom (normal "(吓死我了！)")))
+     (make-animation
+       (chain chair-zoom (normal "已经放了有一会儿了，面都开始坨了")))
+     (make-animation
+       (chain masked-chair-zoom (stop park 1) (normal "…………")))
+     (make-animation (chain masked-chair-zoom (normal "(感觉……)")))
+     (make-animation
+       (chain masked-chair-zoom (normal "哈哈，感觉高中时经常在你旁边过早来着")))
+     (make-animation
+       (chain
+         masked-chair-zoom
+         (normal "每天早上先直奔食堂，刷卡后直接拿碗热干面回教室")))
+     (make-animation (chain masked-chair-zoom (normal "…………")))
+     (make-animation
+       (chain masked-chair-zoom (normal "然后趁着早读前，老师还没来的几分钟吃完")))
+     (make-animation (chain masked-chair-zoom (normal "呵呵")))
+     (make-animation
+       (chain masked-chair-zoom (normal "(明明早点来就不用那么赶)")))
+     (make-animation
+       (chain masked-chair-zoom (normal "不过学校的热干面是真的难吃")))
+     (make-animation
+       (chain masked-chair-zoom (normal "芝麻酱只给一点，面条吃起来却粘粘的")))
+     (make-animation
+       (chain masked-chair-zoom (normal "不像这碗，我还特地让老板多给了些黑芝麻酱")))
+     (make-animation (chain masked-chair-zoom (normal "黑芝麻酱？")))
+     (make-animation (chain masked-chair-zoom (normal "对啊，你看看")))
+     (make-animation (chain masked-chair-zoom (normal "哇哦")))
+     (make-animation
+       (chain masked-chair-zoom (normal "(真的是黑的)")))
+     (make-animation
+       (chain
+         masked-chair-zoom
+         (normal "就从刚才路过的楚熊商区买的，班长你猜猜是哪家店？")))
+     (make-animation (chain masked-chair-zoom (normal "不知道")))
+     (make-animation
+       (chain masked-chair-zoom (normal "(完全没仔细逛过那里)")))
+     (make-animation
+       (chain masked-chair-zoom (normal "那下次有机会带你逛逛")))
+     (make-animation (chain masked-chair-zoom (normal "啊")))
+     (make-animation (chain masked-chair-zoom (normal "(有机会吗)")))
+     (make-animation
+       (chain (fade chair-zoom 1) 1 (normal "对了班长，你要不要尝一下这个酱？")))
+     (make-animation (chain chair-zoom (normal "哈？")))
+     (make-animation (chain chair-zoom (normal "(诶？筷子就一双吧？)")))
+     (make-animation (chain chair-zoom (normal "(难道要这样喂给我吗？)")))
+     (make-animation
+       (chain chair-zoom (normal "用你的包子，撕点皮沾点酱试试？")))
+     (make-animation (chain chair-zoom (normal "啊，这样")))
+     (make-animation (chain chair-zoom (normal "(我在想些什么……)")))
+     (make-animation (chain chair-zoom (normal "你留着自己吃吧")))
+     (make-animation (chain chair-zoom (normal "我吃这些就够了")))
+     (make-animation (chain chair-zoom (normal "还是一样吃得少啊")))
+     (make-animation (chain chair-zoom (normal "要你管")))
+     (make-animation (chain chair-zoom (normal "哈哈")))
+     (make-animation (chain chair-zoom (normal "(真是和以前一样没心没肺)")))
+     (make-animation (chain chair-zoom (normal "…………")))
+     (make-animation (chain chair-zoom (normal "呐，班长，你看天上")))
+     (make-animation (chain chair-zoom (normal "怎么了？")))
+     (make-animation (chain chair-zoom (normal "(是飞机或者鸟吗？)")))
+     (make-animation
+       (chain
+         (lookup (background sky) 2.5)
+         3
+         (normal "你看上面那块，像不像个人的样子")))
+     (make-animation (chain (background sky) (normal "哪有")))
+     (make-animation
+       (chain (background sky) (normal "就那一大片云上面，有个直角，不就是弯腰的姿势嘛")))
+     (make-animation (chain (background sky) (normal "诶～")))
+     (make-animation (chain (background sky) (normal "(还真有点像)")))
+     (make-animation
+       (chain
+         (background sky)
+         (normal "然后最上面的那一块小的，就是头部，突出的那部分就是鼻子")))
+     (make-animation (chain (background sky) (normal "好标准的鹰钩鼻")))
+     (make-animation
+       (chain (background sky) (normal "还有后面那块，就是握紧的拳头")))
+     (make-animation
+       (chain (background sky) (normal "那后面突出来的部分是什么？")))
+     (make-animation
+       (chain (background sky) (normal "是不是尾巴啊，他鼻子那么大，也不像个普通人")))
+     (make-animation (chain (background sky) (normal "有道理啊")))
+     (make-animation
+       (chain (fade chair-zoom 1) 1 (normal "(真是太傻了点)")))
+     (make-animation (chain chair-zoom (normal "这整个看起来就像在跳远啊")))
+     (make-animation (chain chair-zoom (normal "(啊，嘴边还粘着芝麻酱)")))
+     (make-animation
+       (chain chair-zoom (normal "但是有尾巴的生物跳远很奇怪啊")))
+     (make-animation
+       (chain chair-zoom (normal "(明明头发长长了，胡子也明显了)")))
+     (make-animation (chain chair-zoom (normal "班长你怎么想")))
+     (make-animation (chain chair-zoom (normal "(却还是在叫我“班长”啊)")))
+     (make-animation (chain chair-zoom (normal "嗯……")))
+     (make-animation (chain chair-zoom (normal "你要不先把芝麻酱擦擦？")))
+     (make-animation (chain chair-zoom (normal "啊，不好意思")))
+     (make-animation (chain chair-zoom (normal "一个人的时候没太注意")))
+     (make-animation (chain chair-zoom (normal "没事")))
+     (make-animation (chain chair-zoom (normal "(一个人啊)")))
+     (make-animation
+       (chain (fade (background sky) 2) 2 (normal "我都习惯了")))
+     (make-animation (fade (background xin) 2))
+     (make-animation (fade (static black) 1))
+     (jump "stories/prologue.3"))))
+
