@@ -1,5 +1,5 @@
 (library (loader)
-  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color music *musics* inspector *current-viewport* *previous-viewport* *viewport-dest* *viewport-src* *viewport-origin* *current-rt* *previous-rt* *viewport-camera* viewport-init *viewport-scale* *viewport-buffer*)
+  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color music *musics* inspector *current-viewport* *previous-viewport* *viewport-dest* *viewport-src* *viewport-origin* *current-rt* *previous-rt* *viewport-camera* viewport-init *viewport-scale* *viewport-buffer* *color* )
   (import (chezscheme)
 	  (state)
 	  (tool)
@@ -34,6 +34,7 @@
 	(let ([phys-w (flonum->fixnum (* 1920 scale-x))]
 	      [phys-h (flonum->fixnum (* 1080 scale-y))])
 	  (*viewport-src* (make-Rectangle 0.0 0.0 (inexact phys-w) (- (inexact phys-h))))
+	  (*viewport-dest* (make-Rectangle 0.0 0.0 1920.0 1080.0))
 	  (*current-rt* (LoadRenderTexture phys-w phys-h))
 	  (*previous-rt* (LoadRenderTexture phys-w phys-h))
 	  (*viewport-buffer* (LoadRenderTexture phys-w phys-h))
@@ -50,8 +51,6 @@
       (*viewport-camera* (make-Camera2D '(0.0 . 0.0) '(0.0 . 0.0) 0.0 (*viewport-scale*)))
       (resource-guardian (*viewport-camera*))
       
-      (*viewport-dest* (make-Rectangle 0.0 0.0 0.0 0.0))
-
       (*viewport-origin* (make-Vector2 0.0 0.0))
 
       (resource-guardian (*viewport-src*))
@@ -182,8 +181,7 @@
 		[texture1-location (GetShaderLocation sh "texture1")]
 		[progress-location (GetShaderLocation sh "progress")]
 		[progress-ptr (foreign-alloc (ftype-sizeof float))]
-		[progress-fptr (make-ftype-pointer float progress-ptr)]
-		)
+		[progress-fptr (make-ftype-pointer float progress-ptr)])
 	   (resource-guardian sh)
 	   (resource-guardian progress-fptr)
 	   (lambda (ani duration)
@@ -439,5 +437,7 @@
 		 (BeginMode2D ca)
 		 (ani s)
 		 (EndMode2D)
+		 (BeginMode2D (*viewport-camera*))
 		 )))))]))
+
   )

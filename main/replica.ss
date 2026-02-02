@@ -58,8 +58,10 @@
        (logor
 	FLAG_WINDOW_HIGHDPI
 	FLAG_BORDERLESS_WINDOWED_MODE
-	FLAG_WINDOW_UNDECORATED))
-      (InitWindow (GetScreenWidth) (GetScreenHeight) "Test")
+	FLAG_WINDOW_UNDECORATED
+	FLAG_WINDOW_RESIZABLE))
+;      (InitWindow 0 0 "YeYuan")
+      (InitWindow 1920 1080 "YeYuan")
       (viewport-init)
       (InitAudioDevice)
       (SetTargetFPS 60)
@@ -85,7 +87,7 @@
 		   [(jump)
 		    (TraceLog LOG_INFO "Jumping!")
 		    (storying (cadr sig) new-state)]
-		   [else
+		   [(next)
 		    (replica-collect)
 		    (stepper (cdr rest) new-state (+ 1 frame-count))]
 		   ))])))))

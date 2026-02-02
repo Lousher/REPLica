@@ -1,5 +1,5 @@
 (library (directive)
-  (export make-animation static background jump above beside play parallel locate duration stop trigger chain character)
+  (export make-animation static background jump above beside play parallel locate duration stop trigger chain character rectangle hover-rectangle)
   (import (chezscheme)
 	  (state)
 	  (loader)
@@ -20,33 +20,33 @@
 				(animator s)
 				(EndMode2D)
 				(EndTextureMode))
-			      (let* ([sw (GetScreenWidth)] [sh (GetScreenHeight)]
-				     [scale (max (/ sw 1920.0) (/ sh 1080.0))]
-				     [dw (* 1920.0 scale)] [dh (* 1080.0 scale)]
-				     [dx (/ (- sw dw) 2.0)] [dy (/ (- sh dh) 2.0)])
-				(Rectangle-x-set! (*viewport-dest*) dx) (Rectangle-y-set! (*viewport-dest*) dy)
-				(Rectangle-width-set! (*viewport-dest*) dw) (Rectangle-height-set! (*viewport-dest*) dh)
-				(BeginDrawing)
-				(ClearBackground BLACK)
-				(DrawTexturePro (RenderTexture-texture current) 
-						(*viewport-src*) (*viewport-dest*) (*viewport-origin*) 0.0 WHITE)
-			      (EndDrawing))
+			      (BeginDrawing)
+			      (ClearBackground BLACK)
+			      (DrawTexturePro (RenderTexture-texture current) 
+					      (*viewport-src*) (*viewport-dest*) (*viewport-origin*) 0.0 WHITE)
+			      (EndDrawing)
 			      (next s))]
 		 [ping (lambda (s)
 			 (run-frame s (*current-rt*) (*previous-rt*) (lambda (s)
 								       (cond
 									[(WindowShouldClose)
 									 (values `(exit) s)]
-									[(IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-									 (values `(next) s)]
+									[#t
+									 (cond
+									  [(IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+									   (values `(next) s)]
+									  [else (pong (state-time-pass s (GetFrameTime)))])]
 									[else (pong (state-time-pass s (GetFrameTime)))]))))]
 		 [pong (lambda (s)
 			 (run-frame s (*previous-rt*) (*current-rt*) (lambda (s)
 								       (cond
 									[(WindowShouldClose)
 									 (values `(exit) s)]
-									[(IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-									 (values `(next) s)]
+									[#t
+									 (cond
+									  [(IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+									   (values `(next) s)]
+									  [else (pong (state-time-pass s (GetFrameTime)))])]
 									[else (ping (state-time-pass s (GetFrameTime)))]))))])
 	  (ping state)
 	  ))))
@@ -56,7 +56,7 @@
     (lambda (next)
       (lambda (state)
 	(values `(jump ,next) state))))
-
+  
   (define texture->Rectangle
     (lambda (tex)
       (let ([rect (make-Rectangle 0.0 0.0 (inexact (Texture-width tex)) (inexact (Texture-height tex)))])
@@ -71,12 +71,11 @@
   
   (define background
     (lambda (res)
-      (let ([src #f] [dest #f]
+      (let ([src #f] [dest (make-Rectangle 0.0 0.0 1920.0 1080.0)]
 	    [origin (make-Vector2 0.0 0.0)])
 	(resource-guardian origin)
+	(resource-guardian dest)
 	(lambda (s)
-	  (unless dest
-	    (set! dest (window->Rectangle (state-window s))))
 	  (let ([current-status #f] [current-data #f])
 	    (with-mutex (resource-lock res)
 	      (set! current-status (resource-status res))
@@ -97,11 +96,11 @@
 		   (resource-data-set! res tex)
 		   (resource-status-set! res 'gpu-ready)
 		   (UnloadImage current-data)
-		   (TraceLog LOG_INFO "Optimization: Background Image freed manually.")
-		   ))]
+		   (TraceLog LOG_INFO "Optimization: Background Image freed manually."))
+		 )
+		 ]
 	      [(gpu-ready)
-	       (unless src
-		 (set! src (texture->Rectangle current-data)))
+	       (unless src (set! src (texture->Rectangle current-data)))
 	       (DrawTexturePro current-data src dest origin 0.0 WHITE)])
 	    )))))
 
@@ -149,7 +148,32 @@
 		 (set! src (texture->Rectangle current-data)))
 	       (DrawTexturePro current-data src dest origin 0.0 WHITE)])
 	    )))))
+  
+  (define rectangle
+    (lambda (x y w h)
+      (let ([rect (make-Rectangle (exact->inexact x) 
+                                  (exact->inexact y) 
+                                  (exact->inexact w) 
+                                  (exact->inexact h))])
+        (resource-guardian rect)
+        (lambda (s)
+          (let ([vm (GetMousePosition)])
+            (if (CheckCollisionPointRec vm rect)
+                (DrawRectangleLines x y w h RED)
+                (DrawRectangleLines x y w h BLACK)))))))
 
+  (define hover-rectangle
+    (lambda (x y w h ani-normal ani-hover)
+      (let ([rect (make-Rectangle (exact->inexact x) 
+                                  (exact->inexact y) 
+                                  (exact->inexact w) 
+                                  (exact->inexact h))])
+        (resource-guardian rect)
+        (lambda (s)
+          (if (CheckCollisionPointRec (GetMousePosition) rect)
+              (ani-hover s)
+              (ani-normal s))))))
+  
   (define static
     (lambda (res)
       (lambda (s)
@@ -169,15 +193,14 @@
 	       (let ([tex (LoadTextureFromImage current-data)])
 		 (resource-guardian tex)
 ;		 (GenTextureMipmaps tex)
-		 (SetTextureFilter tex 2)
+		 (SetTextureFilter tex 1)
 		 (with-mutex (resource-lock res)
 		   (resource-data-set! res tex)
-		   (resource-status-set! res 'gpu-ready)
-		   ))]
+		   (resource-status-set! res 'gpu-ready))
+		 (DrawTexture tex 0 0 WHITE)
+		 )]
 	      [(gpu-ready)
-	       (DrawTexture current-data
-			    (round (exact (window-x win)))
-			    (round (exact (window-y win))) WHITE)])))))
+	       (DrawTexture current-data 0 0 WHITE)])))))
   
   (define play
     (lambda (res . args)
