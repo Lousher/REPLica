@@ -1,5 +1,5 @@
 (library (directive)
-  (export make-animation static background jump above beside play parallel locate duration stop trigger chain character rectangle hover-rectangle click-rectangle click-next)
+  (export make-animation static background jump above beside play parallel locate duration stop trigger chain character rectangle hover-rectangle click-rectangle click-next emit)
   (import (chezscheme)
 	  (state)
 	  (loader)
@@ -69,8 +69,8 @@
     (lambda ()
       (lambda (s)
 	(when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-	    (emit '(next))))))
-    
+	  (emit '(next))))))
+      
   (define texture->Rectangle
     (lambda (tex)
       (let ([rect (make-Rectangle 0.0 0.0 (inexact (Texture-width tex)) (inexact (Texture-height tex)))])

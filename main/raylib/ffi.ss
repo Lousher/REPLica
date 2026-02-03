@@ -6,8 +6,7 @@
   (define _init
     (case (machine-type)
       [(tarm64osx)
-       (load-shared-object "libraylib.5.5.0.dylib")
-       (load-shared-object "raygui.dynlib")]
+       (load-shared-object "libraylib.5.5.0.dylib")]
       [(ta6nt)
        (load-shared-object "raylib.dll")]))
 

@@ -62,8 +62,8 @@
 	    FLAG_WINDOW_HIGHDPI
 	    FLAG_BORDERLESS_WINDOWED_MODE
 	    FLAG_WINDOW_UNDECORATED
-	    FLAG_WINDOW_RESIZABLE))
-					;      (InitWindow 0 0 "YeYuan")
+	    ;FLAG_WINDOW_RESIZABLE
+	    ))
 	  (InitWindow 1920 1080 "YeYuan")
 	  (viewport-init)
 	  (InitAudioDevice)
