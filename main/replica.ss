@@ -4,6 +4,7 @@
 	  (transpiler)
 	  (state)
 	  (loader)
+	  (tool)
 	  (raylib ffi)
 	  (raylib constant))
 
@@ -54,44 +55,50 @@
   
   (define replica
     (lambda (entry)
-      (SetConfigFlags
-       (logor
-	FLAG_WINDOW_HIGHDPI
-	FLAG_BORDERLESS_WINDOWED_MODE
-	FLAG_WINDOW_UNDECORATED
-	FLAG_WINDOW_RESIZABLE))
-;      (InitWindow 0 0 "YeYuan")
-      (InitWindow 1920 1080 "YeYuan")
-      (viewport-init)
-      (InitAudioDevice)
-      (SetTargetFPS 60)
-      (call/cc
-       (lambda (exit)
-	 (let storying ([current-story (strip-extension entry)]
-			[story-state (state-init)])
-	   (ensure-compiled current-story)
-	   (replica-collect)
-	   (load (string-append current-story ".so"))
-	   (let stepper ([rest (*actions*)] [step-state story-state] [frame-count 0])
-	     (*actions* #f)
-	     (cond
-	      [(null? rest) (exit)]
-	      [(list? (car rest))
-	       (stepper (append (car rest) (cdr rest)) step-state)]
-	      [else
-	       (let-values ([(sig new-state) ((car rest) step-state)])
-		 (case (car sig)
-		   [(exit)
-		    (TraceLog LOG_INFO (format "State is ~a" (state-time new-state)))
-		    (exit)]
-		   [(jump)
-		    (TraceLog LOG_INFO "Jumping!")
-		    (storying (cadr sig) new-state)]
-		   [(next)
-		    (replica-collect)
-		    (stepper (cdr rest) new-state (+ 1 frame-count))]
-		   ))])))))
-      (replica-collect)
-      (CloseAudioDevice)
-      (CloseWindow)))
-  )
+      (dynamic-wind
+	(lambda ()
+	  (SetConfigFlags
+	   (logor
+	    FLAG_WINDOW_HIGHDPI
+	    FLAG_BORDERLESS_WINDOWED_MODE
+	    FLAG_WINDOW_UNDECORATED
+	    FLAG_WINDOW_RESIZABLE))
+					;      (InitWindow 0 0 "YeYuan")
+	  (InitWindow 1920 1080 "YeYuan")
+	  (viewport-init)
+	  (InitAudioDevice)
+	  (SetTargetFPS 60))
+	(lambda ()
+	  (call/cc
+	   (lambda (exit)
+	     (let storying ([current-story (strip-extension entry)]
+			    [story-state (state-init)])
+	       (ensure-compiled current-story)
+	       (replica-collect)
+	       (load (string-append current-story ".so"))
+	       (let stepper ([rest (*actions*)] [step-state story-state] [frame-count 0])
+		 (*actions* #f)
+		 (cond
+		  [(null? rest) (exit)]
+		  [(list? (car rest))
+		   (stepper (append (car rest) (cdr rest)) step-state frame-count)]
+		  [else
+		   (let-values ([(sig new-state) ((car rest) step-state)])
+		     (replica-collect)
+		     (TraceLog LOG_INFO (format "Sig is ~a , State is ~a" sig (state-time new-state)))
+		     (case (car sig)
+		       [(exit)
+			(TraceLog LOG_INFO (format-red "Game Exited Successfully!"))
+			(exit)]
+		       [(jump)
+			(TraceLog LOG_INFO "Jumping to next story!")
+			(storying (cadr sig) new-state)]
+		       [(next)
+			(stepper (cdr rest) new-state (+ 1 frame-count))]
+		       ))]))))))
+	(lambda ()
+	  (replica-collect)
+	  (CloseAudioDevice)
+	  (CloseWindow))))
+    )
+)

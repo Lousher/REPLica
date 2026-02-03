@@ -1,5 +1,5 @@
 (library (loader)
-  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color music *musics* inspector *current-viewport* *previous-viewport* *viewport-dest* *viewport-src* *viewport-origin* *current-rt* *previous-rt* *viewport-camera* viewport-init *viewport-scale* *viewport-buffer* *color* )
+  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color music *musics* inspector *current-viewport* *previous-viewport* *viewport-dest* *viewport-src* *viewport-origin* *current-rt* *previous-rt* *viewport-camera* viewport-init *viewport-scale* *viewport-buffer* *color* *effect-handler*)
   (import (chezscheme)
 	  (state)
 	  (tool)
@@ -7,6 +7,8 @@
 	  (raylib constant))
 
   (define *viewport-scale* (make-parameter 1.0))
+
+  (define *effect-handler* (make-parameter (lambda (effect) (error 'emit "Effect used outside handler"))))
 
   (define *max-concurrent-loads* 3)
   

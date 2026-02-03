@@ -1,5 +1,5 @@
 (library (directive)
-  (export make-animation static background jump above beside play parallel locate duration stop trigger chain character rectangle hover-rectangle)
+  (export make-animation static background jump above beside play parallel locate duration stop trigger chain character rectangle hover-rectangle click-rectangle click-next)
   (import (chezscheme)
 	  (state)
 	  (loader)
@@ -12,51 +12,57 @@
       (lambda (state)
 	(letrec ([run-frame (lambda (s current previous next)
 			      (for-each UpdateMusicStream (*musics*))
-			      (parameterize ([*current-viewport* current]
-					     [*previous-viewport* previous])
-				(BeginTextureMode (*current-viewport*))
+			      (let ([emitted-signal #f])
+				(dynamic-wind
+				  (lambda ()
+				    (BeginTextureMode current)
+				    (ClearBackground BLACK)
+				    (BeginMode2D (*viewport-camera*)))
+				  (lambda ()
+				    (call/cc
+				     (lambda (escape)
+				       (parameterize ([*current-viewport* current]
+						      [*previous-viewport* previous]
+						      [*effect-handler* (lambda (sig)
+									  (set! emitted-signal sig)
+									  (escape))])
+					 (animator s)))))
+				  (lambda ()
+				    (EndMode2D)
+				    (EndTextureMode)))
+				(BeginDrawing)
 				(ClearBackground BLACK)
-				(BeginMode2D (*viewport-camera*))
-				(animator s)
-				(EndMode2D)
-				(EndTextureMode))
-			      (BeginDrawing)
-			      (ClearBackground BLACK)
-			      (DrawTexturePro (RenderTexture-texture current) 
-					      (*viewport-src*) (*viewport-dest*) (*viewport-origin*) 0.0 WHITE)
-			      (EndDrawing)
-			      (next s))]
+				(DrawTexturePro (RenderTexture-texture current) 
+						(*viewport-src*) (*viewport-dest*) (*viewport-origin*) 0.0 WHITE)
+				(EndDrawing)
+				(cond
+				 [(WindowShouldClose) (values `(exit) s)]
+				 [emitted-signal (values emitted-signal s)]
+				 ;[(IsMouseButtonPressed MOUSE_BUTTON_LEFT) (values `(next) s)]
+				 [else (next (state-time-pass s (GetFrameTime)))])))]
 		 [ping (lambda (s)
-			 (run-frame s (*current-rt*) (*previous-rt*) (lambda (s)
-								       (cond
-									[(WindowShouldClose)
-									 (values `(exit) s)]
-									[#t
-									 (cond
-									  [(IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-									   (values `(next) s)]
-									  [else (pong (state-time-pass s (GetFrameTime)))])]
-									[else (pong (state-time-pass s (GetFrameTime)))]))))]
+			 (run-frame s (*current-rt*) (*previous-rt*) pong))]
 		 [pong (lambda (s)
-			 (run-frame s (*previous-rt*) (*current-rt*) (lambda (s)
-								       (cond
-									[(WindowShouldClose)
-									 (values `(exit) s)]
-									[#t
-									 (cond
-									  [(IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-									   (values `(next) s)]
-									  [else (pong (state-time-pass s (GetFrameTime)))])]
-									[else (ping (state-time-pass s (GetFrameTime)))]))))])
+			 (run-frame s (*previous-rt*) (*current-rt*) ping))])
 	  (ping state)
 	  ))))
 
-  
+  (define emit
+    (lambda (effect)
+      (let ([escape (*effect-handler*)])
+	(escape effect))))
+
   (define jump
-    (lambda (next)
-      (lambda (state)
-	(values `(jump ,next) state))))
-  
+    (lambda (to)
+      (lambda (s)
+	(emit `(jump ,to)))))
+
+  (define click-next
+    (lambda ()
+      (lambda (s)
+	(when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+	    (emit '(next))))))
+    
   (define texture->Rectangle
     (lambda (tex)
       (let ([rect (make-Rectangle 0.0 0.0 (inexact (Texture-width tex)) (inexact (Texture-height tex)))])
@@ -96,9 +102,7 @@
 		   (resource-data-set! res tex)
 		   (resource-status-set! res 'gpu-ready)
 		   (UnloadImage current-data)
-		   (TraceLog LOG_INFO "Optimization: Background Image freed manually."))
-		 )
-		 ]
+		   (TraceLog LOG_INFO "Optimization: Background Image freed manually.")))]
 	      [(gpu-ready)
 	       (unless src (set! src (texture->Rectangle current-data)))
 	       (DrawTexturePro current-data src dest origin 0.0 WHITE)])
@@ -171,8 +175,18 @@
         (resource-guardian rect)
         (lambda (s)
           (if (CheckCollisionPointRec (GetMousePosition) rect)
-              (ani-hover s)
-              (ani-normal s))))))
+              (ani-hover s) (ani-normal s))))))
+
+  (define click-rectangle
+    (lambda (x y w h ani-normal ani-click)
+      (let ([rect (make-Rectangle (exact->inexact x) 
+                                  (exact->inexact y) 
+                                  (exact->inexact w) 
+                                  (exact->inexact h))])
+        (resource-guardian rect)
+        (lambda (s)
+          (if (and (IsMouseButtonPressed MOUSE_BUTTON_LEFT) (CheckCollisionPointRec (GetMousePosition) rect))
+              (ani-click s) (ani-normal s))))))
   
   (define static
     (lambda (res)
