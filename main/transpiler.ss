@@ -52,7 +52,6 @@
       (cond
        ;; 1. 如果当前节点就是字符串，收集它
        [(string? x) (list x)]
-       
        ;; 2. 如果是列表（S-expression），递归处理头(car)和尾(cdr)并拼接结果
        [(pair? x)
         (append (rec (car x)) (rec (cdr x)))]
@@ -83,7 +82,7 @@
                  ,@defs
                  ;; 插入动作列表，并自动包裹 make-animation
                  (*actions*
-		  (list
+		  (append
 		   ,@(map (lambda (act)
 			    (if (directive? act) act
 			    `(make-animation ,act)))

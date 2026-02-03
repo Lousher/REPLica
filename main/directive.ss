@@ -7,7 +7,7 @@
 	  (raylib ffi)
 	  (raylib constant))
 
-  (define make-animation
+  (define make-signal-animation
     (lambda (animator)
       (lambda (state)
 	(letrec ([run-frame (lambda (s current previous next)
@@ -46,6 +46,14 @@
 			 (run-frame s (*previous-rt*) (*current-rt*) ping))])
 	  (ping state)
 	  ))))
+  
+  (define make-animation
+    (lambda (inputs)
+      (cond
+       [(procedure? inputs) (list (make-signal-animation inputs))]
+       [(list? inputs) (map make-signal-animation inputs)]
+       [else (TraceLog LOG_ERROR "Invalid Inputs of animation")])
+      ))
 
   (define emit
     (lambda (effect)
