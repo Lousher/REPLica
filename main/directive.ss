@@ -7,6 +7,16 @@
 	  (raylib ffi)
 	  (raylib constant))
 
+  (define get-mouse-position
+    (lambda ()
+      (let* ([p (GetMousePosition)]
+	     [p-x (Vector2-x p)]
+	     [p-y (Vector2-y p)]
+	     [scaled (*monitor-scale*)])
+	(let ([res (make-Vector2 (/ p-x scaled) (/ p-y scaled))])
+	  (resource-guardian res)
+	  res))))
+
   (define make-signal-animation
     (lambda (animator)
       (lambda (state)
@@ -169,7 +179,7 @@
                                   (exact->inexact h))])
         (resource-guardian rect)
         (lambda (s)
-          (let ([vm (GetMousePosition)])
+          (let ([vm (get-mouse-position)])
             (if (CheckCollisionPointRec vm rect)
                 (DrawRectangleLines x y w h RED)
                 (DrawRectangleLines x y w h BLACK)))))))
@@ -182,7 +192,7 @@
                                   (exact->inexact h))])
         (resource-guardian rect)
         (lambda (s)
-          (if (CheckCollisionPointRec (GetMousePosition) rect)
+          (if (CheckCollisionPointRec (get-mouse-position) rect)
               (ani-hover s) (ani-normal s))))))
 
   (define click-rectangle
@@ -193,7 +203,7 @@
                                   (exact->inexact h))])
         (resource-guardian rect)
         (lambda (s)
-          (if (and (IsMouseButtonPressed MOUSE_BUTTON_LEFT) (CheckCollisionPointRec (GetMousePosition) rect))
+          (if (and (IsMouseButtonPressed MOUSE_BUTTON_LEFT) (CheckCollisionPointRec (get-mouse-position) rect))
               (ani-click s) (ani-normal s))))))
   
   (define static

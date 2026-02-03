@@ -61,10 +61,24 @@
 	   (logor
 	    FLAG_WINDOW_HIGHDPI
 	    FLAG_BORDERLESS_WINDOWED_MODE
-	    FLAG_WINDOW_UNDECORATED
-	    ;FLAG_WINDOW_RESIZABLE
+	    FLAG_WINDOW_MAXIMIZED
+;	    FLAG_WINDOW_UNDECORATED
+;	    FLAG_WINDOW_RESIZABLE
+	    FLAG_WINDOW_HIDDEN
 	    ))
-	  (InitWindow 1920 1080 "YeYuan")
+	  (InitWindow 1 1 "YeYuan")
+	  (let* ([monitor-w (GetMonitorWidth 0)]
+		 [monitor-h (GetMonitorHeight 0)]
+		 [scale-w (/ monitor-w 1920.0)]
+		 [scale-h (/ monitor-h 1080.0)]
+		 [scale (min scale-w scale-h)]
+		 [win-w (* scale 1920.0)]
+		 [win-h (* scale 1080.0)])
+	    (*monitor-scale* scale)
+	    (SetWindowPosition 0 0)
+	    (SetWindowSize (flonum->fixnum win-w) (flonum->fixnum win-h))
+	    (ClearWindowState FLAG_WINDOW_HIDDEN)
+	    )
 	  (viewport-init)
 	  (InitAudioDevice)
 	  (SetTargetFPS 60))

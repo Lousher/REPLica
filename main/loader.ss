@@ -1,5 +1,5 @@
 (library (loader)
-  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color music *musics* inspector *current-viewport* *previous-viewport* *viewport-dest* *viewport-src* *viewport-origin* *current-rt* *previous-rt* *viewport-camera* viewport-init *viewport-scale* *viewport-buffer* *color* *effect-handler*)
+  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color music *musics* inspector *current-viewport* *previous-viewport* *viewport-dest* *viewport-src* *viewport-origin* *current-rt* *previous-rt* *viewport-camera* viewport-init *viewport-scale* *viewport-buffer* *color* *effect-handler* *monitor-scale*)
   (import (chezscheme)
 	  (state)
 	  (tool)
@@ -15,6 +15,8 @@
   (define *active-loads* 0)
   (define *load-mutex* (make-mutex))
   (define *load-condition* (make-condition))
+
+  (define *monitor-scale* (make-parameter 1.0))
 
   (define *current-viewport* (make-parameter #f))
   (define *previous-viewport* (make-parameter #f))
@@ -36,7 +38,8 @@
 	(let ([phys-w (flonum->fixnum (* 1920 scale-x))]
 	      [phys-h (flonum->fixnum (* 1080 scale-y))])
 	  (*viewport-src* (make-Rectangle 0.0 0.0 (inexact phys-w) (- (inexact phys-h))))
-	  (*viewport-dest* (make-Rectangle 0.0 0.0 1920.0 1080.0))
+	  (let ([scale (*monitor-scale*)])
+	    (*viewport-dest* (make-Rectangle 0.0 0.0 (* 1920.0 scale) (* 1080.0 scale))))
 	  (*current-rt* (LoadRenderTexture phys-w phys-h))
 	  (*previous-rt* (LoadRenderTexture phys-w phys-h))
 	  (*viewport-buffer* (LoadRenderTexture phys-w phys-h))
