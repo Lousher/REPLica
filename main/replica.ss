@@ -77,6 +77,7 @@
 	    (*monitor-scale* scale)
 	    (SetWindowPosition 0 0)
 	    (SetWindowSize (flonum->fixnum win-w) (flonum->fixnum win-h))
+;	    (SetWindowSize 960 540)
 	    (ClearWindowState FLAG_WINDOW_HIDDEN)
 	    )
 	  (viewport-init)

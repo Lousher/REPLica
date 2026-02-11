@@ -1,5 +1,5 @@
 (library (directive)
-  (export make-animation static background jump above beside play parallel locate duration stop trigger chain character rectangle hover-rectangle click-rectangle click-next emit)
+  (export make-animation static background jump above beside play parallel locate duration stop trigger chain character rectangle hover-rectangle click-rectangle click-next emit pause resume)
   (import (chezscheme)
 	  (state)
 	  (loader)
@@ -233,7 +233,29 @@
 		 )]
 	      [(gpu-ready)
 	       (DrawTexture current-data 0 0 WHITE)])))))
-  
+
+  (define pause
+    (lambda (res)
+      (let ([paused #f]
+	    [is-music (eq? (ftype-pointer->ftype-symbol res) 'Music)])
+	(lambda (s)
+	  (unless paused
+	    (if is-music
+		(PauseMusicStream res)
+		(PauseSound res))
+	    (set! paused #t))))))
+
+  (define resume
+    (lambda (res)
+      (let ([resumed #f]
+	    [is-music (eq? (ftype-pointer->ftype-symbol res) 'Music)])
+	(lambda (s)
+	  (unless resumed
+	    (if is-music
+		(ResumeMusicStream res)
+		(ResumeSound res))
+	    (set! resumed #t))))))
+
   (define play
     (lambda (res . args)
       (let ([fade-time (if (null? args) 0.0 (car args))]
@@ -288,7 +310,6 @@
           (unless stopped
             (unless start-time (set! start-time (state-time s)))
             (let ([elapsed (- (state-time s) start-time)])
-              
               (if (>= elapsed fade-time)
                   ;; --- 停止 ---
                   (begin

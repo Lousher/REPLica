@@ -245,12 +245,20 @@
 		 (BeginTextureMode (*current-viewport*))
 		 
 		 (BeginShaderMode sh)
-		 (when (< progress 1.0)
-		   (if (eqv? #t duration)
-		       (set! progress 1.0)
-		       (set! progress (/ (- (state-time s) started) duration)))
-		   (ftype-set! float () progress-fptr progress)
-		   (SetShaderValue sh progress-location progress-ptr SHADER_UNIFORM_FLOAT))
+		 (let ([elapsed (- (state-time s) started)])
+		   (cond
+		    [(eqv? #t duration) (set! progress 1.0)]
+		    [(number? duration)
+		     (let* ([abs-dur (abs duration)]
+			    [linear-t (if (> abs-dur 0)
+					  (/ elapsed abs-dur)
+					  1.0)])
+		       (when (> linear-t 1.0) (set! linear-t 1.0))
+		       (set! progress (if (< duration 0)
+					  (- 1.0 linear-t)
+					  linear-t)))]))
+		 (ftype-set! float () progress-fptr progress)
+		 (SetShaderValue sh progress-location progress-ptr SHADER_UNIFORM_FLOAT)
 		 (DrawTextureRec (RenderTexture-texture (*viewport-buffer*)) (*viewport-src*) (*viewport-origin*) WHITE)
 		 (EndShaderMode))
 	       ))))]))
