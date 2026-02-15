@@ -192,33 +192,43 @@
 	   (lambda (ani duration)
 	     (let ([started #f] [progress 0.0] [prev #f])
 	       (lambda (s)
+		 (let ([my-target (*current-viewport*)]
+		       [my-buffer (*viewport-buffer*)])
 		 (unless prev
+		   (EndMode2D)
+		   (EndTextureMode)
+		   
 		   (BeginTextureMode (*transition-snapshot*))
 		   (ClearBackground BLANK)
 		   (DrawTextureRec (RenderTexture-texture (*previous-viewport*)) (*viewport-src*) (*viewport-origin*) WHITE)
 		   (EndTextureMode)
-		   (BeginTextureMode (*current-viewport*))
-		   (set! prev (RenderTexture-texture (*transition-snapshot*))))
+		   
+		   (set! prev (RenderTexture-texture (*transition-snapshot*)))
+		   
+		   (BeginTextureMode my-target)
+		   (BeginMode2D (*viewport-camera*)))
 		 (unless started
 		   (set! started (state-time s)))
 
-		 (BeginTextureMode (*viewport-buffer*))
-		 (ClearBackground BLANK)
-		 (BeginMode2D (*viewport-camera*))
-		 (ani s)
-		 (EndMode2D)
-		 (EndTextureMode)
+		 (parameterize ([*current-viewport* my-buffer]
+				[*viewport-buffer* my-target])
+		   (BeginTextureMode my-buffer)
+		   (ClearBackground BLANK)
+		   (BeginMode2D (*viewport-camera*))
+		   (ani s)
+		   (EndMode2D)
+		   (EndTextureMode))
 		 
-		 (BeginTextureMode (*current-viewport*))
+		 (BeginTextureMode my-target)
 		 (BeginShaderMode sh)
 		 (when (< progress 1.0)
 		   (set! progress (/ (- (state-time s) started) duration))
 		   (SetShaderValueTexture sh texture1-location prev)
 		   (ftype-set! float () progress-fptr progress)
 		   (SetShaderValue sh progress-location progress-ptr SHADER_UNIFORM_FLOAT))
-		   (DrawTextureRec (RenderTexture-texture (*viewport-buffer*)) (*viewport-src*) (*viewport-origin*) WHITE)
+		 (DrawTextureRec (RenderTexture-texture (*viewport-buffer*)) (*viewport-src*) (*viewport-origin*) WHITE)
 		   (EndShaderMode))
-	       ))))]))
+	       )))))]))
 
   (define-syntax effect
     (syntax-rules ()
@@ -236,32 +246,40 @@
 		 (unless started
 		   (set! started (state-time s)))
 
-		 (BeginTextureMode (*viewport-buffer*))
-		 (ClearBackground BLANK)
-		 (BeginMode2D (*viewport-camera*))
-		 (ani s)
-		 (EndMode2D)
-		 (EndTextureMode)
-		 (BeginTextureMode (*current-viewport*))
-		 
-		 (BeginShaderMode sh)
-		 (let ([elapsed (- (state-time s) started)])
-		   (cond
-		    [(eqv? #t duration) (set! progress 1.0)]
-		    [(number? duration)
-		     (let* ([abs-dur (abs duration)]
+		 (let ([my-target (*current-viewport*)]
+		       [my-buffer (*viewport-buffer*)])
+		   (EndMode2D)
+		   (EndTextureMode)
+
+		   (parameterize ([*current-viewport* my-buffer]
+				  [*viewport-buffer* my-target])
+		     (BeginTextureMode my-buffer)
+		     (ClearBackground BLANK)
+		     (BeginMode2D (*viewport-camera*))
+		     (ani s)
+		     (EndMode2D)
+		     (EndTextureMode))
+		   
+		   (BeginTextureMode my-target)
+		   (BeginShaderMode sh)
+		   (let ([elapsed (- (state-time s) started)])
+		     (cond
+		      [(eqv? #t duration) (set! progress 1.0)]
+		      [(number? duration)
+		       (let* ([abs-dur (abs duration)]
 			    [linear-t (if (> abs-dur 0)
 					  (/ elapsed abs-dur)
 					  1.0)])
-		       (when (> linear-t 1.0) (set! linear-t 1.0))
-		       (set! progress (if (< duration 0)
-					  (- 1.0 linear-t)
-					  linear-t)))]))
-		 (ftype-set! float () progress-fptr progress)
-		 (SetShaderValue sh progress-location progress-ptr SHADER_UNIFORM_FLOAT)
-		 (DrawTextureRec (RenderTexture-texture (*viewport-buffer*)) (*viewport-src*) (*viewport-origin*) WHITE)
-		 (EndShaderMode))
-	       ))))]))
+			 (when (> linear-t 1.0) (set! linear-t 1.0))
+			 (set! progress (if (< duration 0)
+					    (- 1.0 linear-t)
+					    linear-t)))]))
+		   (ftype-set! float () progress-fptr progress)
+		   (SetShaderValue sh progress-location progress-ptr SHADER_UNIFORM_FLOAT)
+		   (DrawTextureRec (RenderTexture-texture (*viewport-buffer*)) (*viewport-src*) (*viewport-origin*) WHITE)
+		   (EndShaderMode)
+		   (BeginMode2D (*viewport-camera*))
+		   ))))))]))
 
   (define *text* (make-parameter #f))
 
