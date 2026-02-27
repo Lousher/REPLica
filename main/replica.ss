@@ -27,16 +27,21 @@
 	   (UnloadCodepoints codepoints)
 	   (foreign-free (ftype-pointer-address codepoints-count))
 	   (lambda (history-list)
-	     (lambda (s)
+	     (let ([scroll-offset 0.0])
+	       (lambda (s)
+		 (let ([wheel (GetMouseWheelMove)])
+		   (unless (= wheel 0.0)
+		     (set! scroll-offset (+ scroll-offset (* wheel 60.0)))
+		     (when (< scroll-offset 0.0)
+		       (set! scroll-offset 0.0))))
                (BeginMode2D (*viewport-camera*))
                (let loop ([lst history-list]
-                          [y 850.0] 
+                          [y (+ 850.0 scroll-offset)]
                           [logic-alpha 255])
                  (unless (or (null? lst) (< y -50.0))
                    (let* ([text (car lst)]
                           [x 300.0]
                           [render-alpha (max 220 logic-alpha)])
-                     (ftype-set! Color (a) shadow-color (inexact->exact (truncate (* render-alpha 0.6))))
                      (Vector2-x-set! pos (+ x 2.0))
                      (Vector2-y-set! pos (+ y 2.0))
                      (DrawTextPro font text pos origin 0.0 50.0 5.0 shadow-color)
@@ -48,7 +53,7 @@
                      ;; 继续画上一句：Y 往上走 80 像素，逻辑透明度降低 45
                      (loop (cdr lst) (- y 100.0) (- logic-alpha 5)))))
                ;(EndMode2D)
-	       )))))
+	       ))))))
 
   (define state-init
     (lambda ()
@@ -99,7 +104,7 @@
 	(lambda ()
 	  (SetConfigFlags
 	   (logor
-	    FLAG_WINDOW_HIGHDPI
+;	    FLAG_WINDOW_HIGHDPI
 	    FLAG_BORDERLESS_WINDOWED_MODE
 	    FLAG_WINDOW_MAXIMIZED
 ;	    FLAG_WINDOW_UNDECORATED
