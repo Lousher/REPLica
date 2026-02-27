@@ -10,6 +10,52 @@
 
   (define *actions* (make-parameter #f))
 
+  (define chapter-history
+    (lambda (texts)
+      (let* ([codepoints-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int)))]
+	     [codepoints (LoadCodepoints (apply string-append texts) codepoints-count)]
+	     [font (LoadFontEx "assets/font/lxgw.ttf" 36 codepoints (ftype-ref int () codepoints-count))]
+             [pos (make-Vector2 0.0 0.0)]
+             [origin (make-Vector2 0.0 0.0)]
+             [shadow-color (make-Color 0 0 0 255)]
+             [main-color (make-Color 255 255 255 255)])
+	   (resource-guardian font)
+           (resource-guardian pos)
+           (resource-guardian origin)
+           (resource-guardian shadow-color)
+           (resource-guardian main-color)
+	   (UnloadCodepoints codepoints)
+	   (foreign-free (ftype-pointer-address codepoints-count))
+	   (lambda (history-list)
+	     (lambda (s)
+               (BeginMode2D (*viewport-camera*))
+               (let loop ([lst history-list]
+                          [y 850.0] 
+                          [logic-alpha 255])
+                 (unless (or (null? lst) (< y -50.0))
+                   (let* ([line (car lst)]
+                          [is-right (if (pair? line) (eq? (car line) 'su) #f)]
+                          [text (if (pair? line) (cdr line) line)]
+                          [measured (MeasureTextEx font text 40.0 0.0)]
+                          [text-w (Vector2-x measured)]
+                          [x (if is-right (- 1920.0 text-w 300.0) 300.0)]
+                          ;; 【视觉魔法】无论逻辑 alpha 怎么降，实际渲染的 alpha 最低死死锁在 70！
+                          [render-alpha (max 220 logic-alpha)])
+                     ;; 1. 画防穿透阴影 (阴影更淡一点，乘以 0.6)
+                     (ftype-set! Color (a) shadow-color (inexact->exact (truncate (* render-alpha 0.6))))
+                     (Vector2-x-set! pos (+ x 2.0))
+                     (Vector2-y-set! pos (+ y 2.0))
+                     (DrawTextPro font text pos origin 0.0 50.0 5.0 shadow-color)
+                     ;; 2. 画主文字
+                     (ftype-set! Color (a) main-color render-alpha)
+                     (Vector2-x-set! pos x)
+                     (Vector2-y-set! pos y)
+                     (DrawTextPro font text pos origin 0.0 50.0 5.0 main-color)
+                     ;; 继续画上一句：Y 往上走 80 像素，逻辑透明度降低 45
+                     (loop (cdr lst) (- y 100.0) (- logic-alpha 5)))))
+               ;(EndMode2D)
+	       )))))
+
   (define state-init
     (lambda ()
       (make-state
@@ -18,7 +64,7 @@
 
   (define replica-collect
     (lambda ()
-      (collect 4)
+;      (collect 4)
       (resource-collect)
       (ffi-collect)))
 
@@ -91,6 +137,7 @@
 	       (ensure-compiled current-story)
 	       (replica-collect)
 	       (load (string-append current-story ".so"))
+	       (*history* (chapter-history (*text*)))
 	       (let stepper ([rest (*actions*)] [step-state story-state] [frame-count 0])
 		 (*actions* #f)
 		 (cond

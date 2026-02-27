@@ -39,7 +39,8 @@
                  phone
                  define
 		 define-syntax
-		 inspector))))
+		 inspector
+		 history))))
 
   (define directive?
     (lambda (x)
@@ -74,7 +75,7 @@
                
                ;; 生成文本预加载块
                (*text*
-                (string-append ,@text-strings))
+                (list ,@text-strings))
                
                ;; 生成主逻辑块
                (let ()

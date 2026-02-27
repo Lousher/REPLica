@@ -1,11 +1,60 @@
 (library (directive)
-  (export make-animation static background jump above beside play parallel locate duration stop trigger chain character rectangle hover-rectangle click-rectangle click-next emit pause resume)
+  (export make-animation static background jump above beside play parallel locate duration stop trigger chain character rectangle hover-rectangle click-rectangle click-next emit pause resume wheeled? clicked-left? clicked-right? toggle)
   (import (chezscheme)
 	  (state)
 	  (loader)
 	  (tool)
 	  (raylib ffi)
 	  (raylib constant))
+
+  (define toggle
+    (lambda (make-ani-open make-ani-close duration show-cond hide-cond)
+      (let ([status 'hidden] ;; 状态：'hidden, 'opening, 'shown, 'closing
+            [current-ani #f]
+            [start-time #f])
+        (lambda (s)
+          ;; --- 1. 状态机转移与闭包重生 ---
+          (case status
+            [(hidden)
+             (when (show-cond)
+               ;; 【神之一手】调用函数，生成一个拥有全新 start-time 的闭包
+               (set! current-ani (make-ani-open)) 
+               (set! start-time (state-time s))
+               (set! status 'opening))]
+            
+            [(opening)
+             ;; 允许在开启过程中立刻被右键打断（丝滑的交互体验）
+             (if (hide-cond)
+                 (begin
+                   (set! current-ani (make-ani-close))
+                   (set! start-time (state-time s))
+                   (set! status 'closing))
+                 ;; 否则检查开启时间是否到了
+                 (when (>= (- (state-time s) start-time) duration)
+                   (set! status 'shown)))]
+            
+            [(shown)
+             (when (hide-cond)
+               ;; 生成一个全新的关闭动画闭包
+               (set! current-ani (make-ani-close)) 
+               (set! start-time (state-time s))
+               (set! status 'closing))]
+            
+            [(closing)
+             ;; 允许在关闭过程中立刻滚动滚轮重开
+             (if (show-cond)
+                 (begin
+                   (set! current-ani (make-ani-open))
+                   (set! start-time (state-time s))
+                   (set! status 'opening))
+                 ;; 等待关闭动画播完，彻底隐藏
+                 (when (>= (- (state-time s) start-time) duration)
+                   (set! current-ani #f)
+                   (set! status 'hidden)))])
+
+          ;; --- 2. 渲染 ---
+          (when current-ani
+            (current-ani s))))))
 
   (define get-mouse-position
     (lambda ()
@@ -56,11 +105,30 @@
 			 (run-frame s (*previous-rt*) (*current-rt*) ping))])
 	  (ping state)
 	  ))))
+
+  (texture mask "assets/menu/mask.png")
+  (texture scratch "assets/menu/scratch.png")
+  (effect appear #f "assets/glsl/appear.fs")
+
+  (define backlog-interaction
+    (toggle
+     (lambda ()
+       (appear
+        (parallel
+         (background scratch)
+         ((*history*) (*text*))
+         (background mask))
+        0.5))
+     (lambda ()
+       (appear
+        (parallel (background scratch) (background mask))
+        -0.5))
+     0.5 (lambda () (< (wheeled?) 0)) (lambda () (IsMouseButtonPressed MOUSE_BUTTON_RIGHT))))
   
   (define make-animation
     (lambda (inputs)
       (cond
-       [(procedure? inputs) (list (make-signal-animation inputs))]
+       [(procedure? inputs) (list (make-signal-animation (parallel inputs backlog-interaction)))]
        [(list? inputs) (map make-signal-animation inputs)]
        [else (TraceLog LOG_ERROR "Invalid Inputs of animation")])
       ))
@@ -80,6 +148,8 @@
       (lambda (s)
 	(when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
 	  (emit '(next))))))
+
+  
       
   (define texture->Rectangle
     (lambda (tex)
@@ -205,6 +275,24 @@
         (lambda (s)
           (if (and (IsMouseButtonPressed MOUSE_BUTTON_LEFT) (CheckCollisionPointRec (get-mouse-position) rect))
               (ani-click s) (ani-normal s))))))
+
+  #|(define wheel
+    (lambda (ani-normal ani-wheeled)
+      (lambda (s)
+	(let ([move (GetMouseWheelMove)])
+;	  (TraceLog LOG_INFO (format-green "Mose Move is ~a" move))
+	  (if (< move 0.0)
+	      (ani-wheeled s)
+  (ani-normal s)))))) |#
+
+  (define wheeled? GetMouseWheelMove)
+  (define clicked-left?
+    (lambda ()
+      (IsMouseButtonPressed MOUSE_BUTTON_LEFT)))
+
+  (define clicked-right?
+    (lambda ()
+      (IsMouseButtonPressed MOUSE_BUTTON_RIGHT)))
   
   (define static
     (lambda (res)
@@ -392,14 +480,22 @@
 	    (ani s))
 	  ))))
 
+  
+
   (define trigger
     (lambda (ani t)
-      (let ([started #f])
+      (let ([started #f] [triggered #f])
 	(lambda (s)
 	  (unless started
 	    (set! started (state-time s)))
-	  (unless (< (- (state-time s) started) t)
-	    (ani s))))))
+	  (cond
+	   [(number? t)
+	    (unless (< (- (state-time s) started) t)
+	      (ani s))]
+	   [(procedure? t)
+	    (when (or triggered (t))
+	      (ani s)
+	      (set! triggered #t))])))))
 
   (define chain
     (lambda args ;; 接受变长参数

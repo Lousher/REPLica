@@ -1,5 +1,5 @@
 (library (loader)
-  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color music *musics* inspector *current-viewport* *previous-viewport* *viewport-dest* *viewport-src* *viewport-origin* *current-rt* *previous-rt* *viewport-camera* viewport-init *viewport-scale* *viewport-buffer* *color* *effect-handler* *monitor-scale*)
+  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color music *musics* inspector *current-viewport* *previous-viewport* *viewport-dest* *viewport-src* *viewport-origin* *current-rt* *previous-rt* *viewport-camera* viewport-init *viewport-scale* *viewport-buffer* *color* *effect-handler* *monitor-scale* *history*)
   (import (chezscheme)
 	  (state)
 	  (tool)
@@ -282,6 +282,7 @@
 		   ))))))]))
 
   (define *text* (make-parameter #f))
+  (define *history* (make-parameter #f))
 
   (define *color* (make-parameter WHITE))
   (define color
@@ -299,7 +300,7 @@
       [(_ name path)
        (define name
 	 (let* ([codepoints-count (make-ftype-pointer int (foreign-alloc (ftype-sizeof int)))]
-		[codepoints (LoadCodepoints (*text*) codepoints-count)]
+		[codepoints (LoadCodepoints (apply string-append (*text*)) codepoints-count)]
 		[font (LoadFontEx path 50 codepoints (ftype-ref int () codepoints-count))])
 	   (resource-guardian font)
 	   (UnloadCodepoints codepoints)
@@ -340,8 +341,11 @@
 		     (BeginMode2D (*viewport-camera*))
 		     (DrawRectangleRounded bg-box 0.5 10 bg-color)
 		     (DrawTextPro font text position origin 0.0 50.0 0.0 color)
-		     (EndMode2D)))
+		     ;(EndMode2D)
+		     ))
 		 )))))]))
+
+  
 
   (define-syntax phone
     (syntax-rules ()
@@ -395,7 +399,8 @@
 		      (DrawRectangleRounded round-rec 0.25 8 BLACK)
 		      (DrawTexturePro current-data src round-rec origin 0.0 WHITE)
 		      (DrawRectangleRoundedLinesEx round-rec 0.25 8 6.0 LIGHTGRAY)
-                      (EndMode2D) ;; 记得关闭
+                      ;(EndMode2D)
+		      ;; 记得关闭
 		      ])))))))]))
 
   (define-syntax inspector
