@@ -116,7 +116,7 @@
        (appear
         (parallel
          (background scratch)
-         ((*history*) (*text*))
+         ((*history*) (*history-texts*))
          (background mask))
         0.5))
      (lambda ()

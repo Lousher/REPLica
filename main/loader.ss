@@ -1,5 +1,5 @@
 (library (loader)
-  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color music *musics* inspector *current-viewport* *previous-viewport* *viewport-dest* *viewport-src* *viewport-origin* *current-rt* *previous-rt* *viewport-camera* viewport-init *viewport-scale* *viewport-buffer* *color* *effect-handler* *monitor-scale* *history*)
+  (export *text* phone dialogue effect transition sound resource-collect resource-guardian texture phone camera color make-Color music *musics* inspector *current-viewport* *previous-viewport* *viewport-dest* *viewport-src* *viewport-origin* *current-rt* *previous-rt* *viewport-camera* viewport-init *viewport-scale* *viewport-buffer* *color* *effect-handler* *monitor-scale* *history* *history-texts*)
   (import (chezscheme)
 	  (state)
 	  (tool)
@@ -283,6 +283,7 @@
 
   (define *text* (make-parameter #f))
   (define *history* (make-parameter #f))
+  (define *history-texts* (make-parameter '()))
 
   (define *color* (make-parameter WHITE))
   (define color
@@ -320,7 +321,10 @@
 	       (resource-guardian bg-box)
 	       (resource-guardian bg-color)
 	       (lambda (s)
-		 (unless started (set! started (state-time s)))
+		 (unless started
+		   (let ([history (*history-texts*)])
+		     (*history-texts* (cons text history)))
+		   (set! started (state-time s)))
 		 (unless color (set! color (*color*)))
 		 (let* ([win (state-window s)]
 			[win-width (window-width win)]
