@@ -63,7 +63,7 @@
 
   (define replica-collect
     (lambda ()
-;      (collect 4)
+      (collect 4)
       (resource-collect)
       (ffi-collect)))
 

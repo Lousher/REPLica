@@ -1,11 +1,13 @@
 (library (directive)
-  (export make-animation static background jump above beside play parallel locate duration stop trigger chain character rectangle hover-rectangle click-rectangle click-next emit pause resume wheeled? clicked-left? clicked-right? toggle)
+  (export make-animation static background jump above beside play parallel locate duration stop trigger chain character rectangle hover-rectangle click-next emit pause resume wheeled? clicked-left? clicked-right? toggle clicked-rectangle?)
   (import (chezscheme)
 	  (state)
 	  (loader)
 	  (tool)
 	  (raylib ffi)
 	  (raylib constant))
+
+  
 
   (define toggle
     (lambda (make-ani-open make-ani-close duration show-cond hide-cond)
@@ -123,7 +125,9 @@
        (appear
         (parallel (background scratch) (background mask))
         -0.5))
-     0.5 (lambda () (< (wheeled?) 0)) (lambda () (IsMouseButtonPressed MOUSE_BUTTON_RIGHT))))
+     0.5
+     (lambda () (< (wheeled?) 0))
+     (lambda () (IsMouseButtonPressed MOUSE_BUTTON_RIGHT))))
   
   (define make-animation
     (lambda (inputs)
@@ -149,8 +153,6 @@
 	(when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
 	  (emit '(next))))))
 
-  
-      
   (define texture->Rectangle
     (lambda (tex)
       (let ([rect (make-Rectangle 0.0 0.0 (inexact (Texture-width tex)) (inexact (Texture-height tex)))])
@@ -249,10 +251,7 @@
                                   (exact->inexact h))])
         (resource-guardian rect)
         (lambda (s)
-          (let ([vm (get-mouse-position)])
-            (if (CheckCollisionPointRec vm rect)
-                (DrawRectangleLines x y w h RED)
-                (DrawRectangleLines x y w h BLACK)))))))
+	  (DrawRectangle x y w h (*color*))))))
 
   (define hover-rectangle
     (lambda (x y w h ani-normal ani-hover)
@@ -265,7 +264,17 @@
           (if (CheckCollisionPointRec (get-mouse-position) rect)
               (ani-hover s) (ani-normal s))))))
 
-  (define click-rectangle
+  (define clicked-rectangle?
+    (lambda (x y w h)
+      (let ([rect (make-Rectangle (exact->inexact x) 
+                                  (exact->inexact y) 
+                                  (exact->inexact w) 
+                                  (exact->inexact h))])
+	(resource-guardian rect)
+	(and (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+	     (CheckCollisionPointRec (get-mouse-position) rect)))))
+
+  #|(define click-rectangle
     (lambda (x y w h ani-normal ani-click)
       (let ([rect (make-Rectangle (exact->inexact x) 
                                   (exact->inexact y) 
@@ -274,7 +283,7 @@
         (resource-guardian rect)
         (lambda (s)
           (if (and (IsMouseButtonPressed MOUSE_BUTTON_LEFT) (CheckCollisionPointRec (get-mouse-position) rect))
-              (ani-click s) (ani-normal s))))))
+              (ani-click s) (ani-normal s)))))) |#
 
   #|(define wheel
     (lambda (ani-normal ani-wheeled)
@@ -293,6 +302,8 @@
   (define clicked-right?
     (lambda ()
       (IsMouseButtonPressed MOUSE_BUTTON_RIGHT)))
+
+  
   
   (define static
     (lambda (res)
