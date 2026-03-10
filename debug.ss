@@ -1,7 +1,0 @@
-(system "rm stories/*.so stories/*.ril")
-(library-directories "main/")
-(import (replica))
-
-(replica "stories/main")
-;(replica "stories/prologue.3")
-;(replica "stories/backlog")
