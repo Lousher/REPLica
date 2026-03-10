@@ -1,11 +1,13 @@
 (library-directories "main/")
 (import (vm bundle) (raylib ffi) (raylib constant))
-(pack "tests/test.pak"
+
+; if exists
+#|(pack "tests/test.pak"
       '(("yuan" "assets/picture/yuan.png")
 	("xin" "assets/picture/xin.png")
 	("thud" "assets/sound/thud.mp3")
 	("trip" "assets/bgm/midnight-trip.mp3")
-	))
+	)) |#
 
 (InitWindow 0 0 "Replica Bundle Test")
 (InitAudioDevice)
