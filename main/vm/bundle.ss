@@ -1,5 +1,5 @@
 (library (vm bundle)
-  (export pack mount close ref)
+  (export pack mount unmount ref fnv-1a)
   (import (chezscheme))
 
   (define xor-transform!
@@ -121,7 +121,7 @@
 		))
 	    (values #f #f #f)))))
 
-  (define close
+  (define unmount
     (lambda (b)
       (when (bundle-port b)
 	(close-port (bundle-port b))

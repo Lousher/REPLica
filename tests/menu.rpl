@@ -1,0 +1,35 @@
+; resource declaration
+(define resources-bg
+  '[(texture bg "apartment")
+    (texture paper "contract")])
+
+(define resources-tabs
+  '[(texture tab-start "start")
+    (texture tab-start-chosen "start.chosen")
+    (texture tab-continue "continue")
+    (texture tab-continue-chosen "continue.chosen")
+    (texture tab-load "load")
+    (texture tab-load-chosen "load.chosen")
+    (texture tab-gallery "gallery")
+    (texture tab-gallery-chosen "gallery.chosen")
+    (texture tab-config "config")
+    (texture tab-config-chosen "config.chosen")
+    (texture tab-exit "exit")
+    (texture tab-exit-chosen "exit.chosen")])
+
+(define resources-all (append resources-bg resources-tabs))
+
+; area definition
+(define rect-start    (rect 710 240 240 80))
+(define rect-continue (rect 710 340 240 80))
+(define rect-load     (rect 710 440 240 80)) 
+(define rect-gallery  (rect 710 540 240 80))
+(define rect-config   (rect 710 640 240 80))
+(define rect-exit     (rect 710 740 240 80))
+
+; interactable definition
+  
+(stage menu-demo
+       (bundle "menu.rpk")
+       (resources resources-all)
+       ())

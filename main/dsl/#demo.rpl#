@@ -1,5 +1,5 @@
 (stage menu-demo
-       (resources
+       (resource
 	(texture
 	 [bg-mor "assets/bg/mor.png"]
 	 [bg-aft "assets/bg/aft.png"]

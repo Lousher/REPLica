@@ -53,6 +53,7 @@
 (UnloadTexture tex)
 (UnloadSound thud-sound)
 (UnloadMusicStream trip-music)
+(unmount b)
 (CloseAudioDevice)
 (CloseWindow)
 
