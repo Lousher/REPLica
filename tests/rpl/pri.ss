@@ -8,12 +8,13 @@
     (assets
      (texture bgp "avenue")
      (texture bt "tab"))
-    (alpha 0.5
-	   (parallel
-	    (show bgp)
-		   (scale 1.5
-			  (rotate 20
-				  (show bt)))))
+
+    (origin 0.5 0.5
+	    (anchor 0.5 0.5
+		    (rotate 90
+			    (scale 0.2
+				   (show bgp)))))
+    
     ))
 
 (render test-scripts)
