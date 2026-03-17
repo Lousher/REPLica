@@ -15,11 +15,21 @@
 
   (define-record-type render-command
     (fields (mutable type)
-	    (mutable id)))
+	    (mutable id)
+	    (mutable x)
+	    (mutable y)
+	    (mutable w)
+	    (mutable h)
+	    (mutable scale)
+	    (mutable rotation)
+	    (mutable alpha)))
 
   (define-record-type render-context
     (fields (mutable x)
-	    (mutable y)))
+	    (mutable y)
+	    (mutable scale)
+	    (mutable rotation)
+	    (mutable alpha)))
 
   (define *current-bundles* #f)
   (define *command-list* '())
@@ -34,7 +44,46 @@
 		     (let ([name (cadr def)] [path (caddr def)])
 		       (hashtable-set! env name (cons path #f))))
 		   (cdr exp))]
-	[(show)
+	[(parallel) ; (parallel (... 1) (... 2))
+	 (for-each (lambda (sub-ren)
+		     (eval sub-ren env ctx))
+		   (cdr exp))]
+	[(scale) ; (scale X sub)
+	 (let* ([s (cadr exp)] [sub (caddr exp)]
+		[new-ctx (make-render-context
+			  (render-context-x ctx) (render-context-y ctx)
+			  (* (render-context-scale ctx) s)
+			  (render-context-rotation ctx)
+			  (render-context-alpha ctx))])
+	   (eval sub env new-ctx))]
+	[(rotate) ; (rotate DEG sub)
+	 (let* ([deg (cadr exp)] [sub (caddr exp)]
+		[new-ctx (make-render-context
+			  (render-context-x ctx) (render-context-y ctx)
+			  (render-context-scale ctx)
+			  (+ (render-context-rotation ctx) deg) ;; 角度相加
+			  (render-context-alpha ctx))])
+	   (eval sub env new-ctx))]
+	[(alpha) ; (alpha A (...))
+	 (let* ([a (cadr exp)] [sub (caddr exp)]
+		[new-ctx (make-render-context
+			  (render-context-x ctx) (render-context-y ctx)
+			  (render-context-scale ctx) (render-context-rotation ctx)
+			  (* (render-context-alpha ctx) a))])
+	   (eval sub env new-ctx))]
+	[(at) ; (at X Y (...))
+	 (let* ([offset-x (cadr exp)]
+		[offset-y (caddr exp)]
+		[sub-render (cadddr exp)]
+		[new-ctx (make-render-context
+			  (+ (render-context-x ctx) offset-x)
+			  (+ (render-context-y ctx) offset-y)
+			  (render-context-scale ctx)
+			  (render-context-rotation ctx)
+			  (render-context-alpha ctx))])
+	   (eval sub-render env new-ctx)
+	   )]
+	[(show) ; (show TEXTURE-ID) in given ctx!!
 	 (let* ([sym (cadr exp)]
 		[entry (hashtable-ref env sym #f)])
 	   (when (and entry *current-bundles*)
@@ -42,19 +91,36 @@
 		   [cached (cdr entry)])
 	       (let ([cached-tex (if cached cached 
 				     (let-values ([(ext data len) (ref *current-bundles* path)])
-				       (let* ([img (LoadImageFromMemory ext data len)]
-					      [tex (LoadTextureFromImage img)])
-					 (UnloadImage img)
-					 (set-cdr! entry tex)
-					 tex)))])
-		 (set! *command-list* (cons (make-render-command 'TEXTURE cached-tex) *command-list*))))))]
+				       (if data
+					   (let* ([img (LoadImageFromMemory ext data len)]
+						  [tex (LoadTextureFromImage img)])
+					     (UnloadImage img)
+					     (set-cdr! entry tex)
+					     tex)
+					   (begin
+					     (TraceLog LOG_ERROR (format "Asset ~a Not Found" path))
+					     #f))))])
+		 (set! *command-list* (cons
+				       (make-render-command
+					'TEXTURE
+					cached-tex
+					(render-context-x ctx)
+					(render-context-y ctx)
+					(Texture-width cached-tex)
+					(Texture-height cached-tex)
+					(render-context-scale ctx)
+					(render-context-rotation ctx)
+					(render-context-alpha ctx)
+					) *command-list*))))))]
 	)))
 
   (define render
     (lambda (scripts)
-      (InitWindow 0 0 "RPL MVP")
+      (InitWindow 1920 1080 "RPL MVP")
+      (SetTargetFPS 60)
       (let ([env (make-hashtable symbol-hash symbol=?)]
-	    [ctx (make-render-context 0 0)])
+	    [ctx (make-render-context 0.0 0.0 1.0 0.0 1.0)])
+	(set! *command-list* '())
 	(for-each (lambda (exp) (eval exp env ctx)) scripts)
 	(let loop ()
 	  (unless (WindowShouldClose)
@@ -63,7 +129,18 @@
 	    (for-each (lambda (cmd)
 			(case (render-command-type cmd)
 			  [(TEXTURE)
-			   (DrawTexture (render-command-id cmd) 0 0 WHITE)]))
+			   (let* ([tex (render-command-id cmd)]
+				  [scale (render-command-scale cmd)]
+				  [rot (render-command-rotation cmd)]
+				  [alpha (render-command-alpha cmd)]
+				  [src-rect (make-rectangle 0.0 0.0 (render-command-w cmd) (render-command-h cmd))]
+				  [dest-rect (make-rectangle (render-command-x cmd)
+							     (render-command-y cmd)
+							     (* (render-command-w cmd) scale)
+							     (* (render-command-h cmd) scale))]
+				  [origin (make-vector2 0.0 0.0)]
+				  [tint (Fade WHITE alpha)])
+			   (DrawTexturePro tex src-rect dest-rect origin rot tint))]))
 		      (reverse *command-list*))
 	    (EndDrawing)
 	    (loop))))

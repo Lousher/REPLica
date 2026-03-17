@@ -8,8 +8,12 @@
     (assets
      (texture bgp "avenue")
      (texture bt "tab"))
-    (show bgp)
-    (show bt)
+    (alpha 0.5
+	   (parallel
+	    (show bgp)
+		   (scale 1.5
+			  (rotate 20
+				  (show bt)))))
     ))
 
 (render test-scripts)
