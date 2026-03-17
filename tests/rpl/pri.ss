@@ -6,8 +6,10 @@
   '(
     (bundle "tests/rpl/pri.rpk")
     (assets
-     (texture bgp "bg"))
+     (texture bgp "avenue")
+     (texture bt "tab"))
     (show bgp)
+    (show bt)
     ))
 
 (render test-scripts)

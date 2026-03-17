@@ -32,28 +32,32 @@
 	[(assets)
 	 (for-each (lambda (def)
 		     (let ([name (cadr def)] [path (caddr def)])
-		       (hashtable-set! env name path)))
+		       (hashtable-set! env name (cons path #f))))
 		   (cdr exp))]
 	[(show)
 	 (let* ([sym (cadr exp)]
-		[path (hashtable-ref env sym #f)])
-	   (when (and path *current-bundles*)
-	     (let-values ([(ext data len) (ref *current-bundles* path)])
-	       (let* ([img (LoadImageFromMemory ext data len)]
-		      [tex (LoadTextureFromImage img)])
-		 (UnloadImage img)
-		 (set! *command-list* (cons (make-render-command 'TEXTURE tex) *command-list*))))))]
+		[entry (hashtable-ref env sym #f)])
+	   (when (and entry *current-bundles*)
+	     (let ([path (car entry)]
+		   [cached (cdr entry)])
+	       (let ([cached-tex (if cached cached 
+				     (let-values ([(ext data len) (ref *current-bundles* path)])
+				       (let* ([img (LoadImageFromMemory ext data len)]
+					      [tex (LoadTextureFromImage img)])
+					 (UnloadImage img)
+					 (set-cdr! entry tex)
+					 tex)))])
+		 (set! *command-list* (cons (make-render-command 'TEXTURE cached-tex) *command-list*))))))]
 	)))
 
   (define render
     (lambda (scripts)
-      (InitWindow 800 600 "RPL MVP")
+      (InitWindow 0 0 "RPL MVP")
       (let ([env (make-hashtable symbol-hash symbol=?)]
 	    [ctx (make-render-context 0 0)])
+	(for-each (lambda (exp) (eval exp env ctx)) scripts)
 	(let loop ()
 	  (unless (WindowShouldClose)
-	    (set! *command-list* '())
-	    (for-each (lambda (exp) (eval exp env ctx)) scripts)
 	    (BeginDrawing)
 	    (ClearBackground WHITE)
 	    (for-each (lambda (cmd)
