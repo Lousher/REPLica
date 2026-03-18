@@ -12,17 +12,28 @@
      (texture continue "btn-continue")
      (texture gallery "btn-gallery")
      (texture config "btn-config")
-     (texture exit "btn-exit"))
+     (texture exit "btn-exit")
+     (texture start-h "btn-start-chosen")
+     (texture load-h "btn-load-chosen")
+     (texture continue-h "btn-continue-chosen")
+     (texture gallery-h "btn-gallery-chosen")
+     (texture config-h "btn-config-chosen")
+     (texture exit-h "btn-exit-chosen"))
+
+    (prefab hoverd-btn (no ho)
+	    (branch
+	     [(hovered? 480 180) (show ho)]
+	     [else (show no)]))
 
     (prefab menu-buttons (x y)
 	    (at x y
 		(parallel
-		 (at 0 0 (show start))
-		 (at 0 100 (show continue))
-		 (at 0 200 (show load))
-		 (at 0 300 (show gallery))
-		 (at 0 400 (show config))
-		 (at 0 500 (show exit)))))
+		 (at 0 0 (hoverd-btn start start-h))
+		 (at 0 100 (hoverd-btn continue continue-h))
+		 (at 0 200 (hoverd-btn load load-h))
+		 (at 0 300 (hoverd-btn gallery gallery-h))
+		 (at 0 400 (hoverd-btn config config-h))
+		 (at 0 500 (hoverd-btn exit exit-h)))))
 
     (scale 0.5
 	   (parallel

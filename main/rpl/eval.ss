@@ -18,9 +18,32 @@
   (origin OX OY (...))
   |#
 
+  (define-record-type frame-state
+    (fields mx my))
+
+  (define compile-predicate
+    (lambda (exp ctx)
+      (if (eqv? 'else exp) (lambda (f) #t)
+	  (case (car exp)
+	    [(hovered?)
+	     (let* ([w (cadr exp)] [h (caddr exp)]
+		    [vals (render-context-fields-accessor ctx '(x y scale))]
+		    [hx (car vals)] [hy (cadr vals)] [s (caddr vals)]
+		    [hitbox (list hx hy (* w s) (* h s))])
+	       (lambda (f)
+		 (let ([mx (frame-state-mx f)] [my (frame-state-my f)])
+		   (and (>= mx hx) (<= mx (+ hx (* w s)))
+			(>= my hy) (<= my (+ hy (* h s)))))))]
+	    [else (lambda (f) #t)]))))
+
+  (define *uid* 0)
+  (define gen-uid (lambda () (set! *uid* (+ 1 *uid*)) *uid*))
+
+  (define-record-type branch-command
+    (fields id cases))
+
   (define-record-type render-command
-    (fields (mutable type)
-	    (mutable id)
+    (fields (mutable type) (mutable id)
 	    (mutable x) (mutable y)
 	    (mutable w) (mutable h)
 	    (mutable ox) (mutable oy)
@@ -99,6 +122,22 @@
 		[args (caddr exp)]
 		[body (cadddr exp)])
 	   (hashtable-set! env name (list 'prefab args body)))]
+	[(branch) ; (branch [(hovered? X Y) (...)] [else (...)])
+	 (let ([branches (cdr exp)]
+	       [saved-commands *command-list*])
+	   (let ([compiled-cases
+		  (map (lambda (b)
+			 (let ([pred-exp (car b)]
+			       [body-exp (cadr b)])
+			   (let ([pred-fn (compile-predicate pred-exp ctx)])
+			     (set! *command-list* '())
+			     (eval body-exp env ctx)
+			     (let ([cmds (reverse *command-list*)])
+			       (cons pred-fn cmds)))))
+		       branches)])
+	     (set! *command-list* saved-commands)
+	     (set! *command-list*
+		   (cons (make-branch-command (gen-uid) compiled-cases) *command-list*))))]
 	[(parallel) ; (parallel (... 1) (... 2))
 	 (for-each (lambda (sub)
 		     (eval sub env ctx))
@@ -174,6 +213,40 @@
 	       (error 'eval "Unknow primitive or prefab" op)))]
 	)))
 
+
+  (define consume
+    (lambda (cmds frame scale ox oy)
+      (for-each
+       (lambda (cmd)
+	 (cond
+	  [(render-command? cmd)
+	   (case (render-command-type cmd)
+	     [(TEXTURE)
+	      (let* ([tex (render-command-id cmd)]
+		     [final-x (+ (* (render-command-x cmd) scale) ox)]
+		     [final-y (+ (* (render-command-y cmd) scale) oy)]
+		     [final-scale (* (render-command-scale cmd) scale)]
+		     [rot (render-command-rotation cmd)]
+		     [alpha (render-command-alpha cmd)]
+		     [src-rect (make-rectangle 0.0 0.0 (render-command-w cmd) (render-command-h cmd))]
+		     [dest-rect (make-rectangle final-x final-y
+						(* (render-command-w cmd) final-scale)
+						(* (render-command-h cmd) final-scale))]
+		     [origin (make-vector2 (* (render-command-ox cmd) final-scale)
+					   (* (render-command-oy cmd) final-scale))]
+		     [tint (Fade WHITE alpha)])
+		(DrawTexturePro tex src-rect dest-rect origin rot tint))])]
+	  [(branch-command? cmd)
+	   (let loop ([cases (branch-command-cases cmd)])
+	     (unless (null? cases)
+	       (let* ([ca (car cases)]
+		      [pred (car ca)]
+		      [sub-cmds (cdr ca)])
+		 (if (pred frame)
+		     (consume sub-cmds frame scale ox oy)
+		     (loop (cdr cases))))))]))
+       cmds)))
+	 
   (define render
     (lambda (scripts)
       (InitWindow 1280 720 "RPL - Adaptive Display")
@@ -188,31 +261,17 @@
 		   [sh (GetScreenHeight)]
 		   [scale (min (/ sw 1920.0) (/ sh 1080.0))]
 		   [ox (/ (- sw (* 1920.0 scale)) 2.0)]
-		   [oy (/ (- sh (* 1080.0 scale)) 2.0)])
+		   [oy (/ (- sh (* 1080.0 scale)) 2.0)]
+		   [logic-mouse-x (/ (- (GetMouseX) ox) scale)]
+		   [logic-mouse-y (/ (- (GetMouseY) oy) scale)]
+		   [f (make-frame-state logic-mouse-x logic-mouse-y)])
 	      (BeginDrawing)
 	      (ClearBackground WHITE)
-	      (for-each
-	       (lambda (cmd)
-		 (case (render-command-type cmd)
-		   [(TEXTURE)
-		    (let* ([tex (render-command-id cmd)]
-			   [final-x (+ (* (render-command-x cmd) scale) ox)]
-			   [final-y (+ (* (render-command-y cmd) scale) oy)]
-			   [final-scale (* (render-command-scale cmd) scale)]
-			   [rot (render-command-rotation cmd)]
-			   [alpha (render-command-alpha cmd)]
-			   [src-rect (make-rectangle 0.0 0.0 (render-command-w cmd) (render-command-h cmd))]
-			   [dest-rect (make-rectangle final-x final-y
-						      (* (render-command-w cmd) final-scale)
-						      (* (render-command-h cmd) final-scale))]
-			   [origin (make-vector2 (* (render-command-ox cmd) final-scale)
-						 (* (render-command-oy cmd) final-scale))]
-			   [tint (Fade WHITE alpha)])
-		      (DrawTexturePro tex src-rect dest-rect origin rot tint))]))
-	       (reverse *command-list*))
+	      (consume (reverse *command-list*) f scale ox oy)
 	      (EndDrawing)
 	      (loop)))))
       (when *current-bundles* (unmount *current-bundles*))
       (CloseWindow)
       ))
+
   )
