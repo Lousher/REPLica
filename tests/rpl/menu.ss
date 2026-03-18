@@ -43,11 +43,11 @@
      (at 710 250
 	 (scale 0.5
 		(menu-buttons)))
-     (at 100 100
-     (font xiaolai
-	   (size 80.0
-		 (color 255 255 255 255
-			(text "这是个测试"))))))
+     (anchor 0.5 0.5
+	     (origin 0.5 0.5
+		     (font xiaolai
+			   (size 100.0
+			   (text "这真的是个测试啊"))))))
     
     ))
 

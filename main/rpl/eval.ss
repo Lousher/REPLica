@@ -53,7 +53,8 @@
     (fields (mutable font) (mutable text) (mutable x) (mutable y)
 	    (mutable w) (mutable h)
 	    (mutable size) (mutable spacing) (mutable color)
-	    (mutable rotation) (mutable alpha) (mutable ox) (mutable oy)))
+	    (mutable rotation) (mutable alpha) (mutable ox) (mutable oy)
+	    (mutable scale)))
 
   (define render-context-fields '(x y ox oy ax ay scale rotation alpha color font size spacing))
   (define render-context (make-record-type "render-context" render-context-fields))
@@ -66,9 +67,11 @@
     (let ([vals (render-context-fields-accessor ctx '(x y scale ax ay ox oy))])
       (apply (lambda (x y s ax ay ox oy)
                (let ([abs-x (+ x (* *WIDTH* ax))]
-                     [abs-y (+ y (* *HEIGHT* ay))])
+                     [abs-y (+ y (* *HEIGHT* ay))]
+		     [pixel-ox (* ox w)]
+		     [pixel-oy (* oy h)])
                  ;; 仅仅传递原图尺寸和当前缩放率 s
-                 (list abs-x abs-y w h ox oy s)))
+                 (list abs-x abs-y w h pixel-ox pixel-oy s)))
              vals)))
 
   (define call-with-render-context-mutated
@@ -126,7 +129,7 @@
 			[cp-info (hashtable-ref env '*codepoints* '(#f . 0))]
 			[cp-ptr (car cp-info)]
 			[cp-cnt (cdr cp-info)]
-			[font (LoadFontFromMemory ext data len 64 cp-ptr cp-cnt)])
+			[font (LoadFontFromMemory ext data len 128 cp-ptr cp-cnt)])
                    (with-mutex *env-mutex*
                      (vector-set! entry 2 'ready)
                      (vector-set! entry 3 font))
@@ -203,13 +206,14 @@
 		  [tint (get-tint (render-command-color cmd) (render-command-alpha cmd))])
              (DrawTexturePro tex source-rect dest-rect origin (render-command-rotation cmd) tint))]
 	  [(text-command? cmd)
-	    (let* ([final-s scale] ; 物理缩放
+	    (let* ([final-s (* (text-command-scale cmd) scale)] ; 物理缩放
 		   [final-x (+ (* (text-command-x cmd) scale) ox)]
 		   [final-y (+ (* (text-command-y cmd) scale) oy)]
 		   ;; 文字的 Size 和 Spacing 自动受外层 Scale 控制
 		   [final-size (* (text-command-size cmd) final-s)]
 		   [final-space (* (text-command-spacing cmd) final-s)]
-		   [origin (make-vector2 (* (text-command-ox cmd) final-s) (* (text-command-oy cmd) final-s))]
+		   [origin (make-vector2 (* (text-command-ox cmd) final-s)
+					 (* (text-command-oy cmd) final-s))]
 		   [pos (make-vector2 final-x final-y)]
 		   [tint (get-tint (text-command-color cmd) (text-command-alpha cmd))])
 	      ;; 【新增】：使用完全对等的 DrawTextPro
@@ -352,9 +356,7 @@
            [fid ((record-field-accessor render-context 'font) ctx)]
            [fsize ((record-field-accessor render-context 'size) ctx)]
            [fspace ((record-field-accessor render-context 'spacing) ctx)]
-           [font-asset (and fid (load-font-and-cache! fid env))]
-
-           )
+           [font-asset (and fid (load-font-and-cache! fid env))])
       (when font-asset
         ;; 使用 Raylib 测量逻辑宽高等比例
         (let* ([vec2-size (MeasureTextEx font-asset str fsize fspace)]
@@ -367,7 +369,7 @@
                [col ((record-field-accessor render-context 'color) ctx)])
           (set! *command-list*
                 (cons (apply (lambda (ax ay aw ah aox aoy as)
-                               (make-text-command font-asset str ax ay raw-w raw-h fsize fspace col rot alpha aox aoy))
+                               (make-text-command font-asset str ax ay raw-w raw-h fsize fspace col rot alpha aox aoy as))
                              info)
                       *command-list*)))))))
 
