@@ -3,6 +3,7 @@
   (import (vm bundle)
 	  (raylib ffi)
 	  (raylib constant)
+	  (only (chezscheme csv7) record-field-mutator record-field-accessor)
 	  (except (chezscheme) eval)
 	  (rename (chezscheme) (eval c:eval)))
 
@@ -23,16 +24,49 @@
 	    (mutable rotation)
 	    (mutable alpha)))
 
-  (define-record-type render-context
-    (fields (mutable x) (mutable y)
-	    (mutable ox) (mutable oy)
-	    (mutable ax) (mutable ay)
-	    (mutable scale)
-	    (mutable rotation)
-	    (mutable alpha)))
+  (define render-context-fields '(x y ox oy ax ay scale rotation alpha))
+  (define render-context
+    (make-record-type
+     "render-context"
+     render-context-fields))
+  (define make-render-context
+    (record-constructor render-context))
+  (define render-context?
+    (record-predicate render-context))
+
+  (define render-context-fields-accessor
+    (lambda (rc fs)
+      (map (lambda (f) ((record-field-accessor render-context f) rc)) fs)))
+
+  (define render-context-fields-mutator
+    (lambda (rc fs vs)
+      (for-each (lambda (f v) ((record-field-mutator render-context f) rc v)) fs vs)))
+
+  (define call-with-render-context-mutated
+    (lambda (rc mus proc)
+      (let ([fs (map car mus)]
+	    [mutators-f (map cdr mus)])
+	(let* ([vals (render-context-fields-accessor rc fs)])
+	  (render-context-fields-mutator rc fs (map (lambda (m v) (m v)) mutators-f vals))
+	  (proc rc)
+	  (render-context-fields-mutator rc fs vals)))))
 
   (define *current-bundles* #f)
   (define *command-list* '())
+
+  ;; helper func
+  (define load-and-cache!
+    (lambda (entry)
+      (let-values ([(ext data len) (ref *current-bundles* (car entry))])
+	(if data
+	    (let* ([img (LoadImageFromMemory ext data len)]
+		   [tex (LoadTextureFromImage img)])
+		  (UnloadImage img)
+		  (set-cdr! entry tex)
+		  tex)
+		(begin
+		  (TraceLog LOG_ERROR (format "Asset ~a Not Found" (car entry)))
+		  #f)))))
     
   (define eval
     (lambda (exp env ctx)
@@ -50,103 +84,62 @@
 		   (cdr exp))]
 	[(anchor) ; (anchor AX AY (...))
 	 (let* ([ax (cadr exp)] [ay (caddr exp)]
-		[sub (cadddr exp)]
-		[new-ctx (make-render-context
-                        (render-context-x ctx) (render-context-y ctx)
-                        (render-context-ox ctx) (render-context-oy ctx)
-                        ax ay ;; 注入新的锚点
-                        (render-context-scale ctx)
-                        (render-context-rotation ctx)
-                        (render-context-alpha ctx))])
-	   (eval sub env new-ctx))]
+		[sub (cadddr exp)])
+	   (call-with-render-context-mutated
+	    ctx `((ax . ,(lambda (v) ax)) (ay . ,(lambda (v) ay)))
+	    (lambda (new-ctx)
+	      (eval sub env new-ctx))))]
 	[(origin) ; (origin OX OY (...))
 	 (let* ([rx (cadr exp)] [ry (caddr exp)]
-		[sub (cadddr exp)]
-		[new-ctx (make-render-context
-			  (render-context-x ctx) (render-context-y ctx)
-			  rx ry
-			  (render-context-ax ctx) (render-context-ay ctx)
-			  (render-context-scale ctx)
-			  (render-context-rotation ctx)
-			  (render-context-alpha ctx))])
-	   (eval sub env new-ctx))]
+		[sub (cadddr exp)])
+	   (call-with-render-context-mutated
+	    ctx `((ox . ,(lambda (v) rx)) (oy . ,(lambda (v) ry)))
+	    (lambda (new-c)
+	      (eval sub env new-c))))]
 	[(scale) ; (scale X sub)
-	 (let* ([s (cadr exp)] [sub (caddr exp)]
-		[new-ctx (make-render-context
-			  (render-context-x ctx) (render-context-y ctx)
-			  (render-context-ox ctx) (render-context-oy ctx)
-			  (render-context-ax ctx) (render-context-ay ctx)
-			  (* (render-context-scale ctx) s)
-			  (render-context-rotation ctx)
-			  (render-context-alpha ctx))])
-	   (eval sub env new-ctx))]
+	 (let* ([s (cadr exp)] [sub (caddr exp)])
+	   (call-with-render-context-mutated
+	    ctx `((scale . ,(lambda (v) (* v s))))
+	    (lambda (c)
+	      (eval sub env c))))]
 	[(rotate) ; (rotate DEG sub)
-	 (let* ([deg (cadr exp)] [sub (caddr exp)]
-		[new-ctx (make-render-context
-			  (render-context-x ctx) (render-context-y ctx)
-			  (render-context-ox ctx) (render-context-oy ctx)
-			  (render-context-ax ctx) (render-context-ay ctx)
-			  (render-context-scale ctx)
-			  (+ (render-context-rotation ctx) deg) ;; 角度相加
-			  (render-context-alpha ctx))])
-	   (eval sub env new-ctx))]
+	 (let* ([deg (cadr exp)] [sub (caddr exp)])
+	   (call-with-render-context-mutated
+	    ctx `((rotation . ,(lambda (v) (+ v deg))))
+	    (lambda (c) (eval sub env c))))]
 	[(alpha) ; (alpha A (...))
-	 (let* ([a (cadr exp)] [sub (caddr exp)]
-		[new-ctx (make-render-context
-			  (render-context-x ctx) (render-context-y ctx)
-			  (render-context-ox ctx) (render-context-oy ctx)
-			  (render-context-ax ctx) (render-context-ay ctx)
-			  (render-context-scale ctx) (render-context-rotation ctx)
-			  (* (render-context-alpha ctx) a))])
-	   (eval sub env new-ctx))]
+	 (let* ([a (cadr exp)] [sub (caddr exp)])
+	   (call-with-render-context-mutated
+	    ctx `((alpha . ,(lambda (v) (* v a))))
+	    (lambda (c) (eval sub env c))))]
 	[(at) ; (at X Y (...))
 	 (let* ([offset-x (cadr exp)]
 		[offset-y (caddr exp)]
-		[sub-render (cadddr exp)]
-		[new-ctx (make-render-context
-			  (+ (render-context-x ctx) offset-x)
-			  (+ (render-context-y ctx) offset-y)
-			  (render-context-ox ctx) (render-context-oy ctx)
-			  (render-context-ax ctx) (render-context-ay ctx)
-			  (render-context-scale ctx)
-			  (render-context-rotation ctx)
-			  (render-context-alpha ctx))])
-	   (eval sub-render env new-ctx)
-	   )]
+		[sub (cadddr exp)])
+	   (call-with-render-context-mutated
+	    ctx `((x . ,(lambda (v) (+ v offset-x)))
+		  (y . ,(lambda (v) (+ v offset-y))))
+	    (lambda (c) (eval sub env c))))]
 	[(show) ; (show TEXTURE-ID) in given ctx!!
 	 (let* ([sym (cadr exp)]
 		[entry (hashtable-ref env sym #f)])
 	   (when (and entry *current-bundles*)
 	     (let ([path (car entry)]
-		   [cached (cdr entry)])
-	       (let ([cached-tex (if cached cached 
-				     (let-values ([(ext data len) (ref *current-bundles* path)])
-				       (if data
-					   (let* ([img (LoadImageFromMemory ext data len)]
-						  [tex (LoadTextureFromImage img)])
-					     (UnloadImage img)
-					     (set-cdr! entry tex)
-					     tex)
-					   (begin
-					     (TraceLog LOG_ERROR (format "Asset ~a Not Found" path))
-					     #f))))])
-		 (set! *command-list*
-		       (let ([tex-w (Texture-width cached-tex)]
-			     [tex-h (Texture-height cached-tex)])
-			 (cons
-			  (make-render-command
-			   'TEXTURE
-			   cached-tex
-			   (+ (render-context-x ctx) (* 1920.0 (render-context-ax ctx)))
-			   (+ (render-context-y ctx) (* 1080.0 (render-context-ay ctx)))
-			   tex-w
-			   tex-h
-			   (* tex-w (render-context-ox ctx))
-			   (* tex-h (render-context-oy ctx))
-			   (render-context-scale ctx)
-			   (render-context-rotation ctx)
-			   (render-context-alpha ctx))
-			  *command-list*)))))))]
+		   [cached (or (cdr entry) (load-and-cache! entry))])
+	       (when cached
+		 (let ([ctx-vals (render-context-fields-accessor ctx render-context-fields)])
+		   (apply (lambda (x y ox oy ax ay s r a)
+			    (let ([tw (Texture-width cached)]
+				  [th (Texture-height cached)])
+			      (set! *command-list*
+				    (cons
+				     (make-render-command
+				      'TEXTURE cached
+				      (+ x (* 1920.0 ax)) (+ y (* 1080.0 ay))
+				      tw th (* tw ox) (* th oy)
+				      s r a)
+				     *command-list*))))
+			  ctx-vals))))))]
 	)))
 
   (define render
