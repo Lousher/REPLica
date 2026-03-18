@@ -25,21 +25,23 @@
 	     [(hovered? 480 180) (show ho)]
 	     [else (show no)]))
 
-    (prefab menu-buttons (x y)
-	    (at x y
+    (prefab menu-buttons ()
 		(parallel
 		 (at 0 0 (hoverd-btn start start-h))
-		 (at 0 100 (hoverd-btn continue continue-h))
-		 (at 0 200 (hoverd-btn load load-h))
-		 (at 0 300 (hoverd-btn gallery gallery-h))
-		 (at 0 400 (hoverd-btn config config-h))
-		 (at 0 500 (hoverd-btn exit exit-h)))))
+		 (at 0 200 (hoverd-btn continue continue-h))
+		 (at 0 400 (hoverd-btn load load-h))
+		 (at 0 600 (hoverd-btn gallery gallery-h))
+		 (at 0 800 (hoverd-btn config config-h))
+		 (at 0 1000 (hoverd-btn exit exit-h))))
 
-    (scale 0.5
-	   (parallel
-	    (show kv)
-	    (show contract)
-	    (menu-buttons 710 250)))
+    (parallel
+     (scale 0.5
+	    (parallel
+	     (show kv)
+	     (show contract)))
+     (at 710 250
+	 (scale 0.5
+		(menu-buttons))))
     
     ))
 
