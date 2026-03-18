@@ -12,6 +12,10 @@
   (assets
    (texture xxx xxx-path))
   (show xxx) ; assume that xxx is already loaded
+
+  combinator
+  (at X Y (...))
+  (origin OX OY (...))
   |#
 
   (define-record-type render-command
@@ -67,6 +71,18 @@
 		(begin
 		  (TraceLog LOG_ERROR (format "Asset ~a Not Found" (car entry)))
 		  #f)))))
+
+  (define substitute
+    (lambda (tree bindings)
+      (cond
+       [(null? tree) '()]
+       [(symbol? tree)
+	(let ([b (assq tree bindings)])
+	  (if b (cdr b) tree))]
+       [(pair? tree)
+	(cons (substitute (car tree) bindings)
+	      (substitute (cdr tree) bindings))]
+       [else tree])))
     
   (define eval
     (lambda (exp env ctx)
@@ -78,9 +94,14 @@
 		     (let ([name (cadr def)] [path (caddr def)])
 		       (hashtable-set! env name (cons path #f))))
 		   (cdr exp))]
+	[(prefab) ; (prefab name args body)
+	 (let* ([name (cadr exp)]
+		[args (caddr exp)]
+		[body (cadddr exp)])
+	   (hashtable-set! env name (list 'prefab args body)))]
 	[(parallel) ; (parallel (... 1) (... 2))
-	 (for-each (lambda (sub-ren)
-		     (eval sub-ren env ctx))
+	 (for-each (lambda (sub)
+		     (eval sub env ctx))
 		   (cdr exp))]
 	[(anchor) ; (anchor AX AY (...))
 	 (let* ([ax (cadr exp)] [ay (caddr exp)]
@@ -140,6 +161,17 @@
 				      s r a)
 				     *command-list*))))
 			  ctx-vals))))))]
+	[else
+	 (let* ([op (car exp)]
+		[prefab-def (hashtable-ref env op #f)])
+	   (if (and prefab-def (eq? (car prefab-def) 'prefab))
+	       (let* ([args (cadr prefab-def)]
+		      [body (caddr prefab-def)]
+		      [params (cdr exp)]
+		      [bindings (map cons args params)]
+		      [evaled (substitute body bindings)])
+		 (eval evaled env ctx))
+	       (error 'eval "Unknow primitive or prefab" op)))]
 	)))
 
   (define render
@@ -159,24 +191,25 @@
 		   [oy (/ (- sh (* 1080.0 scale)) 2.0)])
 	      (BeginDrawing)
 	      (ClearBackground WHITE)
-	      (for-each (lambda (cmd)
-			  (case (render-command-type cmd)
-			    [(TEXTURE)
-			     (let* ([tex (render-command-id cmd)]
-				    [final-x (+ (* (render-command-x cmd) scale) ox)]
-				    [final-y (+ (* (render-command-y cmd) scale) oy)]
-				    [final-scale (* (render-command-scale cmd) scale)]
-				    [rot (render-command-rotation cmd)]
-				    [alpha (render-command-alpha cmd)]
-				    [src-rect (make-rectangle 0.0 0.0 (render-command-w cmd) (render-command-h cmd))]
-				    [dest-rect (make-rectangle final-x final-y
-							       (* (render-command-w cmd) final-scale)
-							       (* (render-command-h cmd) final-scale))]
-				    [origin (make-vector2 (* (render-command-ox cmd) final-scale)
-							  (* (render-command-oy cmd) final-scale))]
-				    [tint (Fade WHITE alpha)])
-			       (DrawTexturePro tex src-rect dest-rect origin rot tint))]))
-			(reverse *command-list*))
+	      (for-each
+	       (lambda (cmd)
+		 (case (render-command-type cmd)
+		   [(TEXTURE)
+		    (let* ([tex (render-command-id cmd)]
+			   [final-x (+ (* (render-command-x cmd) scale) ox)]
+			   [final-y (+ (* (render-command-y cmd) scale) oy)]
+			   [final-scale (* (render-command-scale cmd) scale)]
+			   [rot (render-command-rotation cmd)]
+			   [alpha (render-command-alpha cmd)]
+			   [src-rect (make-rectangle 0.0 0.0 (render-command-w cmd) (render-command-h cmd))]
+			   [dest-rect (make-rectangle final-x final-y
+						      (* (render-command-w cmd) final-scale)
+						      (* (render-command-h cmd) final-scale))]
+			   [origin (make-vector2 (* (render-command-ox cmd) final-scale)
+						 (* (render-command-oy cmd) final-scale))]
+			   [tint (Fade WHITE alpha)])
+		      (DrawTexturePro tex src-rect dest-rect origin rot tint))]))
+	       (reverse *command-list*))
 	      (EndDrawing)
 	      (loop)))))
       (when *current-bundles* (unmount *current-bundles*))
