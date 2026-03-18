@@ -253,30 +253,30 @@
 	       [cond-var (make-condition)])
 	   (with-mutex *env-mutex*
 	     (hashtable-set! env id (vector type path 'loading #f cond-var)))
-	   (let-values ([(ext data len) (ref *current-bundles* path)])
 	     (fork-thread
 	      (lambda ()
-		(TraceLog LOG_INFO (format "ASSETS: Forked Thread to Load Resourse ~a" path))
-		(case type
-		  [(texture)
-		   (if data
-		       (let ([img (LoadImageFromMemory ext data len)])
-			 (with-mutex *env-mutex*
-			   (let ([entry (hashtable-ref env id #f)])
-			     (vector-set! entry 2 'image)
-			     (vector-set! entry 3 img)
-			     (condition-broadcast cond-var))))
-		       (begin
-			 (TraceLog LOG_ERROR (format "Asset ~a Not Found" path))
-			 (with-mutex *env-mutex*
-			   (let ([entry (hashtable-ref env id #f)])
-			     (vector-set! entry 2 'error)
-			     (condition-broadcast cond-var)))))]
-		[(font)
-		 (with-mutex *env-mutex*
-		   (let ([entry (hashtable-ref env id #f)])
-		     (vector-set! entry 2 'pending)
-		     (condition-broadcast cond-var)))]))))))
+		(let-values ([(ext data len) (ref *current-bundles* path)])
+		  (TraceLog LOG_INFO (format "ASSETS: Forked Thread to Load Resourse ~a" path))
+		  (case type
+		    [(texture)
+		     (if data
+			 (let ([img (LoadImageFromMemory ext data len)])
+			   (with-mutex *env-mutex*
+			     (let ([entry (hashtable-ref env id #f)])
+			       (vector-set! entry 2 'image)
+			       (vector-set! entry 3 img)
+			       (condition-broadcast cond-var))))
+			 (begin
+			   (TraceLog LOG_ERROR (format "Asset ~a Not Found" path))
+			   (with-mutex *env-mutex*
+			     (let ([entry (hashtable-ref env id #f)])
+			       (vector-set! entry 2 'error)
+			       (condition-broadcast cond-var)))))]
+		    [(font)
+		     (with-mutex *env-mutex*
+		       (let ([entry (hashtable-ref env id #f)])
+			 (vector-set! entry 2 'pending)
+			 (condition-broadcast cond-var)))]))))))
        (cdr exp))))
   (define-primitive 'prefab (lambda (exp env ctx) (hashtable-set! env (cadr exp) (list 'prefab (caddr exp) (cadddr exp)))))
   (define-primitive 'parallel (lambda (exp env ctx) (for-each (lambda (sub) (eval sub env ctx)) (cdr exp))))

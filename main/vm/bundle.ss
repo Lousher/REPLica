@@ -6,12 +6,22 @@
     (lambda (data key)
       (let ([d-len (bytevector-length data)]
 	    [k-len (bytevector-length key)])
-	(let loop ([i 0])
-	  (unless (= i d-len)
-	    (let ([data-val (bytevector-u8-ref data i)]
-		  [key-val (bytevector-u8-ref key (remainder i k-len))])
-	      (bytevector-u8-set! data i (logxor data-val key-val))
-	      (loop (+ i 1))))))))
+	(let* ([batch-size 8]
+	       [iterations (quotient d-len batch-size)]
+	       [remainder-bytes (remainder d-len batch-size)])
+	  (let loop-bulk ([i 0])
+	    (unless (= i iterations)
+	      (let* ([pos (* i batch-size)]
+		     [d-val (bytevector-u64-ref data pos (endianness little))]
+		     [k-val (bytevector-u64-ref key (remainder pos k-len) (endianness little))])
+	    (bytevector-u64-set! data pos (logxor d-val k-val) (endianness little))
+	    (loop-bulk (+ i 1)))))
+	  (let loop-rem ([j (* iterations batch-size)])
+	  (unless (= j d-len)
+	    (let ([data-val (bytevector-u8-ref data j)]
+		  [key-val (bytevector-u8-ref key (remainder j k-len))])
+	      (bytevector-u8-set! data j (logxor data-val key-val))
+	      (loop-rem (+ j 1)))))))))
 
   (define XOR_KEY (string->utf8 "replica_secret01"))
   (define MAGIC (string->utf8 "RPK1"))
@@ -107,18 +117,23 @@
 	  (for-each
 	   (lambda (e) (hashtable-set! table (car e) (cdr e)))
 	   raw-index)
-	  (make-bundle p table path)))))
+	  (close-port p)
+	  (make-bundle #f table path)))))
 
   (define ref
     (lambda (b str)
       (let ([info (hashtable-ref (bundle-table b) (fnv-1a str) #f)])
 	(if info
-	    (begin
-	      (set-port-position! (bundle-port b) (car info))
-	      (let ([data (get-bytevector-n (bundle-port b) (cadr info))])
-		(xor-transform! data XOR_KEY)
-		(values (format ".~a" (caddr info)) data (cadr info))
-		))
+	    (call-with-port
+		(open-file-input-port (bundle-path b) (file-options) (buffer-mode block))
+	      (lambda (p)
+		(let ([offset (car info)]
+		      [len (cadr info)]
+		      [ext (caddr info)])
+		  (set-port-position! p offset)
+		  (let ([data (get-bytevector-n p len)])
+		    (xor-transform! data XOR_KEY)
+		    (values (format ".~a" ext) data len)))))
 	    (values #f #f #f)))))
 
   (define unmount
