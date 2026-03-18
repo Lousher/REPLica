@@ -11,6 +11,9 @@
   (define *WIDTH* 1920.0)
   (define *HEIGHT* 1080.0)
 
+  ; mutex for async loading
+  (define *env-mutex* (make-mutex))
+  
   (define (extract-script-codepoints script-ast)
     (let ([char-hash (make-hashtable equal-hash char=?)])
       (define (traverse node)
@@ -66,26 +69,61 @@
           (render-context-fields-mutator rc fs vals)))))
 
   (define load-and-cache!
-    (lambda (entry)
-      (let-values ([(ext data len) (ref *current-bundles* (car entry))])
-        (if data
-            (let* ([img (LoadImageFromMemory ext data len)]
-                   [tex (LoadTextureFromImage img)])
-              (UnloadImage img)
-              (set-cdr! entry tex)
-              tex)
-            (begin (TraceLog LOG_ERROR (format "Asset ~a Not Found" (car entry))) #f)))))
+    (lambda (id env)
+      (let loop ()
+	(let ([entry (with-mutex *env-mutex* (hashtable-ref env id #f))])
+	  (if entry
+	      (let ([type (vector-ref entry 0)]
+		    [path (vector-ref entry 1)]
+		    [status (vector-ref entry 2)]
+		    [payload (vector-ref entry 3)]
+		    [cond-var (vector-ref entry 4)])
+		(case status
+		  [(ready) payload]
+		  [(loading)
+		   (with-mutex *env-mutex* (condition-wait cond-var *env-mutex*))
+		   (loop)]
+		  [(image)
+		   (let ([tex (LoadTextureFromImage payload)])
+		     (UnloadImage payload)
+		     (with-mutex *env-mutex*
+		       (vector-set! entry 2 'ready)
+		       (vector-set! entry 3 tex))
+		     tex)]
+		  [(error) #f]
+		  [else #f]))
+		#f)))))
 
-  (define load-font-and-cache!
-  (lambda (entry)
-    (let-values ([(ext data len) (ref *current-bundles* (car entry))])
-      (if data
-          (let* (;; 假设你在某处生成了 codepoints 指针，如果没有，传 null-pointer 和 0 加载默认 ASCII
-                 ;; 这里的 64 是基础采样字号（越大越清晰，但越占显存），可以根据你的游戏微调
-                 [font (LoadFontFromMemory ext data len 64 0 0)])
-            (set-cdr! entry font)
-            font)
-          (begin (TraceLog LOG_ERROR (format "Font Asset ~a Not Found" (car entry))) #f)))))
+  (define (load-font-and-cache! id env)
+    (let loop ()
+      (let ([entry (with-mutex *env-mutex* (hashtable-ref env id #f))])
+        (if entry
+            (let ([type (vector-ref entry 0)]
+                  [path (vector-ref entry 1)]
+                  [status (vector-ref entry 2)]
+                  [payload (vector-ref entry 3)]
+                  [cond-var (vector-ref entry 4)])
+              (case status
+                [(ready) payload]
+                [(loading)
+                 (with-mutex *env-mutex* (condition-wait cond-var *env-mutex*))
+                 (loop)]
+                [(pending)
+                 ;; 字体加载涉及 OpenGL，在主线程同步完成
+                 (let-values ([(ext data len) (ref *current-bundles* path)])
+                   (if data
+                       (let ([font (LoadFontFromMemory ext data len 64 0 0)])
+                         (with-mutex *env-mutex*
+                           (vector-set! entry 2 'ready)
+                           (vector-set! entry 3 font))
+                         font)
+                       (begin
+                         (TraceLog LOG_ERROR (format "Font ~a Not Found" path))
+                         (with-mutex *env-mutex* (vector-set! entry 2 'error))
+                         #f)))]
+                [(error) #f]
+                [else #f]))
+            #f))))
 
   (define substitute
     (lambda (tree bindings)
@@ -204,7 +242,42 @@
   (define (define-primitive name proc) (hashtable-set! *primitives* name proc))
 
   (define-primitive 'bundle (lambda (exp env ctx) (set! *current-bundles* (mount (cadr exp)))))
-  (define-primitive 'assets (lambda (exp env ctx) (for-each (lambda (def) (hashtable-set! env (cadr def) (cons (caddr def) #f))) (cdr exp))))
+  (define-primitive
+    'assets
+    (lambda (exp env ctx)
+      (for-each
+       (lambda (def)
+	 (let ([type (car def)]
+	       [id (cadr def)]
+	       [path (caddr def)]
+	       [cond-var (make-condition)])
+	   (with-mutex *env-mutex*
+	     (hashtable-set! env id (vector type path 'loading #f cond-var)))
+	   (let-values ([(ext data len) (ref *current-bundles* path)])
+	     (fork-thread
+	      (lambda ()
+		(TraceLog LOG_INFO (format "ASSETS: Forked Thread to Load Resourse ~a" path))
+		(case type
+		  [(texture)
+		   (if data
+		       (let ([img (LoadImageFromMemory ext data len)])
+			 (with-mutex *env-mutex*
+			   (let ([entry (hashtable-ref env id #f)])
+			     (vector-set! entry 2 'image)
+			     (vector-set! entry 3 img)
+			     (condition-broadcast cond-var))))
+		       (begin
+			 (TraceLog LOG_ERROR (format "Asset ~a Not Found" path))
+			 (with-mutex *env-mutex*
+			   (let ([entry (hashtable-ref env id #f)])
+			     (vector-set! entry 2 'error)
+			     (condition-broadcast cond-var)))))]
+		[(font)
+		 (with-mutex *env-mutex*
+		   (let ([entry (hashtable-ref env id #f)])
+		     (vector-set! entry 2 'pending)
+		     (condition-broadcast cond-var)))]))))))
+       (cdr exp))))
   (define-primitive 'prefab (lambda (exp env ctx) (hashtable-set! env (cadr exp) (list 'prefab (caddr exp) (cadddr exp)))))
   (define-primitive 'parallel (lambda (exp env ctx) (for-each (lambda (sub) (eval sub env ctx)) (cdr exp))))
   
@@ -238,19 +311,17 @@
 
   (define-primitive 'show
     (lambda (exp env ctx)
-      (let* ([sym (cadr exp)] [entry (hashtable-ref env sym #f)])
-        (when (and entry *current-bundles*)
-          (let ([cached (or (cdr entry) (load-and-cache! entry))])
-            (when cached
-              (let* ([info (get-logical-spatial-info ctx (Texture-width cached) (Texture-height cached))]
-                     [rot ((record-field-accessor render-context 'rotation) ctx)]
-                     [alpha ((record-field-accessor render-context 'alpha) ctx)]
-		     [col ((record-field-accessor render-context 'color) ctx)])
-                (set! *command-list*
-                      (cons (apply (lambda (ax ay aw ah aox aoy as)
-                                     (make-render-command 'TEXTURE cached ax ay aw ah aox aoy as rot alpha col))
-                                   info)
-                            *command-list*)))))))))
+      (let* ([sym (cadr exp)] [cached (load-and-cache! sym env)])
+        (when cached
+          (let* ([info (get-logical-spatial-info ctx (Texture-width cached) (Texture-height cached))]
+                 [rot ((record-field-accessor render-context 'rotation) ctx)]
+                 [alpha ((record-field-accessor render-context 'alpha) ctx)]
+		 [col ((record-field-accessor render-context 'color) ctx)])
+            (set! *command-list*
+                  (cons (apply (lambda (ax ay aw ah aox aoy as)
+                                 (make-render-command 'TEXTURE cached ax ay aw ah aox aoy as rot alpha col))
+                               info)
+                        *command-list*)))))))
 
  (define-primitive 'text
   (lambda (exp env ctx)
@@ -258,9 +329,9 @@
            [fid ((record-field-accessor render-context 'font) ctx)]
            [fsize ((record-field-accessor render-context 'size) ctx)]
            [fspace ((record-field-accessor render-context 'spacing) ctx)]
-           [entry (and fid (hashtable-ref env fid #f))]
-           ;; 注意：你需要自己实现 load-font-and-cache! (封装 LoadFontEx)
-           [font-asset (if entry (or (caddr entry) (load-font-and-cache! entry)) #f)])
+           [font-asset (and fid (load-font-and-cache! fid env))]
+
+           )
       (when font-asset
         ;; 使用 Raylib 测量逻辑宽高等比例
         (let* ([vec2-size (MeasureTextEx font-asset str fsize fspace)]
