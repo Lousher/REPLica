@@ -108,6 +108,31 @@
 		  [else #f]))
 		#f)))))
 
+  (define (load-sound-and-cache! id env)
+    (let loop ()
+      (let ([entry (with-mutex *env-mutex* (hashtable-ref env id #f))])
+        (if entry
+            (let ([type (vector-ref entry 0)]
+                  [path (vector-ref entry 1)]
+                  [status (vector-ref entry 2)]
+                  [payload (vector-ref entry 3)]
+                  [cond-var (vector-ref entry 4)])
+              (case status
+                [(ready) payload]
+                [(loading)
+                 (with-mutex *env-mutex* (condition-wait cond-var *env-mutex*))
+                 (loop)]
+                [(wav-data-ready)
+		 (let ([snd (LoadSoundFromWave payload)])
+		   (UnloadWave payload)
+                   (with-mutex *env-mutex*
+                     (vector-set! entry 2 'ready)
+                     (vector-set! entry 3 snd))
+                   snd)]
+                [(error) #f]
+                [else #f]))
+            #f))))
+
   (define (load-font-and-cache! id env)
     (let loop ()
       (let ([entry (with-mutex *env-mutex* (hashtable-ref env id #f))])
@@ -137,6 +162,8 @@
                 [(error) #f]
                 [else #f]))
             #f))))
+
+  
 
   (define substitute
     (lambda (tree bindings)
@@ -230,7 +257,8 @@
 
   (define render
     (lambda (scripts)
-      (InitWindow 1280 720 "RPL - Engine Perfected")
+      (InitWindow 1920 1080 "RPL - Engine Perfected")
+      (InitAudioDevice)
       (SetTargetFPS 60)
       (let* ([all-chars (extract-script-codepoints scripts)]
 	     [char-count (length all-chars)]
@@ -253,6 +281,7 @@
               (consume (reverse *command-list*) lmx lmy s ox oy)
               (EndDrawing)
               (loop))))))
+      (CloseAudioDevice)
       (when *current-bundles* (unmount *current-bundles*))
       (CloseWindow)))
 
@@ -291,8 +320,7 @@
 			       (vector-set! entry 2 'error)
 			       (condition-broadcast cond-var)))))]
 		    [(font)
-		     (let-values ([(ext data len) (ref *current-bundles* path)])
-		       (if data 
+		     (if data 
 			   (with-mutex *env-mutex*
 			     (let ([entry (hashtable-ref env id #f)])
 			       (vector-set! entry 2 'font-data-ready)
@@ -303,7 +331,23 @@
 			     (with-mutex *env-mutex*
 			       (let ([entry (hashtable-ref env id #f)])
 				 (vector-set! entry 2 'error)
-				 (condition-broadcast cond-var))))))]))))))
+				 (condition-broadcast cond-var)))))]
+		    [(sound)
+		     (if data
+			 (let ([wav (LoadWaveFromMemory ext data len)])
+			   (with-mutex *env-mutex*
+			     (let ([entry (hashtable-ref env id #f)])
+			       (vector-set! entry 2 'wav-data-ready)
+			       (vector-set! entry 3 wav)
+			       (condition-broadcast cond-var)))
+			   (begin
+			     (TraceLog LOG_ERROR (format "ASSETS: Sound ~a Not Found" path))
+			     (with-mutex *env-mutex*
+			       (let ([entry (hashtable-ref env id #f)])
+				 (vector-set! entry 2 'error)
+				 (condition-broadcast cond-var))))))
+		     ]
+		    ))))))
        (cdr exp))))
   (define-primitive 'prefab (lambda (exp env ctx) (hashtable-set! env (cadr exp) (list 'prefab (caddr exp) (cadddr exp)))))
   (define-primitive 'parallel (lambda (exp env ctx) (for-each (lambda (sub) (eval sub env ctx)) (cdr exp))))
@@ -400,6 +444,13 @@
        ctx
        `((spacing . ,(lambda (v) (cadr exp))))
        (lambda (c) (eval (caddr exp) env c)))))
+
+ #|  (define-primitive 'play
+    (lambda (exp env ctx)
+      (let* ([id (cadr exp)]
+             [snd (load-sound-and-cache! id env)])
+	(when snd
+          (PlaySound snd))))) |#
 
   
   )

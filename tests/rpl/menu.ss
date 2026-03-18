@@ -19,7 +19,8 @@
      (texture gallery-h "btn-gallery-chosen")
      (texture config-h "btn-config-chosen")
      (texture exit-h "btn-exit-chosen")
-     (font xiaolai "xiaolai"))
+     (font xiaolai "xiaolai")
+     )
 
     (prefab hoverd-btn (no ho)
 	    (branch
@@ -42,12 +43,7 @@
 	     (show contract)))
      (at 710 250
 	 (scale 0.5
-		(menu-buttons)))
-     (anchor 0.5 0.5
-	     (origin 0.5 0.5
-		     (font xiaolai
-			   (size 100.0
-			   (text "这真的是个测试啊"))))))
+		(menu-buttons))))
     
     ))
 
