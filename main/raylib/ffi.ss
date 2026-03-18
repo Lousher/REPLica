@@ -352,7 +352,7 @@
   (define-ffi LoadFileText (string) (* char))
   (define-ffi LoadCodepoints (string (* int)) (* int))
   (define-ffi LoadFontEx (string int (* int) int) (& Font))
-  (define-ffi LoadFontFromMemory (string (* char) int int (* int) int) (& Font))
+  (define-ffi LoadFontFromMemory (string u8* int int u8* int) (& Font))
   (define-ffi LoadFont (string) (& Font))
   (define-ffi UnloadFileText ((* char)) void)
   (define-ffi UnloadCodepoints ((* int)) void)

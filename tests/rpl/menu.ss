@@ -18,7 +18,8 @@
      (texture continue-h "btn-continue-chosen")
      (texture gallery-h "btn-gallery-chosen")
      (texture config-h "btn-config-chosen")
-     (texture exit-h "btn-exit-chosen"))
+     (texture exit-h "btn-exit-chosen")
+     (font xiaolai "xiaolai"))
 
     (prefab hoverd-btn (no ho)
 	    (branch
@@ -41,7 +42,12 @@
 	     (show contract)))
      (at 710 250
 	 (scale 0.5
-		(menu-buttons))))
+		(menu-buttons)))
+     (at 100 100
+     (font xiaolai
+	   (size 80.0
+		 (color 255 255 255 255
+			(text "这是个测试"))))))
     
     ))
 

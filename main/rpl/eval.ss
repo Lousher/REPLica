@@ -13,6 +13,17 @@
 
   ; mutex for async loading
   (define *env-mutex* (make-mutex))
+
+  (define list->c-int-array
+    (lambda (lst)
+      (let* ([len (length lst)]
+	     [bv (make-bytevector (* len 4))])
+	(let loop ([i 0] [remaining lst])
+	  (if (null? remaining)
+	      bv
+	      (begin
+		(bytevector-u32-set! bv (* i 4) (car remaining) (endianness little))
+		(loop (+ i 1) (cdr remaining))))))))
   
   (define (extract-script-codepoints script-ast)
     (let ([char-hash (make-hashtable equal-hash char=?)])
@@ -108,19 +119,18 @@
                 [(loading)
                  (with-mutex *env-mutex* (condition-wait cond-var *env-mutex*))
                  (loop)]
-                [(pending)
-                 ;; 字体加载涉及 OpenGL，在主线程同步完成
-                 (let-values ([(ext data len) (ref *current-bundles* path)])
-                   (if data
-                       (let ([font (LoadFontFromMemory ext data len 64 0 0)])
-                         (with-mutex *env-mutex*
-                           (vector-set! entry 2 'ready)
-                           (vector-set! entry 3 font))
-                         font)
-                       (begin
-                         (TraceLog LOG_ERROR (format "Font ~a Not Found" path))
-                         (with-mutex *env-mutex* (vector-set! entry 2 'error))
-                         #f)))]
+                [(font-data-ready)
+		 (let* ([ext (car payload)]
+			[data (cadr payload)]
+			[len (caddr payload)]
+			[cp-info (hashtable-ref env '*codepoints* '(#f . 0))]
+			[cp-ptr (car cp-info)]
+			[cp-cnt (cdr cp-info)]
+			[font (LoadFontFromMemory ext data len 64 cp-ptr cp-cnt)])
+                   (with-mutex *env-mutex*
+                     (vector-set! entry 2 'ready)
+                     (vector-set! entry 3 font))
+                   font)]
                 [(error) #f]
                 [else #f]))
             #f))))
@@ -218,11 +228,15 @@
     (lambda (scripts)
       (InitWindow 1280 720 "RPL - Engine Perfected")
       (SetTargetFPS 60)
-      (let ([env (make-hashtable symbol-hash symbol=?)]
-            [ctx (make-render-context 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 1.0 '(255 255 255 255) #f 24.0 1.0)])
-        (set! *command-list* '())
-        (for-each (lambda (exp) (eval exp env ctx)) scripts)
-        (let loop ()
+      (let* ([all-chars (extract-script-codepoints scripts)]
+	     [char-count (length all-chars)]
+	     [codepoints-ptr (list->c-int-array all-chars)])
+	(let ([env (make-hashtable symbol-hash symbol=?)]
+              [ctx (make-render-context 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 1.0 '(255 255 255 255) #f 24.0 1.0)])
+	  (hashtable-set! env '*codepoints* (cons codepoints-ptr char-count))
+          (set! *command-list* '())
+          (for-each (lambda (exp) (eval exp env ctx)) scripts)
+          (let loop ()
           (unless (WindowShouldClose)
             (let* ([sw (GetScreenWidth)] [sh (GetScreenHeight)]
                    [s (min (/ sw *WIDTH*) (/ sh *HEIGHT*))]
@@ -234,7 +248,7 @@
               (ClearBackground BLACK)
               (consume (reverse *command-list*) lmx lmy s ox oy)
               (EndDrawing)
-              (loop)))))
+              (loop))))))
       (when *current-bundles* (unmount *current-bundles*))
       (CloseWindow)))
 
@@ -267,16 +281,25 @@
 			       (vector-set! entry 3 img)
 			       (condition-broadcast cond-var))))
 			 (begin
-			   (TraceLog LOG_ERROR (format "Asset ~a Not Found" path))
+			   (TraceLog LOG_ERROR (format "ASSETS: Resource ~a Not Found" path))
 			   (with-mutex *env-mutex*
 			     (let ([entry (hashtable-ref env id #f)])
 			       (vector-set! entry 2 'error)
 			       (condition-broadcast cond-var)))))]
 		    [(font)
-		     (with-mutex *env-mutex*
-		       (let ([entry (hashtable-ref env id #f)])
-			 (vector-set! entry 2 'pending)
-			 (condition-broadcast cond-var)))]))))))
+		     (let-values ([(ext data len) (ref *current-bundles* path)])
+		       (if data 
+			   (with-mutex *env-mutex*
+			     (let ([entry (hashtable-ref env id #f)])
+			       (vector-set! entry 2 'font-data-ready)
+			       (vector-set! entry 3 (list ext data len))
+			       (condition-broadcast cond-var)))
+			   (begin
+			     (TraceLog LOG_ERROR (format "ASSETS: Font File ~a Not Found" path))
+			     (with-mutex *env-mutex*
+			       (let ([entry (hashtable-ref env id #f)])
+				 (vector-set! entry 2 'error)
+				 (condition-broadcast cond-var))))))]))))))
        (cdr exp))))
   (define-primitive 'prefab (lambda (exp env ctx) (hashtable-set! env (cadr exp) (list 'prefab (caddr exp) (cadddr exp)))))
   (define-primitive 'parallel (lambda (exp env ctx) (for-each (lambda (sub) (eval sub env ctx)) (cdr exp))))
