@@ -177,13 +177,23 @@
     (lambda (exp ctx)
       (if (eqv? 'else exp) (lambda (mx my) #t)
           (case (car exp)
+	    [(clicked?)
+             (let* ([w (cadr exp)] [h (caddr exp)]
+                    [info (get-logical-spatial-info ctx w h)]
+                    [hx (car info)] [hy (cadr info)] 
+                    [raw-w (caddr info)] [raw-h (cadddr info)]
+                    [s (list-ref info 6)]
+                    [hw (* raw-w s)] [hh (* raw-h s)])
+               (lambda (mx my)
+                 (and (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+		  (>= mx hx) (<= mx (+ hx hw))
+                  (>= my hy) (<= my (+ hy hh)))))]
             [(hovered?)
              (let* ([w (cadr exp)] [h (caddr exp)]
                     [info (get-logical-spatial-info ctx w h)]
                     [hx (car info)] [hy (cadr info)] 
                     [raw-w (caddr info)] [raw-h (cadddr info)]
                     [s (list-ref info 6)]
-                    ;; 在编译期算死真实的物理判定尺寸
                     [hw (* raw-w s)] [hh (* raw-h s)])
                (lambda (mx my)
                  (and (>= mx hx) (<= mx (+ hx hw))
@@ -257,7 +267,7 @@
 
   (define render
     (lambda (scripts)
-      (InitWindow 1920 1080 "RPL - Engine Perfected")
+      (InitWindow 1280 720 "RPL - Engine Perfected")
       (InitAudioDevice)
       (SetTargetFPS 60)
       (let* ([all-chars (extract-script-codepoints scripts)]

@@ -20,11 +20,13 @@
      (texture config-h "btn-config-chosen")
      (texture exit-h "btn-exit-chosen")
      (font xiaolai "xiaolai")
+     (sound sign "sign")
      )
 
     (prefab hoverd-btn (no ho)
 	    (branch
-	     [(hovered? 480 180) (show ho)]
+	     [(clicked? 480 180) (show no)]
+	     [(hovered? 480 180) (show ho)] ; TBD
 	     [else (show no)]))
 
     (prefab menu-buttons ()
