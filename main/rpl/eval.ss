@@ -7,72 +7,57 @@
           (except (chezscheme) eval)
           (rename (chezscheme) (eval c:eval)))
 
-  ;; --- 1. 基础配置与常量 ---
+  ;; --- 1. 基础配置与全局状态 ---
   (define *WIDTH* 1920.0)
   (define *HEIGHT* 1080.0)
-
-  ; mutex for async loading
   (define *env-mutex* (make-mutex))
+  (define *scene-root* #f)
+  (define *current-parent* #f)
+  (define *current-bundles* #f)
 
-  (define list->c-int-array
-    (lambda (lst)
-      (let* ([len (length lst)]
-	     [bv (make-bytevector (* len 4))])
-	(let loop ([i 0] [remaining lst])
-	  (if (null? remaining)
-	      bv
-	      (begin
-		(bytevector-u32-set! bv (* i 4) (car remaining) (endianness little))
-		(loop (+ i 1) (cdr remaining))))))))
+  ;; VM state saver
+  (define *current-scripts* #f)
+  (define *pc* 0)
+  (define *call-stack* '())
+  (define *jump-signal* #f)
+
+  ;; NEED FIX
+  (define (load-rpl-file path)
+  ;; 使用循环读取文件中所有的 S-表达式，直到文件结束
+    (with-input-from-file path
+      (lambda ()
+	(let loop ([acc '()])
+          (let ([exp (read)])
+            (if (eof-object? exp)
+		(list->vector (reverse acc)) ;; 到达文件末尾，反转列表并转为向量
+		(loop (cons exp acc)))))))) ;; 继续读取下一个表达式
+
+  (define (clear-scene!)
+    ;; 跳转新剧本时清空舞台，防止旧章节残留 
+    (when *scene-root*
+      (scene-node-children-set! *scene-root* '())
+      (set! *current-parent* *scene-root*)))
   
-  (define (extract-script-codepoints script-ast)
-    (let ([char-hash (make-hashtable equal-hash char=?)])
-      (define (traverse node)
-	(cond
-	 [(pair? node)
-          (if (eq? (car node) 'text)
-              (string-for-each (lambda (c) (hashtable-set! char-hash c #t)) (cadr node))
-              (begin (traverse (car node)) (traverse (cdr node))))]
-	 [(vector? node)
-          (vector-for-each traverse node)]))
-      ;; 载入基础 ASCII (32-126)
-      (let loop ([i 32])
-	(when (< i 127)
-          (hashtable-set! char-hash (integer->char i) #t)
-          (loop (+ i 1))))
-      (traverse script-ast)
-      ;; 返回升序排列的 Unicode CodePoint 整数列表
-      (list-sort < (map char->integer (vector->list (hashtable-keys char-hash))))))
+  ;; --- 2. 数据结构定义 (Records) ---
+  (define-record-type scene-node
+    (fields (mutable type)       ; 'root, 'texture, 'text, 'group, 'branch, 'audio
+            (mutable id)         ; 资源 ID
+            (mutable payload)    ; 物理对象 (Texture/Font/Sound)
+            (mutable x) (mutable y)
+            (mutable ax) (mutable ay) ; Anchor (0.0-1.0)
+            (mutable ox) (mutable oy) ; Origin (0.0-1.0)
+            (mutable scale) (mutable rotation)
+            (mutable alpha) (mutable color)
+            (mutable children)   ; 子节点列表
+            (mutable visible?)   ; 是否可见
+            (mutable data)       ; 扩展数据 (Text 内容或 Branch 列表)
+            (mutable status)))   ; 生命周期状态 ('ready, 'expired)
 
-  ;; --- 2. 核心数据结构 (Records) ---
-  (define-record-type branch-command (fields id cases))
-  (define-record-type render-command
-    (fields (mutable type) (mutable id) (mutable x) (mutable y) (mutable w) (mutable h)
-            (mutable ox) (mutable oy) (mutable scale) (mutable rotation) (mutable alpha) (mutable color)))
-  (define-record-type text-command
-    (fields (mutable font) (mutable text) (mutable x) (mutable y)
-	    (mutable w) (mutable h)
-	    (mutable size) (mutable spacing) (mutable color)
-	    (mutable rotation) (mutable alpha) (mutable ox) (mutable oy)
-	    (mutable scale)))
-
-  (define render-context-fields '(x y ox oy ax ay scale rotation alpha color font size spacing))
+  (define render-context-fields '(color font size spacing))
   (define render-context (make-record-type "render-context" render-context-fields))
   (define make-render-context (record-constructor render-context))
   (define render-context-fields-accessor (lambda (rc fs) (map (lambda (f) ((record-field-accessor render-context f) rc)) fs)))
   (define render-context-fields-mutator (lambda (rc fs vs) (for-each (lambda (f v) ((record-field-mutator render-context f) rc v)) fs vs)))
-
-  ;; --- 3. 空间逻辑与辅助函数 ---
-  (define (get-logical-spatial-info ctx w h)
-    (let ([vals (render-context-fields-accessor ctx '(x y scale ax ay ox oy))])
-      (apply (lambda (x y s ax ay ox oy)
-               (let ([abs-x (+ x (* *WIDTH* ax))]
-                     [abs-y (+ y (* *HEIGHT* ay))]
-		     [pixel-ox (* ox w)]
-		     [pixel-oy (* oy h)])
-                 ;; 仅仅传递原图尺寸和当前缩放率 s
-                 (list abs-x abs-y w h pixel-ox pixel-oy s)))
-             vals)))
 
   (define call-with-render-context-mutated
     (lambda (rc mus proc)
@@ -82,54 +67,61 @@
           (proc rc)
           (render-context-fields-mutator rc fs vals)))))
 
+  ;; --- 3. 辅助函数 (Utils) ---
+  (define (make-default-node type id payload data)
+    (make-scene-node type id payload 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 1.0 '(255 255 255 255) '() #t data 'ready))
+
+  (define (get-tint color-list alpha)
+    (make-Color (car color-list) (cadr color-list) (caddr color-list) 
+                (inexact->exact (round (* (cadddr color-list) alpha)))))
+
+  (define (reset-audio-status node)
+    (when (eq? (scene-node-type node) 'audio) (scene-node-status-set! node 'ready))
+    (for-each reset-audio-status (scene-node-children node)))
+
+  (define (list->c-int-array lst)
+    (let* ([len (length lst)] [bv (make-bytevector (* len 4))])
+      (let loop ([i 0] [remaining lst])
+        (if (null? remaining) bv
+            (begin (bytevector-u32-set! bv (* i 4) (car remaining) (endianness little))
+                   (loop (+ i 1) (cdr remaining)))))))
+
+  (define (extract-script-codepoints script-ast)
+    (let ([char-hash (make-hashtable equal-hash char=?)])
+      (define (traverse node)
+        (cond [(pair? node) (if (eq? (car node) 'text)
+                                (string-for-each (lambda (c) (hashtable-set! char-hash c #t)) (cadr node))
+                                (begin (traverse (car node)) (traverse (cdr node))))]
+              [(vector? node) (vector-for-each traverse node)]))
+      (let loop ([i 32]) (when (< i 127) (hashtable-set! char-hash (integer->char i) #t) (loop (+ i 1))))
+      (traverse script-ast)
+      (list-sort < (map char->integer (vector->list (hashtable-keys char-hash))))))
+
+  ;; --- 4. 资源加载函数 ---
   (define load-and-cache!
     (lambda (id env)
       (let loop ()
-	(let ([entry (with-mutex *env-mutex* (hashtable-ref env id #f))])
-	  (if entry
-	      (let ([type (vector-ref entry 0)]
-		    [path (vector-ref entry 1)]
-		    [status (vector-ref entry 2)]
-		    [payload (vector-ref entry 3)]
-		    [cond-var (vector-ref entry 4)])
-		(case status
-		  [(ready) payload]
-		  [(loading)
-		   (with-mutex *env-mutex* (condition-wait cond-var *env-mutex*))
-		   (loop)]
-		  [(image)
-		   (let ([tex (LoadTextureFromImage payload)])
-		     (UnloadImage payload)
-		     (with-mutex *env-mutex*
-		       (vector-set! entry 2 'ready)
-		       (vector-set! entry 3 tex))
-		     tex)]
-		  [(error) #f]
-		  [else #f]))
-		#f)))))
+        (let ([entry (with-mutex *env-mutex* (hashtable-ref env id #f))])
+          (if entry
+              (let ([status (vector-ref entry 2)] [payload (vector-ref entry 3)] [cond-var (vector-ref entry 4)])
+                (case status
+                  [(ready) payload]
+                  [(loading) (with-mutex *env-mutex* (condition-wait cond-var *env-mutex*)) (loop)]
+                  [(image) (let ([tex (LoadTextureFromImage payload)]) (UnloadImage payload)
+				(with-mutex *env-mutex* (vector-set! entry 2 'ready) (vector-set! entry 3 tex)) tex)]
+                  [else #f]))
+              #f)))))
 
   (define (load-sound-and-cache! id env)
     (let loop ()
       (let ([entry (with-mutex *env-mutex* (hashtable-ref env id #f))])
         (if entry
-            (let ([type (vector-ref entry 0)]
-                  [path (vector-ref entry 1)]
-                  [status (vector-ref entry 2)]
-                  [payload (vector-ref entry 3)]
-                  [cond-var (vector-ref entry 4)])
+            (let ([status (vector-ref entry 2)] [payload (vector-ref entry 3)] [cond-var (vector-ref entry 4)])
               (case status
                 [(ready) payload]
-                [(loading)
-                 (with-mutex *env-mutex* (condition-wait cond-var *env-mutex*))
-                 (loop)]
-                [(wav-data-ready)
-		 (let ([snd (LoadSoundFromWave payload)])
-		   (UnloadWave payload)
-                   (with-mutex *env-mutex*
-                     (vector-set! entry 2 'ready)
-                     (vector-set! entry 3 snd))
-                   snd)]
-                [(error) #f]
+                [(loading) (with-mutex *env-mutex* (condition-wait cond-var *env-mutex*)) (loop)]
+                [(wav-data-ready) (let ([snd (LoadSoundFromWave payload)]) (UnloadWave payload)
+                                       (with-mutex *env-mutex* (vector-set! entry 2 'ready) (vector-set! entry 3 snd)) snd)]
                 [else #f]))
             #f))))
 
@@ -137,330 +129,234 @@
     (let loop ()
       (let ([entry (with-mutex *env-mutex* (hashtable-ref env id #f))])
         (if entry
-            (let ([type (vector-ref entry 0)]
-                  [path (vector-ref entry 1)]
-                  [status (vector-ref entry 2)]
-                  [payload (vector-ref entry 3)]
-                  [cond-var (vector-ref entry 4)])
+            (let ([status (vector-ref entry 2)] [payload (vector-ref entry 3)] [cond-var (vector-ref entry 4)])
               (case status
                 [(ready) payload]
-                [(loading)
-                 (with-mutex *env-mutex* (condition-wait cond-var *env-mutex*))
-                 (loop)]
-                [(font-data-ready)
-		 (let* ([ext (car payload)]
-			[data (cadr payload)]
-			[len (caddr payload)]
-			[cp-info (hashtable-ref env '*codepoints* '(#f . 0))]
-			[cp-ptr (car cp-info)]
-			[cp-cnt (cdr cp-info)]
-			[font (LoadFontFromMemory ext data len 128 cp-ptr cp-cnt)])
-                   (with-mutex *env-mutex*
-                     (vector-set! entry 2 'ready)
-                     (vector-set! entry 3 font))
-                   font)]
-                [(error) #f]
+                [(loading) (with-mutex *env-mutex* (condition-wait cond-var *env-mutex*)) (loop)]
+                [(font-data-ready) (let* ([ext (car payload)] [data (cadr payload)] [len (caddr payload)]
+                                          [cp-info (hashtable-ref env '*codepoints* '(#f . 0))]
+                                          [font (LoadFontFromMemory ext data len 128 (car cp-info) (cdr cp-info))])
+                                     (with-mutex *env-mutex* (vector-set! entry 2 'ready) (vector-set! entry 3 font)) font)]
                 [else #f]))
             #f))))
 
-  
+  ;; --- 5. 渲染后端 (Recursive Scene Tree Processor) ---
+  (define (consume-tree node px py ps pa mx my screen-scale screen-ox screen-oy)
+    (when (scene-node-visible? node)
+      (let* ([cur-s (* ps (scene-node-scale node))]
+             [cur-x (+ px (* (scene-node-x node) ps) (* *WIDTH* (scene-node-ax node) ps))]
+             [cur-y (+ py (* (scene-node-y node) ps) (* *HEIGHT* (scene-node-ay node) ps))]
+             [cur-a (* pa (scene-node-alpha node))]
+             [tint (get-tint (scene-node-color node) cur-a)])
+        (case (scene-node-type node)
+          [(texture) (let* ([tex (scene-node-payload node)] [w (Texture-width tex)] [h (Texture-height tex)]
+                            [render-x (+ (* cur-x screen-scale) screen-ox)] [render-y (+ (* cur-y screen-scale) screen-oy)]
+                            [dest (make-rectangle render-x render-y (* w cur-s screen-scale) (* h cur-s screen-scale))]
+                            [src (make-rectangle 0.0 0.0 w h)]
+                            [origin (make-vector2 (* (scene-node-ox node) w cur-s screen-scale) (* (scene-node-oy node) h cur-s screen-scale))])
+                       (DrawTexturePro tex src dest origin (scene-node-rotation node) tint))]
+          [(text) (let ([font (scene-node-payload node)] [str (scene-node-data node)])
+                    (DrawTextEx font str (make-vector2 (+ (* cur-x screen-scale) screen-ox) (+ (* cur-y screen-scale) screen-oy))
+                                (* 24.0 cur-s screen-scale) (* 1.0 screen-scale) tint))]
+          [(audio) (when (eq? (scene-node-status node) 'ready) (PlaySound (scene-node-payload node)) (scene-node-status-set! node 'expired))]
+          [(interact)
+	   (let* ([node-data (scene-node-data node)]
+		  [scope (car node-data)]
+		  [cases (cadr node-data)]
+		  ;; 1. 预计算环境状态
+		  [is-global? (eq? (car scope) 'global)]
+		  [is-hover? (if is-global? #t
+				 (let ([w (* (car scope) cur-s)] [h (* (cadr scope) cur-s)])
+				   (and (>= mx cur-x) (<= mx (+ cur-x w))
+					(>= my cur-y) (<= my (+ cur-y h)))))]
+		  [is-click? (IsMouseButtonPressed MOUSE_BUTTON_LEFT)]
+		  [any-visual-state-hit? #f])
 
-  (define substitute
-    (lambda (tree bindings)
-      (cond [(null? tree) '()]
-            [(symbol? tree) (let ([b (assq tree bindings)]) (if b (cdr b) tree))]
-            [(pair? tree) (cons (substitute (car tree) bindings) (substitute (cdr tree) bindings))]
-            [else tree])))
+	     ;; 2. 并行扫描所有分支 (不再是匹配一个就跳出)
+	     (for-each 
+	      (lambda (ca)
+		(let* ([cond-list (car ca)]
+		       [sub-node (cdr ca)]
+		       ;; 【核心】AND 逻辑：检查列表中所有条件是否全部成立
+		       [all-matched? (let check ([cs cond-list])
+				       (if (null? cs) #t
+					   (let ([c (car cs)])
+					     (and (case c
+						    [(click) is-click?]
+						    [(hover) is-hover?]
+						    [(else)  (not any-visual-state-hit?)]
+						    [else    #f])
+						  (check (cdr cs))))))])
+		  (when all-matched?
+		    ;; 如果条件包含点击，则重置音频状态使其能再次播放
+		    (when (memq 'click cond-list) (reset-audio-status sub-node))
+		    
+		    ;; 渲染该分支的子树 
+		    (consume-tree sub-node cur-x cur-y cur-s cur-a mx my screen-scale screen-ox screen-oy)
+		    
+		    ;; 如果该分支包含视觉状态(hover)，标记已命中，防止后续 else 触发
+		    (when (and (memq 'hover cond-list) (not (memq 'click cond-list)))
+		      (set! any-visual-state-hit? #t)))))
+	      cases))])
+        (unless (eq? (scene-node-type node) 'branch)
+          (for-each (lambda (child) (consume-tree child cur-x cur-y cur-s cur-a mx my screen-scale screen-ox screen-oy)) (reverse (scene-node-children node)))))))
 
-  ;; --- 4. 编译器逻辑 (Eval & Compile) ---
-  (define compile-predicate
-    (lambda (exp ctx)
-      (if (eqv? 'else exp) (lambda (mx my) #t)
-          (case (car exp)
-	    [(clicked?)
-             (let* ([w (cadr exp)] [h (caddr exp)]
-                    [info (get-logical-spatial-info ctx w h)]
-                    [hx (car info)] [hy (cadr info)] 
-                    [raw-w (caddr info)] [raw-h (cadddr info)]
-                    [s (list-ref info 6)]
-                    [hw (* raw-w s)] [hh (* raw-h s)])
-               (lambda (mx my)
-                 (and (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-		  (>= mx hx) (<= mx (+ hx hw))
-                  (>= my hy) (<= my (+ hy hh)))))]
-            [(hovered?)
-             (let* ([w (cadr exp)] [h (caddr exp)]
-                    [info (get-logical-spatial-info ctx w h)]
-                    [hx (car info)] [hy (cadr info)] 
-                    [raw-w (caddr info)] [raw-h (cadddr info)]
-                    [s (list-ref info 6)]
-                    [hw (* raw-w s)] [hh (* raw-h s)])
-               (lambda (mx my)
-                 (and (>= mx hx) (<= mx (+ hx hw))
-                      (>= my hy) (<= my (+ hy hh)))))]
-            [else (lambda (mx my) #t)]))))
-
-  (define *current-bundles* #f)
-  (define *command-list* '())
-  (define *uid* 0)
-  (define gen-uid (lambda () (set! *uid* (+ 1 *uid*)) *uid*))
+  ;; --- 6. 指令分发与环境 (Eval & Setup) ---
   (define *primitives* (make-hashtable symbol-hash symbol=?))
+  (define (define-primitive name proc) (hashtable-set! *primitives* name proc))
 
-  (define eval
-    (lambda (exp env ctx)
-      (let ([handler (hashtable-ref *primitives* (car exp) #f)])
-        (if handler
-            (handler exp env ctx)
-            (let ([prefab-def (hashtable-ref env (car exp) #f)])
-              (if (and prefab-def (eq? (car prefab-def) 'prefab))
-                  (eval (substitute (caddr prefab-def) (map cons (cadr prefab-def) (cdr exp))) env ctx)
-                  (error 'eval "Unknown primitive or prefab" (car exp))))))))
+  (define (substitute tree bindings)
+    (cond [(null? tree) '()] [(symbol? tree) (let ([b (assq tree bindings)]) (if b (cdr b) tree))]
+          [(pair? tree) (cons (substitute (car tree) bindings) (substitute (cdr tree) bindings))]
+          [else tree]))
 
-  (define (get-tint color-list alpha)
-    (make-Color (car color-list) 
-		(cadr color-list) 
-		(caddr color-list)
-		(inexact->exact (round (* (cadddr color-list) alpha)))))
-  ;; --- 5. 渲染后端 (Consume) ---
-  (define consume
-    (lambda (cmds mx my scale ox oy)
-      (for-each
-       (lambda (cmd)
-         (cond
-          [(render-command? cmd)
-           (let* ([tex (render-command-id cmd)]
-                  [final-s (* (render-command-scale cmd) scale)]
-                  [final-x (+ (* (render-command-x cmd) scale) ox)]
-                  [final-y (+ (* (render-command-y cmd) scale) oy)]
-                  ;; 只有渲染到屏幕的 DestRect 会缩小
-                  [final-w (* (render-command-w cmd) final-s)]
-                  [final-h (* (render-command-h cmd) final-s)]
-                  [origin (make-vector2 (* (render-command-ox cmd) final-s) 
-                                        (* (render-command-oy cmd) final-s))]
-                  [dest-rect (make-rectangle final-x final-y final-w final-h)]
-                  ;; SourceRect 永远保持原图大小裁剪！
-                  [source-rect (make-rectangle 0.0 0.0 (render-command-w cmd) (render-command-h cmd))]
-		  [tint (get-tint (render-command-color cmd) (render-command-alpha cmd))])
-             (DrawTexturePro tex source-rect dest-rect origin (render-command-rotation cmd) tint))]
-	  [(text-command? cmd)
-	    (let* ([final-s (* (text-command-scale cmd) scale)] ; 物理缩放
-		   [final-x (+ (* (text-command-x cmd) scale) ox)]
-		   [final-y (+ (* (text-command-y cmd) scale) oy)]
-		   ;; 文字的 Size 和 Spacing 自动受外层 Scale 控制
-		   [final-size (* (text-command-size cmd) final-s)]
-		   [final-space (* (text-command-spacing cmd) final-s)]
-		   [origin (make-vector2 (* (text-command-ox cmd) final-s)
-					 (* (text-command-oy cmd) final-s))]
-		   [pos (make-vector2 final-x final-y)]
-		   [tint (get-tint (text-command-color cmd) (text-command-alpha cmd))])
-	      ;; 【新增】：使用完全对等的 DrawTextPro
-	      (DrawTextPro (text-command-font cmd) (text-command-text cmd) pos origin 
-			   (text-command-rotation cmd) final-size final-space tint))]
-          [(branch-command? cmd)
-           (let loop ([cases (branch-command-cases cmd)])
-             (unless (null? cases)
-               (let* ([ca (car cases)] [pred (car ca)] [sub-cmds (cdr ca)])
-                 (if (pred mx my)
-                     (consume sub-cmds mx my scale ox oy)
-                     (loop (cdr cases))))))]))
-       cmds)))
+  (define (eval exp env ctx)
+    (let ([handler (hashtable-ref *primitives* (car exp) #f)])
+      (if handler (handler exp env ctx)
+          (let ([prefab-def (hashtable-ref env (car exp) #f)])
+            (if (and prefab-def (eq? (car prefab-def) 'prefab))
+                (eval (substitute (caddr prefab-def) (map cons (cadr prefab-def) (cdr exp))) env ctx)
+                (error 'eval "Unknown primitive" (car exp)))))))
 
+  (define (make-group-wrapper proc setter-fn env ctx)
+    (let ([group (make-default-node 'group 'grp #f #f)] [old-parent *current-parent*])
+      (setter-fn group)
+      (scene-node-children-set! old-parent (cons group (scene-node-children old-parent)))
+      (set! *current-parent* group) (proc) (set! *current-parent* old-parent)))
+
+  (define (step! env ctx)
+    (when (and *current-scripts* (< *pc* (vector-length *current-scripts*)))
+      (let ([exp (vector-ref *current-scripts* *pc*)])
+        (set! *pc* (+ *pc* 1))
+        (eval exp env ctx)
+        ;; 跳转信号处理：由 Primitive 发起，在此处统一执行状态切换
+        (cond
+          [*jump-signal* (let ([signal *jump-signal*])
+             (set! *jump-signal* #f)
+             (case (car signal)
+               [(jump) ;; 彻底跳转：加载新文件，重置 PC，清空舞台 
+                (set! *current-scripts* (load-rpl-file (cdr signal)))
+                (set! *pc* 0)
+                (clear-scene!)
+                (step! env ctx)]
+               [(call) ;; 调用子剧本：压栈当前进度，跳转新文件
+                (set! *call-stack* (cons (cons *current-scripts* *pc*) *call-stack*))
+                (set! *current-scripts* (load-rpl-file (cdr signal)))
+                (set! *pc* 0)
+                (step! env ctx)]
+               [(return) ;; 返回上一级：弹栈恢复旧脚本和 PC 
+                (if (null? *call-stack*) (error 'return "Call stack empty")
+                    (let ([top (car *call-stack*)])
+                      (set! *call-stack* (cdr *call-stack*))
+                      (set! *current-scripts* (car top))
+                      (set! *pc* (cdr top))
+                      (step! env ctx)))]))]
+          ;; 只有遇到文本时才停止自动步进，等待玩家点击 [cite: 39]
+          [(not (eq? (car exp) 'text)) (step! env ctx)]))))
+
+  ;; --- 7. 主渲染器 (Render) ---
   (define render
-    (lambda (scripts)
-      (InitWindow 1280 720 "RPL - Engine Perfected")
-      (InitAudioDevice)
-      (SetTargetFPS 60)
-      (let* ([all-chars (extract-script-codepoints scripts)]
-	     [char-count (length all-chars)]
-	     [codepoints-ptr (list->c-int-array all-chars)])
-	(let ([env (make-hashtable symbol-hash symbol=?)]
-              [ctx (make-render-context 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 1.0 '(255 255 255 255) #f 24.0 1.0)])
-	  (hashtable-set! env '*codepoints* (cons codepoints-ptr char-count))
-          (set! *command-list* '())
-          (for-each (lambda (exp) (eval exp env ctx)) scripts)
-          (let loop ()
+    (lambda (entry-path) ;; 之前是 scripts-list 
+      (let* ([env (make-hashtable symbol-hash symbol=?)]
+             [ctx (make-render-context '(255 255 255 255) #f 24.0 1.0)])
+        (InitWindow 1280 720 "RPL VM Engine")
+        (InitAudioDevice)
+        (SetTargetFPS 60)
+        
+        ;; 初始化 VM 寄存器 [cite: 40, 41]
+        (set! *current-scripts* (load-rpl-file entry-path))
+        (set! *pc* 0)
+        (set! *scene-root* (make-default-node 'root 'root #f #f))
+        (set! *current-parent* *scene-root*)
+
+        (step! env ctx)
+
+        (let loop () 
           (unless (WindowShouldClose)
             (let* ([sw (GetScreenWidth)] [sh (GetScreenHeight)]
                    [s (min (/ sw *WIDTH*) (/ sh *HEIGHT*))]
-                   [ox (/ (- sw (* *WIDTH* s)) 2.0)]
-                   [oy (/ (- sh (* *HEIGHT* s)) 2.0)]
-                   [lmx (/ (- (GetMouseX) ox) s)]
-                   [lmy (/ (- (GetMouseY) oy) s)])
+                   [ox (/ (- sw (* *WIDTH* s)) 2.0)] [oy (/ (- sh (* *HEIGHT* s)) 2.0)])
               (BeginDrawing)
               (ClearBackground BLACK)
-              (consume (reverse *command-list*) lmx lmy s ox oy)
+              ;; 玩家点击屏幕推进到下一条指令 [cite: 39, 42]
+              (when (IsMouseButtonPressed MOUSE_BUTTON_LEFT) (step! env ctx))
+              (let ([mx (/ (- (GetMouseX) ox) s)] [my (/ (- (GetMouseY) oy) s)])
+                (consume-tree *scene-root* 0.0 0.0 1.0 1.0 mx my s ox oy))
               (EndDrawing)
-              (loop))))))
-      (CloseAudioDevice)
-      (when *current-bundles* (unmount *current-bundles*))
-      (CloseWindow)))
+              (loop))))
+        (CloseAudioDevice)
+        (CloseWindow))))
 
-  ;; --- 6. 指令注册 (Expressions) ---
-  (define (define-primitive name proc) (hashtable-set! *primitives* name proc))
-
+  ;; --- 8. 指令注册 (Expressions) ---
+  ;; 所有 define-primitive 必须放在所有 define 之后
   (define-primitive 'bundle (lambda (exp env ctx) (set! *current-bundles* (mount (cadr exp)))))
-  (define-primitive
-    'assets
-    (lambda (exp env ctx)
-      (for-each
-       (lambda (def)
-	 (let ([type (car def)]
-	       [id (cadr def)]
-	       [path (caddr def)]
-	       [cond-var (make-condition)])
-	   (with-mutex *env-mutex*
-	     (hashtable-set! env id (vector type path 'loading #f cond-var)))
-	     (fork-thread
-	      (lambda ()
-		(let-values ([(ext data len) (ref *current-bundles* path)])
-		  (TraceLog LOG_INFO (format "ASSETS: Forked Thread to Load Resourse ~a" path))
-		  (case type
-		    [(texture)
-		     (if data
-			 (let ([img (LoadImageFromMemory ext data len)])
-			   (with-mutex *env-mutex*
-			     (let ([entry (hashtable-ref env id #f)])
-			       (vector-set! entry 2 'image)
-			       (vector-set! entry 3 img)
-			       (condition-broadcast cond-var))))
-			 (begin
-			   (TraceLog LOG_ERROR (format "ASSETS: Resource ~a Not Found" path))
-			   (with-mutex *env-mutex*
-			     (let ([entry (hashtable-ref env id #f)])
-			       (vector-set! entry 2 'error)
-			       (condition-broadcast cond-var)))))]
-		    [(font)
-		     (if data 
-			   (with-mutex *env-mutex*
-			     (let ([entry (hashtable-ref env id #f)])
-			       (vector-set! entry 2 'font-data-ready)
-			       (vector-set! entry 3 (list ext data len))
-			       (condition-broadcast cond-var)))
-			   (begin
-			     (TraceLog LOG_ERROR (format "ASSETS: Font File ~a Not Found" path))
-			     (with-mutex *env-mutex*
-			       (let ([entry (hashtable-ref env id #f)])
-				 (vector-set! entry 2 'error)
-				 (condition-broadcast cond-var)))))]
-		    [(sound)
-		     (if data
-			 (let ([wav (LoadWaveFromMemory ext data len)])
-			   (with-mutex *env-mutex*
-			     (let ([entry (hashtable-ref env id #f)])
-			       (vector-set! entry 2 'wav-data-ready)
-			       (vector-set! entry 3 wav)
-			       (condition-broadcast cond-var)))
-			   (begin
-			     (TraceLog LOG_ERROR (format "ASSETS: Sound ~a Not Found" path))
-			     (with-mutex *env-mutex*
-			       (let ([entry (hashtable-ref env id #f)])
-				 (vector-set! entry 2 'error)
-				 (condition-broadcast cond-var))))))
-		     ]
-		    ))))))
-       (cdr exp))))
+  (define-primitive 'assets (lambda (exp env ctx) 
+			      (for-each (lambda (def) 
+					  (let ([type (car def)] [id (cadr def)] [path (caddr def)] [cond-var (make-condition)])
+					    (with-mutex *env-mutex* (hashtable-set! env id (vector type path 'loading #f cond-var)))
+					    (fork-thread (lambda () (let-values ([(ext data len) (ref *current-bundles* path)])
+								      (case type
+									[(texture) (if data (let ([img (LoadImageFromMemory ext data len)])
+											      (with-mutex *env-mutex* (let ([entry (hashtable-ref env id #f)]) (vector-set! entry 2 'image) (vector-set! entry 3 img) (condition-broadcast cond-var))))
+										       (with-mutex *env-mutex* (vector-set! (hashtable-ref env id #f) 2 'error) (condition-broadcast cond-var)))]
+									[(font) (if data (with-mutex *env-mutex* (let ([entry (hashtable-ref env id #f)]) (vector-set! entry 2 'font-data-ready) (vector-set! entry 3 (list ext data len)) (condition-broadcast cond-var)))
+										    (with-mutex *env-mutex* (vector-set! (hashtable-ref env id #f) 2 'error) (condition-broadcast cond-var)))]
+									[(sound) (if data (let ([wav (LoadWaveFromMemory ext data len)])
+											    (with-mutex *env-mutex* (let ([entry (hashtable-ref env id #f)]) (vector-set! entry 2 'wav-data-ready) (vector-set! entry 3 wav) (condition-broadcast cond-var))))
+										     (with-mutex *env-mutex* (vector-set! (hashtable-ref env id #f) 2 'error) (condition-broadcast cond-var)))])))))) (cdr exp))))
+
   (define-primitive 'prefab (lambda (exp env ctx) (hashtable-set! env (cadr exp) (list 'prefab (caddr exp) (cadddr exp)))))
   (define-primitive 'parallel (lambda (exp env ctx) (for-each (lambda (sub) (eval sub env ctx)) (cdr exp))))
-  
-  (define-primitive 'branch 
+  (define-primitive 'at (lambda (exp env ctx) (make-group-wrapper (lambda () (eval (cadddr exp) env ctx)) (lambda (g) (scene-node-x-set! g (cadr exp)) (scene-node-y-set! g (caddr exp))) env ctx)))
+  (define-primitive 'scale (lambda (exp env ctx) (make-group-wrapper (lambda () (eval (caddr exp) env ctx)) (lambda (g) (scene-node-scale-set! g (cadr exp))) env ctx)))
+  (define-primitive 'alpha (lambda (exp env ctx) (make-group-wrapper (lambda () (eval (caddr exp) env ctx)) (lambda (g) (scene-node-alpha-set! g (cadr exp))) env ctx)))
+  (define-primitive 'rotate (lambda (exp env ctx) (make-group-wrapper (lambda () (eval (caddr exp) env ctx)) (lambda (g) (scene-node-rotation-set! g (cadr exp))) env ctx)))
+  (define-primitive 'anchor (lambda (exp env ctx) (make-group-wrapper (lambda () (eval (cadddr exp) env ctx)) (lambda (g) (scene-node-ax-set! g (cadr exp)) (scene-node-ay-set! g (caddr exp))) env ctx)))
+  (define-primitive 'origin (lambda (exp env ctx) (make-group-wrapper (lambda () (eval (cadddr exp) env ctx)) (lambda (g) (scene-node-ox-set! g (cadr exp)) (scene-node-oy-set! g (caddr exp))) env ctx)))
+
+  (define-primitive 'show (lambda (exp env ctx) (let* ([id (cadr exp)] [cached (load-and-cache! id env)])
+						  (when cached (scene-node-children-set! *current-parent* (cons (make-default-node 'texture id cached #f) (scene-node-children *current-parent*)))))))
+
+  (define-primitive 'play (lambda (exp env ctx) (let* ([id (cadr exp)] [snd (load-sound-and-cache! id env)])
+						  (when snd (scene-node-children-set! *current-parent* (cons (make-default-node 'audio id snd #f) (scene-node-children *current-parent*)))))))
+
+  (define-primitive 'text (lambda (exp env ctx) (let* ([str (cadr exp)] [fid ((record-field-accessor render-context 'font) ctx)] [font (and fid (load-font-and-cache! fid env))])
+						  (when font (scene-node-children-set! *current-parent* (cons (make-default-node 'text 'txt font str) (scene-node-children *current-parent*)))))))
+
+  (define-primitive 'interact
     (lambda (exp env ctx)
-      (let ([saved *command-list*])
-        (let ([compiled (map (lambda (b)
-                               (let ([pred-fn (compile-predicate (car b) ctx)])
-                                 (set! *command-list* '())
-                                 (eval (cadr b) env ctx)
-                                 (cons pred-fn (reverse *command-list*))))
-                             (cdr exp))])
-          (set! *command-list* saved)
-          (set! *command-list* (cons (make-branch-command (gen-uid) compiled) *command-list*))))))
+      ;; 兼容 (interact 480 180 ...) 和 (interact (global) ...) 两种写法
+      (let* ([header (if (list? (cadr exp)) (cadr exp) (list (cadr exp) (caddr exp)))]
+             [body (if (list? (cadr exp)) (cddr exp) (cdddr exp))]
+             [interact-node (make-default-node 'interact 'inter-grp #f '())]
+             [processed-cases '()])
+	(for-each 
+	 (lambda (case-exp)
+           (let* ([cond-list (let ([c (car case-exp)]) (if (list? c) c (list c)))]
+                  [sub-group (make-default-node 'group 'case-grp #f #f)])
+             ;; 为该分支创建独立的子树
+             (let ([old-parent *current-parent*])
+               (set! *current-parent* sub-group)
+               (for-each (lambda (e) (eval e env ctx)) (cdr case-exp))
+               (set! *current-parent* old-parent))
+             ;; 存储格式：( (cond1 cond2 ...) . 子树节点 )
+             (set! processed-cases (cons (cons cond-list sub-group) processed-cases))))
+	 body)
+	;; 在 data 槽位存储：(范围定义 . 处理后的分支列表)
+	(scene-node-data-set! interact-node (list header (reverse processed-cases)))
+	(scene-node-children-set! *current-parent* (cons interact-node (scene-node-children *current-parent*))))))
 
+  (define-primitive 'color (lambda (exp env ctx) (call-with-render-context-mutated ctx `((color . ,(lambda (v) (list-head (cdr exp) 4)))) (lambda (c) (eval (car (reverse exp)) env c)))))
+  (define-primitive 'font (lambda (exp env ctx) (call-with-render-context-mutated ctx `((font . ,(lambda (v) (cadr exp)))) (lambda (c) (eval (caddr exp) env c)))))
+  (define-primitive 'size (lambda (exp env ctx) (call-with-render-context-mutated ctx `((size . ,(lambda (v) (cadr exp)))) (lambda (c) (eval (caddr exp) env c)))))
+  (define-primitive 'spacing (lambda (exp env ctx) (call-with-render-context-mutated ctx `((spacing . ,(lambda (v) (cadr exp)))) (lambda (c) (eval (caddr exp) env c)))))
 
-  (define-primitive 'at 
-    (lambda (exp env ctx)
-      (let ([s ((record-field-accessor render-context 'scale) ctx)])
-	(call-with-render-context-mutated
-	 ctx 
-	 `((x . ,(lambda (v) (+ v (* s (cadr exp))))) 
-	   (y . ,(lambda (v) (+ v (* s (caddr exp))))))
-	 (lambda (c) (eval (cadddr exp) env c))))))
-  
-  (define-primitive 'scale (lambda (exp env ctx) (call-with-render-context-mutated ctx `((scale . ,(lambda (v) (* v (cadr exp))))) (lambda (c) (eval (caddr exp) env c)))))
-  (define-primitive 'alpha (lambda (exp env ctx) (call-with-render-context-mutated ctx `((alpha . ,(lambda (v) (* v (cadr exp))))) (lambda (c) (eval (caddr exp) env c)))))
-  (define-primitive 'anchor (lambda (exp env ctx) (call-with-render-context-mutated ctx `((ax . ,(lambda (v) (cadr exp))) (ay . ,(lambda (v) (caddr exp)))) (lambda (c) (eval (cadddr exp) env c)))))
-  (define-primitive 'origin (lambda (exp env ctx) (call-with-render-context-mutated ctx `((ox . ,(lambda (v) (cadr exp))) (oy . ,(lambda (v) (caddr exp)))) (lambda (c) (eval (cadddr exp) env c)))))
-  (define-primitive 'rotate (lambda (exp env ctx) (call-with-render-context-mutated ctx `((rotation . ,(lambda (v) (+ v (cadr exp))))) (lambda (c) (eval (caddr exp) env c)))))
-
-  (define-primitive 'show
-    (lambda (exp env ctx)
-      (let* ([sym (cadr exp)] [cached (load-and-cache! sym env)])
-        (when cached
-          (let* ([info (get-logical-spatial-info ctx (Texture-width cached) (Texture-height cached))]
-                 [rot ((record-field-accessor render-context 'rotation) ctx)]
-                 [alpha ((record-field-accessor render-context 'alpha) ctx)]
-		 [col ((record-field-accessor render-context 'color) ctx)])
-            (set! *command-list*
-                  (cons (apply (lambda (ax ay aw ah aox aoy as)
-                                 (make-render-command 'TEXTURE cached ax ay aw ah aox aoy as rot alpha col))
-                               info)
-                        *command-list*)))))))
-
- (define-primitive 'text
-  (lambda (exp env ctx)
-    (let* ([str (cadr exp)]
-           [fid ((record-field-accessor render-context 'font) ctx)]
-           [fsize ((record-field-accessor render-context 'size) ctx)]
-           [fspace ((record-field-accessor render-context 'spacing) ctx)]
-           [font-asset (and fid (load-font-and-cache! fid env))])
-      (when font-asset
-        ;; 使用 Raylib 测量逻辑宽高等比例
-        (let* ([vec2-size (MeasureTextEx font-asset str fsize fspace)]
-               [raw-w (Vector2-x vec2-size)] ; 假设你的 FFI 有 Vector2-x 访问器
-               [raw-h (Vector2-y vec2-size)]
-               ;; 文字现在完美支持 at, origin, anchor 等一切空间算子！
-               [info (get-logical-spatial-info ctx raw-w raw-h)]
-               [rot ((record-field-accessor render-context 'rotation) ctx)]
-               [alpha ((record-field-accessor render-context 'alpha) ctx)]
-               [col ((record-field-accessor render-context 'color) ctx)])
-          (set! *command-list*
-                (cons (apply (lambda (ax ay aw ah aox aoy as)
-                               (make-text-command font-asset str ax ay raw-w raw-h fsize fspace col rot alpha aox aoy as))
-                             info)
-                      *command-list*)))))))
-
-  (define-primitive 'color 
-    (lambda (exp env ctx)
-      (call-with-render-context-mutated
-       ctx 
-       `((color . ,(lambda (v) (list-head (cdr exp) 4)))) ;; (color 255 0 0 255) -> 存入 '(255 0 0 255)
-       (lambda (c) (eval (car (reverse exp)) env c)))))
-
-  (define-primitive 'font 
-    (lambda (exp env ctx)
-      (call-with-render-context-mutated
-       ctx
-       `((font . ,(lambda (v) (cadr exp))))
-       (lambda (c) (eval (caddr exp) env c)))))
-
-  (define-primitive 'size 
-    (lambda (exp env ctx)
-      (call-with-render-context-mutated
-       ctx
-       `((size . ,(lambda (v) (cadr exp))))
-       (lambda (c) (eval (caddr exp) env c)))))
-
-  (define-primitive 'spacing 
-    (lambda (exp env ctx)
-      (call-with-render-context-mutated
-       ctx
-       `((spacing . ,(lambda (v) (cadr exp))))
-       (lambda (c) (eval (caddr exp) env c)))))
-
- #|  (define-primitive 'play
-    (lambda (exp env ctx)
-      (let* ([id (cadr exp)]
-             [snd (load-sound-and-cache! id env)])
-	(when snd
-          (PlaySound snd))))) |#
-
+  (define-primitive 'jump   (lambda (exp env ctx) (set! *jump-signal* (cons 'jump (cadr exp)))))
+  (define-primitive 'call   (lambda (exp env ctx) (set! *jump-signal* (cons 'call (cadr exp)))))
+  (define-primitive 'return (lambda (exp env ctx) (set! *jump-signal* (cons 'return #f))))
+  (define-primitive 'include (lambda (exp env ctx)
+                               ;; include 是静态引入，直接在当前环境 eval 文件内容 [cite: 34, 35]
+                               (let ([content (with-input-from-file (cadr exp) read)])
+                                 (for-each (lambda (e) (eval e env ctx)) content))))
   
   )
