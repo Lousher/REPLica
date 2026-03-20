@@ -1,4 +1,7 @@
-(bundle "tests/rpl/menu.rpk")
+
+(bundle "pack/common.rpk")
+(bundle "pack/main-menu.rpk")
+
 (assets
  (texture kv "key-visual")
  (texture contract "contract")
@@ -14,7 +17,7 @@
  (texture gallery-h "btn-gallery-chosen")
  (texture config-h "btn-config-chosen")
  (texture exit-h "btn-exit-chosen")
- (font xiaolai "xiaolai")
+ (font normal "xiaolai")
  (sound sign "sign"))
 
 (prefab hoverd-btn (no ho cl)

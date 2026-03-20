@@ -1,6 +1,6 @@
 (library (rpl eval)
   (export eval render)
-  (import (vm bundle)
+  (import (tool bundle)
           (raylib ffi)
           (raylib constant)
           (only (chezscheme csv7) record-field-mutator record-field-accessor)
@@ -13,7 +13,7 @@
   (define *env-mutex* (make-mutex))
   (define *scene-root* #f)
   (define *current-parent* #f)
-  (define *current-bundles* #f)
+  (define *current-bundles* '())
 
   ;; VM state saver
   (define *current-scripts* #f)
@@ -21,7 +21,17 @@
   (define *call-stack* '())
   (define *jump-signal* #f)
 
-  ;; NEED FIX
+  ;; 多个bundle搜索
+  (define (find-resource-in-all-bundles path)
+    ;; 按列表顺序搜寻，因为新挂载的包在列表头(cons)，所以实现了“最新覆盖” 
+    (let loop ([bundles *current-bundles*])
+      (if (null? bundles)
+          (values #f #f #f) ;; 所有包都找遍了，未命中
+          (let-values ([(ext data len) (ref (car bundles) path)]) ;; 调用 bundle.ss 的 ref [cite: 12]
+            (if data
+		(values ext data len) ;; 命中资源，立即返回
+		(loop (cdr bundles)))))))
+
   (define (load-rpl-file path)
   ;; 使用循环读取文件中所有的 S-表达式，直到文件结束
     (with-input-from-file path
@@ -78,24 +88,6 @@
   (define (reset-audio-status node)
     (when (eq? (scene-node-type node) 'audio) (scene-node-status-set! node 'ready))
     (for-each reset-audio-status (scene-node-children node)))
-
-  (define (list->c-int-array lst)
-    (let* ([len (length lst)] [bv (make-bytevector (* len 4))])
-      (let loop ([i 0] [remaining lst])
-        (if (null? remaining) bv
-            (begin (bytevector-u32-set! bv (* i 4) (car remaining) (endianness little))
-                   (loop (+ i 1) (cdr remaining)))))))
-
-  (define (extract-script-codepoints script-ast)
-    (let ([char-hash (make-hashtable equal-hash char=?)])
-      (define (traverse node)
-        (cond [(pair? node) (if (eq? (car node) 'text)
-                                (string-for-each (lambda (c) (hashtable-set! char-hash c #t)) (cadr node))
-                                (begin (traverse (car node)) (traverse (cdr node))))]
-              [(vector? node) (vector-for-each traverse node)]))
-      (let loop ([i 32]) (when (< i 127) (hashtable-set! char-hash (integer->char i) #t) (loop (+ i 1))))
-      (traverse script-ast)
-      (list-sort < (map char->integer (vector->list (hashtable-keys char-hash))))))
 
   ;; --- 4. 资源加载函数 ---
   (define load-and-cache!
@@ -169,9 +161,12 @@
 				 (let ([w (* (car scope) cur-s)] [h (* (cadr scope) cur-s)])
 				   (and (>= mx cur-x) (<= mx (+ cur-x w))
 					(>= my cur-y) (<= my (+ cur-y h)))))]
-		  [is-click? (IsMouseButtonPressed MOUSE_BUTTON_LEFT)]
+		  [is-click?
+		   (let ([w (* (car scope) cur-s)] [h (* (cadr scope) cur-s)])
+		     (and (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+		      (>= mx cur-x) (<= mx (+ cur-x w))
+		      (>= my cur-y) (<= my (+ cur-y h))))]
 		  [any-visual-state-hit? #f])
-
 	     ;; 2. 并行扫描所有分支 (不再是匹配一个就跳出)
 	     (for-each 
 	      (lambda (ca)
@@ -289,21 +284,34 @@
 
   ;; --- 8. 指令注册 (Expressions) ---
   ;; 所有 define-primitive 必须放在所有 define 之后
-  (define-primitive 'bundle (lambda (exp env ctx) (set! *current-bundles* (mount (cadr exp)))))
-  (define-primitive 'assets (lambda (exp env ctx) 
-			      (for-each (lambda (def) 
-					  (let ([type (car def)] [id (cadr def)] [path (caddr def)] [cond-var (make-condition)])
-					    (with-mutex *env-mutex* (hashtable-set! env id (vector type path 'loading #f cond-var)))
-					    (fork-thread (lambda () (let-values ([(ext data len) (ref *current-bundles* path)])
-								      (case type
-									[(texture) (if data (let ([img (LoadImageFromMemory ext data len)])
-											      (with-mutex *env-mutex* (let ([entry (hashtable-ref env id #f)]) (vector-set! entry 2 'image) (vector-set! entry 3 img) (condition-broadcast cond-var))))
-										       (with-mutex *env-mutex* (vector-set! (hashtable-ref env id #f) 2 'error) (condition-broadcast cond-var)))]
-									[(font) (if data (with-mutex *env-mutex* (let ([entry (hashtable-ref env id #f)]) (vector-set! entry 2 'font-data-ready) (vector-set! entry 3 (list ext data len)) (condition-broadcast cond-var)))
-										    (with-mutex *env-mutex* (vector-set! (hashtable-ref env id #f) 2 'error) (condition-broadcast cond-var)))]
-									[(sound) (if data (let ([wav (LoadWaveFromMemory ext data len)])
-											    (with-mutex *env-mutex* (let ([entry (hashtable-ref env id #f)]) (vector-set! entry 2 'wav-data-ready) (vector-set! entry 3 wav) (condition-broadcast cond-var))))
-										     (with-mutex *env-mutex* (vector-set! (hashtable-ref env id #f) 2 'error) (condition-broadcast cond-var)))])))))) (cdr exp))))
+  (define-primitive 'bundle
+    (lambda (exp env ctx)
+      (let ([b (mount (cadr exp))])
+	(with-mutex *env-mutex* (set! *current-bundles* (cons b *current-bundles*))))))
+  
+  (define-primitive 'assets
+    (lambda (exp env ctx) 
+      (for-each (lambda (def) 
+		  (let ([type (car def)] [id (cadr def)] [path (caddr def)] [cond-var (make-condition)])
+		    (with-mutex *env-mutex* (hashtable-set! env id (vector type path 'loading #f cond-var)))
+		    (fork-thread
+		     (lambda ()
+		       (let-values ([(ext data len) (find-resource-in-all-bundles path)])
+			 (case type
+			   [(texture)
+			    (if data
+				(let ([img (LoadImageFromMemory ext data len)])
+				  (with-mutex *env-mutex* (let ([entry (hashtable-ref env id #f)]) (vector-set! entry 2 'image) (vector-set! entry 3 img) (condition-broadcast cond-var))))
+				(with-mutex *env-mutex* (vector-set! (hashtable-ref env id #f) 2 'error) (condition-broadcast cond-var)))]
+			   [(font)
+			    (if data
+				(with-mutex *env-mutex* (let ([entry (hashtable-ref env id #f)]) (vector-set! entry 2 'font-data-ready) (vector-set! entry 3 (list ext data len)) (condition-broadcast cond-var)))
+				(with-mutex *env-mutex* (vector-set! (hashtable-ref env id #f) 2 'error) (condition-broadcast cond-var)))]
+			   [(sound)
+			    (if data
+				(let ([wav (LoadWaveFromMemory ext data len)])
+				  (with-mutex *env-mutex* (let ([entry (hashtable-ref env id #f)]) (vector-set! entry 2 'wav-data-ready) (vector-set! entry 3 wav) (condition-broadcast cond-var))))
+				(with-mutex *env-mutex* (vector-set! (hashtable-ref env id #f) 2 'error) (condition-broadcast cond-var)))])))))) (cdr exp))))
 
   (define-primitive 'prefab (lambda (exp env ctx) (hashtable-set! env (cadr exp) (list 'prefab (caddr exp) (cadddr exp)))))
   (define-primitive 'parallel (lambda (exp env ctx) (for-each (lambda (sub) (eval sub env ctx)) (cdr exp))))
