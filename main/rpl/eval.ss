@@ -183,97 +183,87 @@
             #f))))
 
   ;; --- 5. 渲染后端 (Recursive Scene Tree Processor) ---
-  (define (consume-tree node px py ps pa mx my screen-scale screen-ox screen-oy)
-    (when (scene-node-visible? node)
-      (let* ([cur-s (* ps (scene-node-scale node))]
-             [cur-x (+ px (* (scene-node-x node) ps) (* *WIDTH* (scene-node-ax node) ps))]
-             [cur-y (+ py (* (scene-node-y node) ps) (* *HEIGHT* (scene-node-ay node) ps))]
-             [cur-a (* pa (scene-node-alpha node))]
-             [tint (get-tint (scene-node-color node) cur-a)]
-	     )
-        (case (scene-node-type node)
-          [(texture) (let* ([tex (scene-node-payload node)] [w (Texture-width tex)] [h (Texture-height tex)]
-                            [render-x (+ (* cur-x screen-scale) screen-ox)] [render-y (+ (* cur-y screen-scale) screen-oy)]
-                            [dest (make-rectangle render-x render-y (* w cur-s screen-scale) (* h cur-s screen-scale))]
-                            [src (make-rectangle 0.0 0.0 w h)]
-                            [origin (make-vector2 (* (scene-node-ox node) w cur-s screen-scale) (* (scene-node-oy node) h cur-s screen-scale))])
-                       (DrawTexturePro tex src dest origin (scene-node-rotation node) tint))]
-          [(text) (let ([font (scene-node-payload node)] [str (scene-node-data node)])
-                    (DrawTextEx font str (make-vector2 (+ (* cur-x screen-scale) screen-ox) (+ (* cur-y screen-scale) screen-oy))
-                                (* 24.0 cur-s screen-scale) (* 1.0 screen-scale) tint))]
-          [(audio) (when (eq? (scene-node-status node) 'ready) (PlaySound (scene-node-payload node)) (scene-node-status-set! node 'expired))]
-          [(interact)
-	   (let* ([node-data (scene-node-data node)]
-		  [scope (car node-data)]
-		  [cases (cadr node-data)]
-		  ;; 1. 预计算环境状态
-		  [is-global? (eq? (car scope) 'global)]
-		  [is-hover? (if is-global? #t
-				 (let ([w (* (car scope) cur-s)] [h (* (cadr scope) cur-s)])
-				   (and (>= mx cur-x) (<= mx (+ cur-x w))
-					(>= my cur-y) (<= my (+ cur-y h)))))]
-		  [is-click?
-		   (let ([w (* (car scope) cur-s)] [h (* (cadr scope) cur-s)])
-		     (and (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-		      (>= mx cur-x) (<= mx (+ cur-x w))
-		      (>= my cur-y) (<= my (+ cur-y h))))]
-		  [any-visual-state-hit? #f])
-	     ;; 2. 并行扫描所有分支 (不再是匹配一个就跳出)
-	     (for-each 
-	      (lambda (ca)
-		(let* ([cond-list (car ca)]
-		       [sub-node (cdr ca)]
-		       ;; 【核心】AND 逻辑：检查列表中所有条件是否全部成立
-		       [all-matched? (let check ([cs cond-list])
-				       (if (null? cs) #t
-					   (let ([c (car cs)])
-					     (and (case c
-						    [(click) is-click?]
-						    [(hover) is-hover?]
-						    [(else)  (not any-visual-state-hit?)]
-						    [else    #f])
-						  (check (cdr cs))))))])
-		  (when all-matched?
-		    ;; 如果条件包含点击，则重置音频状态使其能再次播放
-		    (when (memq 'click cond-list) (reset-audio-status sub-node))
-		    
-		    ;; 渲染该分支的子树 
-		    (consume-tree sub-node cur-x cur-y cur-s cur-a mx my screen-scale screen-ox screen-oy)
-		    
-		    ;; 如果该分支包含视觉状态(hover)，标记已命中，防止后续 else 触发
-		    (when (and (memq 'hover cond-list) (not (memq 'click cond-list)))
-		      (set! any-visual-state-hit? #t)))))
-	      cases))]
-	  [(label)
-	   (let* ([font-bundle (scene-node-payload node)]
-		  [atlas-tex (car font-bundle)]
-		  [glyph-map (cdr font-bundle)]
-		  [str (scene-node-data node)]
-		  [base-size 128.0]
-		  [targeg-size 24.0]
-		  [s (* (/ targeg-size base-size) cur-s screen-scale)])
-	     (BeginShaderMode *sdf-shader*)
-	     (let loop ([chars (string->list str)] [cx 0.0])
-	       (unless (null? chars)
-		 (let* ([cp (char->integer (car chars))]
-			[info (hashtable-ref glyph-map cp #f)])
-		   (when info
-		     (let ([src (vector-ref info 0)]
-			   [ox (vector-ref info 1)]
-			   [oy (vector-ref info 2)]
-			   [adv (vector-ref info 3)])
-		       (let ([dest (make-rectangle
-				    (+ (* cur-x screen-scale) screen-ox (* (+ cx ox) s))
-				    (+ (* cur-y screen-scale) screen-oy (* oy s))
-				    (* (Rectangle-width src) s)
-				    (* (Rectangle-height src) s))])
-			 (DrawTexturePro atlas-tex src dest (make-vector2 0 0)
-					 (scene-node-rotation node) tint)
-			 (loop (cdr chars) (+ cx adv))))))))
-	     (EndShaderMode)
-	     )])
-        (unless (eq? (scene-node-type node) 'branch)
-          (for-each (lambda (child) (consume-tree child cur-x cur-y cur-s cur-a mx my screen-scale screen-ox screen-oy)) (reverse (scene-node-children node)))))))
+  ;; 【新增 pr 参数】
+(define (consume-tree node px py ps pr pa mx my screen-scale screen-ox screen-oy)
+  (when (scene-node-visible? node)
+    (let* ([cur-s (* ps (scene-node-scale node))]
+           ;; 【核心修复 1】累加旋转：当前总旋转 = 父级旋转 + 节点自身旋转
+           [cur-r (+ pr (scene-node-rotation node))] 
+           [cur-x (+ px (* (scene-node-x node) ps) (* *WIDTH* (scene-node-ax node) ps))]
+           [cur-y (+ py (* (scene-node-y node) ps) (* *HEIGHT* (scene-node-ay node) ps))]
+           [cur-a (* pa (scene-node-alpha node))]
+           [tint (get-tint (scene-node-color node) cur-a)])
+      
+      (case (scene-node-type node)
+        [(texture) 
+         (let* ([tex (scene-node-payload node)] [w (Texture-width tex)] [h (Texture-height tex)]
+                [render-x (+ (* cur-x screen-scale) screen-ox)] [render-y (+ (* cur-y screen-scale) screen-oy)]
+                [dest (make-rectangle render-x render-y (* w cur-s screen-scale) (* h cur-s screen-scale))]
+                [src (make-rectangle 0.0 0.0 w h)]
+                [origin (make-vector2 (* (scene-node-ox node) w cur-s screen-scale) 
+                                      (* (scene-node-oy node) h cur-s screen-scale))])
+           ;; 【核心修复 2】图片应用累加后的总旋转 cur-r [cite: 53]
+           (DrawTexturePro tex src dest origin cur-r tint))]
+        
+        [(text) (let ([font (scene-node-payload node)] [str (scene-node-data node)])
+                  (DrawTextEx font str (make-vector2 (+ (* cur-x screen-scale) screen-ox) (+ (* cur-y screen-scale) screen-oy))
+                               (* 24.0 cur-s screen-scale) (* 1.0 screen-scale) tint))]
+        
+        [(audio) (when (eq? (scene-node-status node) 'ready) (PlaySound (scene-node-payload node)) (scene-node-status-set! node 'expired))]
+        
+        [(interact)
+         (let* ([node-data (scene-node-data node)] [scope (car node-data)] [cases (cadr node-data)]
+                [is-global? (eq? (car scope) 'global)]
+                [is-hover? (if is-global? #t
+                               (let ([w (* (car scope) cur-s)] [h (* (cadr scope) cur-s)])
+                                 (and (>= mx cur-x) (<= mx (+ cur-x w)) (>= my cur-y) (<= my (+ cur-y h)))))]
+                [is-click? (let ([w (* (car scope) cur-s)] [h (* (cadr scope) cur-s)])
+                             (and (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+                                  (>= mx cur-x) (<= mx (+ cur-x w)) (>= my cur-y) (<= my (+ cur-y h))))]
+                [any-visual-state-hit? #f])
+           (for-each 
+            (lambda (ca)
+              (let* ([cond-list (car ca)] [sub-node (cdr ca)]
+                     [all-matched? (let check ([cs cond-list])
+                                     (if (null? cs) #t
+                                         (and (case (car cs)
+                                                [(click) is-click?] [(hover) is-hover?]
+                                                [(else)  (not any-visual-state-hit?)] [else #f])
+                                              (check (cdr cs)))))])
+                (when all-matched?
+                  (when (memq 'click cond-list) (reset-audio-status sub-node))
+                  ;; 【核心修复 3】分支内部渲染也需要传递 cur-r [cite: 59]
+                  (consume-tree sub-node cur-x cur-y cur-s cur-r cur-a mx my screen-scale screen-ox screen-oy)
+                  (when (and (memq 'hover cond-list) (not (memq 'click cond-list))) (set! any-visual-state-hit? #t)))))
+            cases))]
+            
+        [(label)
+         (let* ([font-bundle (scene-node-payload node)]
+                [atlas-tex (car font-bundle)] [glyph-map (cdr font-bundle)]
+                [str (scene-node-data node)]
+                [s (* (/ 24.0 128.0) cur-s screen-scale)])
+           (BeginShaderMode *sdf-shader*)
+           (let loop ([chars (string->list str)] [cx 0.0])
+             (unless (null? chars)
+               (let* ([cp (char->integer (car chars))] [info (hashtable-ref glyph-map cp #f)])
+                 (when info
+                   (let ([src (vector-ref info 0)] [ox (vector-ref info 1)] 
+                         [oy (vector-ref info 2)] [adv (vector-ref info 3)])
+                     (let ([dest (make-rectangle
+                                  (+ (* cur-x screen-scale) screen-ox (* (+ cx ox) s))
+                                  (+ (* cur-y screen-scale) screen-oy (* oy s))
+                                  (* (Rectangle-width src) s) (* (Rectangle-height src) s))])
+                       ;; 【核心修复 4】每个字应用累加后的总旋转 cur-r [cite: 62]
+                       (DrawTexturePro atlas-tex src dest (make-vector2 0 0) cur-r tint)
+                       (loop (cdr chars) (+ cx adv))))))))
+           (EndShaderMode))]
+           )
+      
+      ;; 【核心修复 5】向下传递 cur-r 给所有子节点
+      (unless (eq? (scene-node-type node) 'branch)
+        (for-each (lambda (child) 
+                    (consume-tree child cur-x cur-y cur-s cur-r cur-a mx my screen-scale screen-ox screen-oy)) 
+                  (reverse (scene-node-children node)))))))
 
   ;; --- 6. 指令分发与环境 (Eval & Setup) ---
   (define *primitives* (make-hashtable symbol-hash symbol=?))
@@ -356,7 +346,7 @@
               ;; 玩家点击屏幕推进到下一条指令 [cite: 39, 42]
               (when (IsMouseButtonPressed MOUSE_BUTTON_LEFT) (step! env ctx))
               (let ([mx (/ (- (GetMouseX) ox) s)] [my (/ (- (GetMouseY) oy) s)])
-                (consume-tree *scene-root* 0.0 0.0 1.0 1.0 mx my s ox oy))
+                (consume-tree *scene-root* 0.0 0.0 1.0 0.0 1.0 mx my s ox oy))
               (EndDrawing)
               (loop))))
         (CloseAudioDevice)
@@ -447,8 +437,17 @@
   (define-primitive 'anchor (lambda (exp env ctx) (make-group-wrapper (lambda () (eval (cadddr exp) env ctx)) (lambda (g) (scene-node-ax-set! g (cadr exp)) (scene-node-ay-set! g (caddr exp))) env ctx)))
   (define-primitive 'origin (lambda (exp env ctx) (make-group-wrapper (lambda () (eval (cadddr exp) env ctx)) (lambda (g) (scene-node-ox-set! g (cadr exp)) (scene-node-oy-set! g (caddr exp))) env ctx)))
 
-  (define-primitive 'show (lambda (exp env ctx) (let* ([id (cadr exp)] [cached (load-and-cache! id env)])
-						  (when cached (scene-node-children-set! *current-parent* (cons (make-default-node 'texture id cached #f) (scene-node-children *current-parent*)))))))
+  (define-primitive 'show 
+  (lambda (exp env ctx) 
+    (let* ([id (cadr exp)] 
+           [cached (load-and-cache! id env)]
+           ;; 【修复】从 ctx 获取当前 color 状态
+           [cur-color ((record-field-accessor render-context 'color) ctx)])
+      (when cached 
+        (let ([node (make-default-node 'texture id cached #f)])
+          ;; 【修复】将颜色注入节点，让它响应 color combinator
+          (scene-node-color-set! node cur-color)
+          (scene-node-children-set! *current-parent* (cons node (scene-node-children *current-parent*))))))))
 
   (define-primitive 'play (lambda (exp env ctx) (let* ([id (cadr exp)] [snd (load-sound-and-cache! id env)])
 						  (when snd (scene-node-children-set! *current-parent* (cons (make-default-node 'audio id snd #f) (scene-node-children *current-parent*)))))))
@@ -503,14 +502,18 @@
         `((typeface . ,(lambda (v) id))) ;; 暂存当前使用的 ID 到 context [cite: 9-10]
         (lambda (c) (eval sub-exp env c))))))
 
+  ;; 修改 eval.ss 约 106 行
   (define-primitive 'label
-  (lambda (exp env ctx)
-    (let* ([str (cadr exp)]
-           [tid ((record-field-accessor render-context 'typeface) ctx)])
-      (let ([bundle (and tid (load-typeface-and-cache! tid env))])
-	(when bundle
-          ;; 这里的 payload 暂时传 ID，渲染时从 env 取 ready 的结果 [cite: 6-7, 87]
-          (scene-node-children-set! *current-parent*
-				    (cons (make-default-node 'label tid bundle str) 
-					  (scene-node-children *current-parent*))))))))
+    (lambda (exp env ctx)
+      (let* ([str (cadr exp)]
+             [tid ((record-field-accessor render-context 'typeface) ctx)]
+             ;; 【核心修复】从渲染上下文中提取当前的 color 设定 [cite: 28-29]
+             [cur-color ((record-field-accessor render-context 'color) ctx)])
+	(let ([bundle (and tid (load-typeface-and-cache! tid env))])
+          (when bundle
+            (let ([node (make-default-node 'label tid bundle str)])
+              ;; 将 Combinator 修改后的颜色存入节点，否则渲染时永远是白色 [cite: 101]
+              (scene-node-color-set! node cur-color)
+              (scene-node-children-set! *current-parent*
+					(cons node (scene-node-children *current-parent*)))))))))
 )

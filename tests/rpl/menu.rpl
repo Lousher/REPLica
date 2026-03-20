@@ -39,10 +39,12 @@
 	(parallel
 	 (show kv)
 	 (show contract)))
-
-(scale 10.0
+(rotate 45
+(scale 10
+(color 0 255 0 100
 (typeface main-font
- (label "这！只是个测试")))
+ (label "这只是个测试")))))
+ 
  (at 710 250
      (scale 0.5
 	    (menu-buttons))))
