@@ -1,6 +1,6 @@
 (library-directories "main/")
 
-(import (vm bundle))
+(import (tool bundle))
 
 (pack "pack/main-menu.rpk"
     '(("key-visual" "../assets/bg/apartment.morning.jpg")
@@ -20,4 +20,5 @@
       ("sign" "../assets/sound/sign.mp3")))
 
 (pack "pack/common.rpk"
-      '(("xiaolai" "../assets/font/Xiaolai-Regular.ttf")))
+      '(("xiaolai.atlas" "pack/xiaolai.atlas.gray.png")
+	("xiaolai.bin" "pack/xiaolai.bin")))

@@ -14,6 +14,7 @@
   (define *scene-root* #f)
   (define *current-parent* #f)
   (define *current-bundles* '())
+  (define *sdf-shader*)
 
   ;; VM state saver
   (define *current-scripts* #f)
@@ -63,7 +64,7 @@
             (mutable data)       ; 扩展数据 (Text 内容或 Branch 列表)
             (mutable status)))   ; 生命周期状态 ('ready, 'expired)
 
-  (define render-context-fields '(color font size spacing))
+  (define render-context-fields '(color font size spacing typeface))
   (define render-context (make-record-type "render-context" render-context-fields))
   (define make-render-context (record-constructor render-context))
   (define render-context-fields-accessor (lambda (rc fs) (map (lambda (f) ((record-field-accessor render-context f) rc)) fs)))
@@ -132,6 +133,55 @@
                 [else #f]))
             #f))))
 
+  (define (parse-bin-metadata bv len)
+    (let ([map (make-hashtable (lambda (x) x) =)]
+          [count (bytevector-s32-ref bv 0 (endianness little))]) ;; 读取头部的总字数
+      (let loop ([i 0] [offset 4]) ;; 从第 4 字节开始读取每个字形的数据
+        (if (< i count)
+            (let ([cp  (bytevector-s32-ref bv offset (endianness little))]
+                  [rx  (bytevector-ieee-single-ref bv (+ offset 4) (endianness little))]
+                  [ry  (bytevector-ieee-single-ref bv (+ offset 8) (endianness little))]
+                  [rw  (bytevector-ieee-single-ref bv (+ offset 12) (endianness little))]
+                  [rh  (bytevector-ieee-single-ref bv (+ offset 16) (endianness little))]
+                  [ox  (bytevector-s32-ref bv (+ offset 20) (endianness little))]
+                  [oy  (bytevector-s32-ref bv (+ offset 24) (endianness little))]
+                  [adv (bytevector-s32-ref bv (+ offset 28) (endianness little))])
+              (hashtable-set! map cp 
+                (vector (make-rectangle rx ry rw rh) ox oy adv))
+              (loop (+ i 1) (+ offset 32)))
+            map))))
+  
+  (define (load-typeface-and-cache! id env)
+    (let loop ()
+      (let ([entry (with-mutex *env-mutex* (hashtable-ref env id #f))])
+        (if entry
+            (let ([status (vector-ref entry 2)] 
+                  [payload (vector-ref entry 3)] 
+                  [cond-var (vector-ref entry 4)])
+              (case status
+                [(ready) payload]
+                [(loading) (with-mutex *env-mutex* (condition-wait cond-var *env-mutex*)) (loop)]
+                [(typeface-data-ready)
+                 ;; 【核心修复】主线程加锁抢占，确保 UnloadImage 只执行一次 [cite: 25-26]
+                 (let ([can-proceed? (with-mutex *env-mutex*
+                                       (if (eq? (vector-ref entry 2) 'typeface-data-ready)
+                                           (begin (vector-set! entry 2 'converting) #t)
+                                           #f))])
+                   (if can-proceed?
+                       (let* ([img (car payload)] [glyph-map (cdr payload)]
+                              [tex (LoadTextureFromImage img)])
+                         (SetTextureFilter tex 1)
+                         (UnloadImage img) ;; 安全释放大图内存 [cite: 27]
+                         (with-mutex *env-mutex*
+                           (vector-set! entry 2 'ready)
+                           (vector-set! entry 3 (cons tex glyph-map))
+                           (condition-broadcast cond-var))
+                         (cons tex glyph-map))
+                       (loop)))]
+                [(converting) (with-mutex *env-mutex* (condition-wait cond-var *env-mutex*)) (loop)]
+                [else #f]))
+            #f))))
+
   ;; --- 5. 渲染后端 (Recursive Scene Tree Processor) ---
   (define (consume-tree node px py ps pa mx my screen-scale screen-ox screen-oy)
     (when (scene-node-visible? node)
@@ -139,7 +189,8 @@
              [cur-x (+ px (* (scene-node-x node) ps) (* *WIDTH* (scene-node-ax node) ps))]
              [cur-y (+ py (* (scene-node-y node) ps) (* *HEIGHT* (scene-node-ay node) ps))]
              [cur-a (* pa (scene-node-alpha node))]
-             [tint (get-tint (scene-node-color node) cur-a)])
+             [tint (get-tint (scene-node-color node) cur-a)]
+	     )
         (case (scene-node-type node)
           [(texture) (let* ([tex (scene-node-payload node)] [w (Texture-width tex)] [h (Texture-height tex)]
                             [render-x (+ (* cur-x screen-scale) screen-ox)] [render-y (+ (* cur-y screen-scale) screen-oy)]
@@ -192,7 +243,35 @@
 		    ;; 如果该分支包含视觉状态(hover)，标记已命中，防止后续 else 触发
 		    (when (and (memq 'hover cond-list) (not (memq 'click cond-list)))
 		      (set! any-visual-state-hit? #t)))))
-	      cases))])
+	      cases))]
+	  [(label)
+	   (let* ([font-bundle (scene-node-payload node)]
+		  [atlas-tex (car font-bundle)]
+		  [glyph-map (cdr font-bundle)]
+		  [str (scene-node-data node)]
+		  [base-size 128.0]
+		  [targeg-size 24.0]
+		  [s (* (/ targeg-size base-size) cur-s screen-scale)])
+	     (BeginShaderMode *sdf-shader*)
+	     (let loop ([chars (string->list str)] [cx 0.0])
+	       (unless (null? chars)
+		 (let* ([cp (char->integer (car chars))]
+			[info (hashtable-ref glyph-map cp #f)])
+		   (when info
+		     (let ([src (vector-ref info 0)]
+			   [ox (vector-ref info 1)]
+			   [oy (vector-ref info 2)]
+			   [adv (vector-ref info 3)])
+		       (let ([dest (make-rectangle
+				    (+ (* cur-x screen-scale) screen-ox (* (+ cx ox) s))
+				    (+ (* cur-y screen-scale) screen-oy (* oy s))
+				    (* (Rectangle-width src) s)
+				    (* (Rectangle-height src) s))])
+			 (DrawTexturePro atlas-tex src dest (make-vector2 0 0)
+					 (scene-node-rotation node) tint)
+			 (loop (cdr chars) (+ cx adv))))))))
+	     (EndShaderMode)
+	     )])
         (unless (eq? (scene-node-type node) 'branch)
           (for-each (lambda (child) (consume-tree child cur-x cur-y cur-s cur-a mx my screen-scale screen-ox screen-oy)) (reverse (scene-node-children node)))))))
 
@@ -253,7 +332,7 @@
   (define render
     (lambda (entry-path) ;; 之前是 scripts-list 
       (let* ([env (make-hashtable symbol-hash symbol=?)]
-             [ctx (make-render-context '(255 255 255 255) #f 24.0 1.0)])
+             [ctx (make-render-context '(255 255 255 255) #f 24.0 1.0 #f)])
         (InitWindow 1280 720 "RPL VM Engine")
         (InitAudioDevice)
         (SetTargetFPS 60)
@@ -263,6 +342,7 @@
         (set! *pc* 0)
         (set! *scene-root* (make-default-node 'root 'root #f #f))
         (set! *current-parent* *scene-root*)
+	(set! *sdf-shader* (LoadShader #f "main/sdf.fs"))
 
         (step! env ctx)
 
@@ -291,27 +371,72 @@
   
   (define-primitive 'assets
     (lambda (exp env ctx) 
-      (for-each (lambda (def) 
-		  (let ([type (car def)] [id (cadr def)] [path (caddr def)] [cond-var (make-condition)])
-		    (with-mutex *env-mutex* (hashtable-set! env id (vector type path 'loading #f cond-var)))
-		    (fork-thread
-		     (lambda ()
-		       (let-values ([(ext data len) (find-resource-in-all-bundles path)])
-			 (case type
-			   [(texture)
-			    (if data
-				(let ([img (LoadImageFromMemory ext data len)])
-				  (with-mutex *env-mutex* (let ([entry (hashtable-ref env id #f)]) (vector-set! entry 2 'image) (vector-set! entry 3 img) (condition-broadcast cond-var))))
-				(with-mutex *env-mutex* (vector-set! (hashtable-ref env id #f) 2 'error) (condition-broadcast cond-var)))]
-			   [(font)
-			    (if data
-				(with-mutex *env-mutex* (let ([entry (hashtable-ref env id #f)]) (vector-set! entry 2 'font-data-ready) (vector-set! entry 3 (list ext data len)) (condition-broadcast cond-var)))
-				(with-mutex *env-mutex* (vector-set! (hashtable-ref env id #f) 2 'error) (condition-broadcast cond-var)))]
-			   [(sound)
-			    (if data
-				(let ([wav (LoadWaveFromMemory ext data len)])
-				  (with-mutex *env-mutex* (let ([entry (hashtable-ref env id #f)]) (vector-set! entry 2 'wav-data-ready) (vector-set! entry 3 wav) (condition-broadcast cond-var))))
-				(with-mutex *env-mutex* (vector-set! (hashtable-ref env id #f) 2 'error) (condition-broadcast cond-var)))])))))) (cdr exp))))
+      (for-each
+       (lambda (def) 
+         (let ([type (car def)] 
+               [id (cadr def)] 
+               [paths (cddr def)] ;; 识别 (type id . paths)
+	       )
+	   (unless (with-mutex *env-mutex* (hashtable-contains? env id))
+	     (let ([cond-var (make-condition)])
+           ;; 统一初始化状态为 loading，并将 paths 列表存入 payload 
+               (with-mutex *env-mutex* (hashtable-set! env id (vector type paths 'loading #f cond-var)))
+               (fork-thread
+		(lambda ()
+		  (case type
+                    ;; --- 新增 Typeface 处理逻辑 ---
+                    [(typeface)
+                     (let ([png-path (car paths)]
+			   [bin-path (cadr paths)])
+                       (let-values ([(p-ext p-data p-len) (find-resource-in-all-bundles png-path)]
+                                    [(b-ext b-data b-len) (find-resource-in-all-bundles bin-path)])
+			 (if (and p-data b-data)
+                             (let* ([img (LoadImageFromMemory p-ext p-data p-len)]
+;                                    [_ (ImageFormat img 1)] ;; SDF 灰度优化 /no way because of ffi definition
+                                    [glyph-map (parse-bin-metadata b-data b-len)])
+                               (with-mutex *env-mutex*
+				 (let ([entry (hashtable-ref env id #f)])
+				   (vector-set! entry 2 'typeface-data-ready)
+				   (vector-set! entry 3 (cons img glyph-map)) ;; 存入对子 [cite: 14]
+				   (condition-broadcast cond-var))))
+                             (with-mutex *env-mutex*
+                               (vector-set! (hashtable-ref env id #f) 2 'error)
+                               (condition-broadcast cond-var)))))]
+                    ;; --- 标准单路径资源处理 ---
+                    [(texture)
+                     (let ([path (car paths)])
+                       (let-values ([(ext data len) (find-resource-in-all-bundles path)])
+			 (if data
+                             (let ([img (LoadImageFromMemory ext data len)])
+                               (with-mutex *env-mutex* (let ([entry (hashtable-ref env id #f)]) 
+							 (vector-set! entry 2 'image) 
+							 (vector-set! entry 3 img) 
+							 (condition-broadcast cond-var))))
+                             (with-mutex *env-mutex* (vector-set! (hashtable-ref env id #f) 2 'error) 
+					 (condition-broadcast cond-var)))))]
+                    
+                    [(font)
+                     (let ([path (car paths)])
+                       (let-values ([(ext data len) (find-resource-in-all-bundles path)])
+			 (if data
+                             (with-mutex *env-mutex* (let ([entry (hashtable-ref env id #f)]) 
+						       (vector-set! entry 2 'font-data-ready) 
+						       (vector-set! entry 3 (list ext data len)) 
+						       (condition-broadcast cond-var)))
+                             (with-mutex *env-mutex* (vector-set! (hashtable-ref env id #f) 2 'error) 
+					 (condition-broadcast cond-var)))))]
+                    [(sound)
+                     (let ([path (car paths)])
+                       (let-values ([(ext data len) (find-resource-in-all-bundles path)])
+			 (if data
+                             (let ([wav (LoadWaveFromMemory ext data len)])
+                               (with-mutex *env-mutex* (let ([entry (hashtable-ref env id #f)]) 
+							 (vector-set! entry 2 'wav-data-ready) 
+							 (vector-set! entry 3 wav) 
+							 (condition-broadcast cond-var))))
+                             (with-mutex *env-mutex* (vector-set! (hashtable-ref env id #f) 2 'error) 
+					 (condition-broadcast cond-var)))))])))))))
+	   (cdr exp))))
 
   (define-primitive 'prefab (lambda (exp env ctx) (hashtable-set! env (cadr exp) (list 'prefab (caddr exp) (cadddr exp)))))
   (define-primitive 'parallel (lambda (exp env ctx) (for-each (lambda (sub) (eval sub env ctx)) (cdr exp))))
@@ -366,5 +491,26 @@
                                ;; include 是静态引入，直接在当前环境 eval 文件内容 [cite: 34, 35]
                                (let ([content (with-input-from-file (cadr exp) read)])
                                  (for-each (lambda (e) (eval e env ctx)) content))))
-  
-  )
+
+  ; typeface for SDF font
+  (define-primitive 'typeface
+  (lambda (exp env ctx)
+    (let ([id (cadr exp)]
+          [sub-exp (caddr exp)])
+      ;; 在执行子指令前，先确保 GPU 纹理已就绪（主线程安全执行）
+      (load-typeface-and-cache! id env) 
+      (call-with-render-context-mutated ctx 
+        `((typeface . ,(lambda (v) id))) ;; 暂存当前使用的 ID 到 context [cite: 9-10]
+        (lambda (c) (eval sub-exp env c))))))
+
+  (define-primitive 'label
+  (lambda (exp env ctx)
+    (let* ([str (cadr exp)]
+           [tid ((record-field-accessor render-context 'typeface) ctx)])
+      (let ([bundle (and tid (load-typeface-and-cache! tid env))])
+	(when bundle
+          ;; 这里的 payload 暂时传 ID，渲染时从 env 取 ready 的结果 [cite: 6-7, 87]
+          (scene-node-children-set! *current-parent*
+				    (cons (make-default-node 'label tid bundle str) 
+					  (scene-node-children *current-parent*))))))))
+)

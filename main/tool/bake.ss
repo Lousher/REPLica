@@ -49,7 +49,7 @@
                 ;; 准备二级指针盒子 [cite: 33, 55]
                 (let ([recs-box (make-ftype-pointer *Rectangle (foreign-alloc (ftype-sizeof *Rectangle)))]) 
                   (let ([atlas-img (GenImageFontAtlas glyphs-ptr recs-box cp-count size padding 1)])
-                    ;; 获取真正的 Rectangle 数组指针 [cite: 33]
+		    ;; 获取真正的 Rectangle 数组指针 [cite: 33]
                     (let ([recs-ptr (ftype-ref *Rectangle () recs-box)])
                       ;; 导出图片 [cite: 56]
                       (ExportImage atlas-img output-png)

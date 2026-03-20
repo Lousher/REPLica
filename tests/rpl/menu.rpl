@@ -1,4 +1,3 @@
-
 (bundle "pack/common.rpk")
 (bundle "pack/main-menu.rpk")
 
@@ -17,7 +16,7 @@
  (texture gallery-h "btn-gallery-chosen")
  (texture config-h "btn-config-chosen")
  (texture exit-h "btn-exit-chosen")
- (font normal "xiaolai")
+ (typeface main-font "xiaolai.atlas" "xiaolai.bin")
  (sound sign "sign"))
 
 (prefab hoverd-btn (no ho cl)
@@ -40,6 +39,10 @@
 	(parallel
 	 (show kv)
 	 (show contract)))
+
+(scale 10.0
+(typeface main-font
+ (label "这！只是个测试")))
  (at 710 250
      (scale 0.5
 	    (menu-buttons))))
