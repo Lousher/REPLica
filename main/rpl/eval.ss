@@ -64,7 +64,7 @@
             (mutable data)       ; 扩展数据 (Text 内容或 Branch 列表)
             (mutable status)))   ; 生命周期状态 ('ready, 'expired)
 
-  (define render-context-fields '(color font size spacing typeface))
+  (define render-context-fields '(color size spacing typeface))
   (define render-context (make-record-type "render-context" render-context-fields))
   (define make-render-context (record-constructor render-context))
   (define render-context-fields-accessor (lambda (rc fs) (map (lambda (f) ((record-field-accessor render-context f) rc)) fs)))
@@ -118,21 +118,7 @@
                 [else #f]))
             #f))))
 
-  (define (load-font-and-cache! id env)
-    (let loop ()
-      (let ([entry (with-mutex *env-mutex* (hashtable-ref env id #f))])
-        (if entry
-            (let ([status (vector-ref entry 2)] [payload (vector-ref entry 3)] [cond-var (vector-ref entry 4)])
-              (case status
-                [(ready) payload]
-                [(loading) (with-mutex *env-mutex* (condition-wait cond-var *env-mutex*)) (loop)]
-                [(font-data-ready) (let* ([ext (car payload)] [data (cadr payload)] [len (caddr payload)]
-                                          [cp-info (hashtable-ref env '*codepoints* '(#f . 0))]
-                                          [font (LoadFontFromMemory ext data len 128 (car cp-info) (cdr cp-info))])
-                                     (with-mutex *env-mutex* (vector-set! entry 2 'ready) (vector-set! entry 3 font)) font)]
-                [else #f]))
-            #f))))
-
+  
   (define (parse-bin-metadata bv len)
     (let ([map (make-hashtable (lambda (x) x) =)]
           [count (bytevector-s32-ref bv 0 (endianness little))]) ;; 读取头部的总字数
@@ -204,13 +190,7 @@
                                       (* (scene-node-oy node) h cur-s screen-scale))])
            ;; 【核心修复 2】图片应用累加后的总旋转 cur-r [cite: 53]
            (DrawTexturePro tex src dest origin cur-r tint))]
-        
-        [(text) (let ([font (scene-node-payload node)] [str (scene-node-data node)])
-                  (DrawTextEx font str (make-vector2 (+ (* cur-x screen-scale) screen-ox) (+ (* cur-y screen-scale) screen-oy))
-                               (* 24.0 cur-s screen-scale) (* 1.0 screen-scale) tint))]
-        
         [(audio) (when (eq? (scene-node-status node) 'ready) (PlaySound (scene-node-payload node)) (scene-node-status-set! node 'expired))]
-        
         [(interact)
          (let* ([node-data (scene-node-data node)] [scope (car node-data)] [cases (cadr node-data)]
                 [is-global? (eq? (car scope) 'global)]
@@ -236,7 +216,6 @@
                   (consume-tree sub-node cur-x cur-y cur-s cur-r cur-a mx my screen-scale screen-ox screen-oy)
                   (when (and (memq 'hover cond-list) (not (memq 'click cond-list))) (set! any-visual-state-hit? #t)))))
             cases))]
-            
         [(label)
          (let* ([font-bundle (scene-node-payload node)]
                 [atlas-tex (car font-bundle)] [glyph-map (cdr font-bundle)]
@@ -316,13 +295,13 @@
                       (set! *pc* (cdr top))
                       (step! env ctx)))]))]
           ;; 只有遇到文本时才停止自动步进，等待玩家点击 [cite: 39]
-          [(not (eq? (car exp) 'text)) (step! env ctx)]))))
+          [(not (eq? (car exp) 'label)) (step! env ctx)]))))
 
   ;; --- 7. 主渲染器 (Render) ---
   (define render
     (lambda (entry-path) ;; 之前是 scripts-list 
       (let* ([env (make-hashtable symbol-hash symbol=?)]
-             [ctx (make-render-context '(255 255 255 255) #f 24.0 1.0 #f)])
+             [ctx (make-render-context '(255 255 255 255) 24.0 1.0 #f)])
         (InitWindow 1280 720 "RPL VM Engine")
         (InitAudioDevice)
         (SetTargetFPS 60)
@@ -404,17 +383,6 @@
 							 (condition-broadcast cond-var))))
                              (with-mutex *env-mutex* (vector-set! (hashtable-ref env id #f) 2 'error) 
 					 (condition-broadcast cond-var)))))]
-                    
-                    [(font)
-                     (let ([path (car paths)])
-                       (let-values ([(ext data len) (find-resource-in-all-bundles path)])
-			 (if data
-                             (with-mutex *env-mutex* (let ([entry (hashtable-ref env id #f)]) 
-						       (vector-set! entry 2 'font-data-ready) 
-						       (vector-set! entry 3 (list ext data len)) 
-						       (condition-broadcast cond-var)))
-                             (with-mutex *env-mutex* (vector-set! (hashtable-ref env id #f) 2 'error) 
-					 (condition-broadcast cond-var)))))]
                     [(sound)
                      (let ([path (car paths)])
                        (let-values ([(ext data len) (find-resource-in-all-bundles path)])
@@ -452,8 +420,6 @@
   (define-primitive 'play (lambda (exp env ctx) (let* ([id (cadr exp)] [snd (load-sound-and-cache! id env)])
 						  (when snd (scene-node-children-set! *current-parent* (cons (make-default-node 'audio id snd #f) (scene-node-children *current-parent*)))))))
 
-  (define-primitive 'text (lambda (exp env ctx) (let* ([str (cadr exp)] [fid ((record-field-accessor render-context 'font) ctx)] [font (and fid (load-font-and-cache! fid env))])
-						  (when font (scene-node-children-set! *current-parent* (cons (make-default-node 'text 'txt font str) (scene-node-children *current-parent*)))))))
 
   (define-primitive 'interact
     (lambda (exp env ctx)
@@ -479,7 +445,7 @@
 	(scene-node-children-set! *current-parent* (cons interact-node (scene-node-children *current-parent*))))))
 
   (define-primitive 'color (lambda (exp env ctx) (call-with-render-context-mutated ctx `((color . ,(lambda (v) (list-head (cdr exp) 4)))) (lambda (c) (eval (car (reverse exp)) env c)))))
-  (define-primitive 'font (lambda (exp env ctx) (call-with-render-context-mutated ctx `((font . ,(lambda (v) (cadr exp)))) (lambda (c) (eval (caddr exp) env c)))))
+  
   (define-primitive 'size (lambda (exp env ctx) (call-with-render-context-mutated ctx `((size . ,(lambda (v) (cadr exp)))) (lambda (c) (eval (caddr exp) env c)))))
   (define-primitive 'spacing (lambda (exp env ctx) (call-with-render-context-mutated ctx `((spacing . ,(lambda (v) (cadr exp)))) (lambda (c) (eval (caddr exp) env c)))))
 
