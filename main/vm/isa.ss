@@ -6,6 +6,8 @@
   ;; 格式: [ B: 9 bits | C: 9 bits | A: 8 bits | OP: 6 bits ]
   (define make-instruction-ABC
     (lambda (op A B C)
+      (unless (and (<= 0 A 255) (<= 0 B 511) (<= 0 C 511))
+	(error 'make-instruction "Operand out of bounds" A B C))
       (bitwise-ior op
 		   (bitwise-arithmetic-shift-left A 6)
 		   (bitwise-arithmetic-shift-left C 14)
