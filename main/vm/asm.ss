@@ -11,9 +11,10 @@
 
   (define-map OP-MAP
     (MOVE LOADK SHOW WAIT JMP
-	  ADD SUB MUL DIV
-	  EQ LT LE TEXT
-	  AND OR NOT CONCAT RAND))
+		    ADD SUB MUL DIV
+		    EQ LT LE TEXT
+		    AND OR NOT CONCAT RAND
+		    SETZ))
 
   (define assemble
     (lambda (scripts)
@@ -69,8 +70,9 @@
 				       (- (hashtable-ref labels target #f) (+ pc 1))
 				       target)])
 			     (make-instruction-AsBx JMP 0 offset))]
-			  [(TEXT) (make-instruction-ABx TEXT (car args) 0)]
+			  [(TEXT) (make-instruction-ABC TEXT (car args) (cadr args) 0)]
 			  [(WAIT) (make-instruction-ABC WAIT 0 0 0)]
+			  [(SETZ) (make-instruction-ABC SETZ (car args) 0 0)]
 			  [(RAND) (make-instruction-ABC RAND (car args) (cadr args) 0)]
 			  [else (error 'asm "Unknow opcode" op-sym)])])
 		  (bytevector-u32-native-set! bv (* pc 4) inst-val)

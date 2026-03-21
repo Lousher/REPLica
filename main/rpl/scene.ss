@@ -1,5 +1,23 @@
 (library (rpl scene)
-  (export)
+  (export
+   scene-node? make-scene-node
+   scene-node-id scene-node-type scene-node-z-index scene-node-payload
+   scene-node-data scene-node-data-set!
+   scene-node-x scene-node-x-set!
+   scene-node-y scene-node-y-set!
+   scene-node-scale-x scene-node-scale-x-set!
+   scene-node-scale-y scene-node-scale-y-set!
+   scene-node-rotation scene-node-rotation-set!
+   scene-node-alpha scene-node-alpha-set!
+   scene-node-color scene-node-color-set!
+   scene-node-visible? scene-node-visible?-set!
+   scene-node-parent scene-node-parent-set!
+   scene-node-children scene-node-children-set!
+   
+   make-node-root make-node node-add-child!
+   node-remove-child! find-node tree-sort-children!
+   clear-tree!
+	  )
   (import (chezscheme))
 
   (define-record-type scene-node
@@ -13,7 +31,7 @@
      (mutable color)
      (mutable visible?)
      (mutable parent)
-     (mutable childern)
+     (mutable children)
      ))
 
   (define make-node-root

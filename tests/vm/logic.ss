@@ -29,7 +29,7 @@
 
 					;(run (make my-bytecode constants))
 
-(define-values (code constants)
+#|(define-values (code constants)
   (asm
     (LOADK 0 "bg.png")       ;; 不用再管索引了！汇编器会自动去重并映射
     (LOADK 1 1920)
@@ -39,7 +39,24 @@
     (LOADK 3 "Alice")
     (TEXT 3)
     (JMP "draw")
-    (WAIT)))
+(WAIT))) |#
+(define-values (code constants)
+  (asm
+  (LOADK 0 "NpcA_Bubble")
+  (LOADK 1 "我是NPC A，我正在滑入屏幕！")
+  (LOADK 2 "NpcB_Bubble")
+  (LOADK 3 "我是NPC B，我也在滑入！")
+  
+  ;; 同时更新两人的文本
+  (TEXT 0 1) 
+  (TEXT 2 3) 
+  
+  ;; 发出滑动动画指令 (假设你有对应的指令系统)
+  ;; (MOVE_ANIM 0 ...)
+  ;; (MOVE_ANIM 2 ...)
+
+  ;; 直到所有表现指令全部下发完毕，才执行 WAIT 把控制权交回给玩家
+  (WAIT)))
 (display constants)
 (newline)
 (run (make code constants))
