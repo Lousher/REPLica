@@ -34,9 +34,12 @@
     (LOADK 0 "bg.png")       ;; 不用再管索引了！汇编器会自动去重并映射
     (LOADK 1 1920)
     (LOADK 2 1080)
+    (LABEL "draw")
     (SHOW 0 1 2)
     (LOADK 3 "Alice")
     (TEXT 3)
+    (JMP "draw")
     (WAIT)))
 (display constants)
+(newline)
 (run (make code constants))
