@@ -1,5 +1,5 @@
 (library (raylib ffi)
-  (export DrawTextPro ffi-collect ffi-guardian make-Rectangle make-Vector2 make-Color Rectangle-x Rectangle-y Rectangle-width Rectangle-height Rectangle-x-set! Rectangle-y-set! Rectangle-width-set! Rectangle-height-set! Vector2-x Vector2-y Vector2-x-set! Vector2-y-set! make-Camera2D init-Camera2D Camera2D-offset-set! Camera2D-target-set! Camera2D-rotation-set! Camera2D-zoom-set! reset-Camera2D camera-2d->Camera2D GetMonitorWidth GetMonitorHeight GetScreenWidth GetScreenHeight SetConfigFlags InitWindow SetTargetFPS WindowShouldClose CloseWindow GetTime GetFrameTime Fade BeginDrawing EndDrawing DrawTexture DrawTexturePro DrawTextureV DrawTextureRec UnloadTexture UnloadRenderTexture ClearBackground LoadRenderTexture BeginTextureMode EndTextureMode DrawRectangle DrawRectangleRec DrawRectangleV DrawRectangleRounded DrawRectangleRoundedLinesEx SetTextureFilter GenTextureMipmaps BeginShaderMode EndShaderMode LoadShader UnloadShader GetShaderLocation SetShaderValue SetShaderValueTexture LoadFileData UnloadFileData IsWindowReady SetWindowSize LoadImage LoadImageFromTexture ImageFlipVertical ImageFlipHorizontal LoadImageFromScreen LoadTextureFromImage LoadTexture UnloadImage ImageResize IsMouseButtonPressed IsMouseButtonDown IsMouseButtonReleased IsMouseButtonUp IsKeyPressed IsKeyPressedRepeat IsKeyDown IsKeyReleased IsKeyUp GetKeyPressed GetCharPressed InitAudioDevice CloseAudioDevice LoadSound UnloadSound PlaySound StopSound PauseSound ResumeSound IsSoundPlaying SetSoundPan SetSoundVolume SetSoundPitch LoadMusicStream UnloadMusicStream PlayMusicStream UpdateMusicStream StopMusicStream SetMusicVolume IsMusicStreamPlaying DrawTextCodepoints DrawText LoadFileText LoadCodepoints LoadFontEx LoadFontFromMemory LoadFont UnloadFileText UnloadCodepoints UnloadFont DrawTextEx TextSubtext GetCodepointCount MeasureTextEx BeginMode2D EndMode2D TraceLog IsTextureValid ExportImage RenderTexture-texture Texture-width Texture-height Camera2D GenImageColor ImageAlphaMask ImageFormat Image Texture IsImageValid Music Rectangle GetWindowScaleDPI GetRenderWidth GetRenderHeight Color DrawRectangleLines GetMouseX GetMouseY CheckCollisionPointRec GetMousePosition GetScreenToWorld2D ClearWindowState SetWindowPosition PauseMusicStream ResumeMusicStream GetMouseWheelMoveV GetMouseWheelMove LoadImageFromMemory LoadWaveFromMemory LoadSoundFromWave UnloadWave LoadMusicStreamFromMemory make-rectangle make-vector2 LoadFontData GenImageFontAtlas *Rectangle UnloadFontData GlyphInfo LoadImageColors UnloadImageColors Image-width Image-height ImageColorGrayscale Image-data)
+  (export DrawTextPro ffi-collect ffi-guardian make-Rectangle make-Vector2 make-Color Rectangle-x Rectangle-y Rectangle-width Rectangle-height Rectangle-x-set! Rectangle-y-set! Rectangle-width-set! Rectangle-height-set! Vector2-x Vector2-y Vector2-x-set! Vector2-y-set! make-Camera2D init-Camera2D Camera2D-offset-set! Camera2D-target-set! Camera2D-rotation-set! Camera2D-zoom-set! reset-Camera2D camera-2d->Camera2D GetMonitorWidth GetMonitorHeight GetScreenWidth GetScreenHeight SetConfigFlags InitWindow SetTargetFPS WindowShouldClose CloseWindow GetTime GetFrameTime Fade BeginDrawing EndDrawing DrawTexture DrawTexturePro DrawTextureV DrawTextureRec UnloadTexture UnloadRenderTexture ClearBackground LoadRenderTexture BeginTextureMode EndTextureMode DrawRectangle DrawRectangleRec DrawRectangleV DrawRectangleRounded DrawRectangleRoundedLinesEx SetTextureFilter GenTextureMipmaps BeginShaderMode EndShaderMode LoadShader UnloadShader GetShaderLocation SetShaderValue SetShaderValueTexture LoadFileData UnloadFileData IsWindowReady SetWindowSize LoadImage LoadImageFromTexture ImageFlipVertical ImageFlipHorizontal LoadImageFromScreen LoadTextureFromImage LoadTexture UnloadImage ImageResize IsMouseButtonPressed IsMouseButtonDown IsMouseButtonReleased IsMouseButtonUp IsKeyPressed IsKeyPressedRepeat IsKeyDown IsKeyReleased IsKeyUp GetKeyPressed GetCharPressed InitAudioDevice CloseAudioDevice LoadSound UnloadSound PlaySound StopSound PauseSound ResumeSound IsSoundPlaying SetSoundPan SetSoundVolume SetSoundPitch LoadMusicStream UnloadMusicStream PlayMusicStream UpdateMusicStream StopMusicStream SetMusicVolume IsMusicStreamPlaying DrawTextCodepoints DrawText LoadFileText LoadCodepoints LoadFontEx LoadFontFromMemory LoadFont UnloadFileText UnloadCodepoints UnloadFont DrawTextEx TextSubtext GetCodepointCount MeasureTextEx BeginMode2D EndMode2D TraceLog IsTextureValid ExportImage RenderTexture-texture Texture-width Texture-height Camera2D GenImageColor ImageAlphaMask ImageFormat Image Texture IsImageValid Music Rectangle GetWindowScaleDPI GetRenderWidth GetRenderHeight Color DrawRectangleLines GetMouseX GetMouseY CheckCollisionPointRec GetMousePosition GetScreenToWorld2D ClearWindowState SetWindowPosition PauseMusicStream ResumeMusicStream GetMouseWheelMoveV GetMouseWheelMove LoadImageFromMemory LoadWaveFromMemory LoadSoundFromWave UnloadWave LoadMusicStreamFromMemory make-rectangle make-vector2 LoadFontData GenImageFontAtlas *Rectangle UnloadFontData GlyphInfo LoadImageColors UnloadImageColors Image-width Image-height ImageColorGrayscale Image-data Color-a-set! Color-r-set! Color-g-set! Color-b-set!)
   (import (chezscheme)
 	  (tool))
 
@@ -80,6 +80,19 @@
       [g unsigned-8]
       [b unsigned-8]
       [a unsigned-8]))
+  (define Color-r-set!
+    (lambda (c updated)
+      (ftype-set! Color (r) c updated)))
+  (define Color-g-set!
+    (lambda (c updated)
+      (ftype-set! Color (g) c updated)))
+  (define Color-b-set!
+    (lambda (c updated)
+      (ftype-set! Color (b) c updated)))
+  (define Color-a-set!
+    (lambda (c updated)
+      (ftype-set! Color (a) c updated)))
+
   (define-ftype-ex Rectangle
     (struct
       [x float]
@@ -108,6 +121,7 @@
     (lambda (rect updated)
       (ftype-set! Rectangle (height) rect updated)))
 
+  
   (define Vector2-x-set!
     (lambda (vec updated)
       (ftype-set! Vector2 (x) vec updated)))

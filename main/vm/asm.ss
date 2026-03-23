@@ -14,7 +14,7 @@
 		    ADD SUB MUL DIV
 		    EQ LT LE TEXT
 		    AND OR NOT CONCAT RAND
-		    SETZ))
+		    SETZ SETS SETR))
 
   (define assemble
     (lambda (scripts)
@@ -72,7 +72,7 @@
 			     (make-instruction-AsBx JMP 0 offset))]
 			  [(TEXT) (make-instruction-ABC TEXT (car args) (cadr args) 0)]
 			  [(WAIT) (make-instruction-ABC WAIT 0 0 0)]
-			  [(SETZ) (make-instruction-ABC SETZ (car args) 0 0)]
+			  [(SETZ SETR SETS) (make-instruction-ABC op-val (car args) 0 0)]
 			  [(RAND) (make-instruction-ABC RAND (car args) (cadr args) 0)]
 			  [else (error 'asm "Unknow opcode" op-sym)])])
 		  (bytevector-u32-native-set! bv (* pc 4) inst-val)

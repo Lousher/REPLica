@@ -1,0 +1,6 @@
+(prefab show-b ()
+	(show "b.png"))
+(show "a.png")
+(scale 0.5
+       (rotate 45
+	       (at 100 200 (show-b))))

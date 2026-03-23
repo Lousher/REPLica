@@ -4,7 +4,7 @@
 	  ADD SUB MUL DIV
 	  EQ LT LE TEXT
 	  AND OR NOT CONCAT RAND
-	  SETZ
+	  SETZ SETS SETR
 	  state-scene-root
 	  state-running?
 	  state-running?-set!
@@ -17,7 +17,7 @@
 		    ADD SUB MUL DIV
 		    EQ LT LE TEXT
 		    AND OR NOT CONCAT RAND
-		    SETZ))
+		    SETZ SETS SETR))
 
   (define-record-type state
     (fields
@@ -27,11 +27,16 @@
      (immutable registers)
      (mutable running?)
      (mutable z-index)
+     (mutable scale)
+     (mutable rotation)
      (mutable scene-root)))
 
   (define make
     (lambda (bytecode constants)
-      (make-state 0 bytecode constants (make-vector 32 #f) #t 0 (make-node-root))))
+      (make-state 0 bytecode constants
+		  (make-vector 32 #f) #t
+		  0 1.0 0
+		  (make-node-root))))
 
   (define-syntax case=
     (syntax-rules (else)
@@ -75,6 +80,12 @@
 		       (if (number? z-val)
 			   (state-z-index-set! vm z-val)
 			   (error 'SETZ "Not a number" z-val))
+		       (loop next-ip))]
+	       [SETS (let ([s-val (vector-ref regs a)])
+		       (state-scale-set! vm s-val)
+		       (loop next-ip))]
+	       [SETR (let ([r-val (vector-ref regs a)])
+		       (state-rotation-set! vm r-val)
 		       (loop next-ip))]
 	       ;; 测试失败，跳过下一条指令（通常是 JMP）
 	       [EQ (let ([val-b (vector-ref regs b)] [val-c (vector-ref regs c)])
@@ -125,6 +136,10 @@
 			(state-z-index-set! vm (+ z 1))
 			(scene-node-x-set! new-node (inexact x))
 			(scene-node-y-set! new-node (inexact y))
+			(let ([s (state-scale vm)])
+			  (scene-node-scale-x-set! new-node s)
+			  (scene-node-scale-y-set! new-node s))
+			(scene-node-rotation-set! new-node (state-rotation vm))
 			(node-add-child! root new-node)
 			(loop next-ip))]
 	       [WAIT  ;; 挂起时必须将 ip 同步回 vm 记录，以便之后恢复 

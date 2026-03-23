@@ -30,22 +30,34 @@
 	(let* ([world-x (+ parent-x (scene-node-x node))]
 	       [world-y (+ parent-y (scene-node-y node))]
 	       [world-alpha (* parent-alpha (scene-node-alpha node))]
-	       [color-lst (scene-node-color node)]
-	       [tint (make-Color (car color-lst) (cadr color-lst) (caddr color-lst)
-				 (inexact->exact (round (* 255 world-alpha))))])
+	       [color (scene-node-color node)])
 	  (case (scene-node-type node)
 	    [(texture)
 	     (let* ([payload-id (scene-node-payload node)]
 		    [tex-path (if (symbol? payload-id) (symbol->string payload-id) payload-id)]
-		    [tex (cache-ref tex-path)])
-	       (DrawTextureV tex (make-vector2 world-x world-y) tint))]
+		    [tex (cache-ref tex-path)]
+		    [tw (Texture-width tex)]
+		    [th (Texture-height tex)]
+		    [src (scene-node-src node)]
+		    [dest (scene-node-dest node)]
+		    [origin (scene-node-origin node)]
+		    [s (scene-node-scale-x node)]
+		    [rot (scene-node-rotation node)])
+	       (when (zero? (Rectangle-width src))
+		 (Rectangle-width-set! src (inexact tw))
+		 (Rectangle-height-set! src (inexact th)))
+	       (Rectangle-x-set! dest (inexact world-x))
+	       (Rectangle-y-set! dest (inexact world-y))
+	       (Rectangle-width-set! dest (* tw s))
+	       (Rectangle-height-set! dest (* th s))
+	       (DrawTexturePro tex src dest origin (inexact rot) color))]
 	    [(label)
 	     (let ([text (scene-node-data node)])
 	       (when (string? text)
 		 (DrawText text
 			   (inexact->exact (round world-x))
 			   (inexact->exact (round world-y))
-			   30 tint)))])
+			   30 color)))])
 	  (for-each
 	   (lambda (child)
 	     (draw child world-x world-y world-alpha))

@@ -13,25 +13,28 @@
    scene-node-visible? scene-node-visible?-set!
    scene-node-parent scene-node-parent-set!
    scene-node-children scene-node-children-set!
-   
+   scene-node-src scene-node-dest scene-node-origin
    make-node-root make-node node-add-child!
    node-remove-child! find-node tree-sort-children!
    clear-tree!
 	  )
-  (import (chezscheme))
+  (import (chezscheme)
+	  (raylib ffi))
 
   (define-record-type scene-node
     (fields
      ; basic 4 fields
      (mutable id) (mutable type) (mutable z-index) (mutable payload)
      ; additional
-     (mutable data) (mutable x) (mutable y) (mutable scale-x) (mutable scale-y)
+     (mutable data)
+     (mutable x) (mutable y) (mutable scale-x) (mutable scale-y)
      (mutable rotation)
      (mutable alpha)
      (mutable color)
      (mutable visible?)
      (mutable parent)
      (mutable children)
+     (mutable src) (mutable dest) (mutable origin)
      ))
 
   (define make-node-root
@@ -43,8 +46,11 @@
       (make-scene-node
        id type z-index payload
        #f 0.0 0.0 1.0 1.0 0.0
-       1.0 '(255 255 255) #t 
-       #f '()))) ; parent childern
+       1.0 (make-Color 255 255 255 255) #t 
+       #f '() ;
+       (make-rectangle 0 0 0 0)
+       (make-rectangle 0 0 0 0)
+       (make-vector2 0 0))))
 
   (define tree-sort-children!
     (lambda (node)
