@@ -121,7 +121,8 @@
 			     [x  (vector-ref regs b)]
 			     [y  (vector-ref regs c)]
 			     [z (state-z-index vm)]
-			     [new-node (make-node (string->symbol id) 'texture z id)])
+			     [new-node (make-node (string->symbol id) 'texture (+ z 1) id)])
+			(state-z-index-set! vm (+ z 1))
 			(scene-node-x-set! new-node (inexact x))
 			(scene-node-y-set! new-node (inexact y))
 			(node-add-child! root new-node)
