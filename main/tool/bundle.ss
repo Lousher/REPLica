@@ -1,8 +1,29 @@
 (library (tool bundle)
-  (export pack mount unmount ref fnv-1a)
+  (export u32-xor-transform! u64-xor-transform! pack mount unmount ref fnv-1a)
   (import (chezscheme))
 
-  (define xor-transform!
+  (define u32-xor-transform!
+    (lambda (data key)
+      (let ([d-len (bytevector-length data)]
+	    [k-len (bytevector-length key)])
+	(let* ([batch-size 4]
+	       [iterations (quotient d-len batch-size)]
+	       [remainder-bytes (remainder d-len batch-size)])
+	  (let loop-bulk ([i 0])
+	    (unless (= i iterations)
+	      (let* ([pos (* i batch-size)]
+		     [d-val (bytevector-u32-ref data pos (endianness little))]
+		     [k-val (bytevector-u32-ref key (remainder pos k-len) (endianness little))])
+	    (bytevector-u32-set! data pos (logxor d-val k-val) (endianness little))
+	    (loop-bulk (+ i 1)))))
+	  (let loop-rem ([j (* iterations batch-size)])
+	  (unless (= j d-len)
+	    (let ([data-val (bytevector-u8-ref data j)]
+		  [key-val (bytevector-u8-ref key (remainder j k-len))])
+	      (bytevector-u8-set! data j (logxor data-val key-val))
+	      (loop-rem (+ j 1)))))))))
+
+  (define u64-xor-transform!
     (lambda (data key)
       (let ([d-len (bytevector-length data)]
 	    [k-len (bytevector-length key)])
@@ -81,7 +102,7 @@
 			     (let* ([id (car asset)]
 				    [ext (path-extension (cadr asset))]
 				    [data (file->bv (cadr asset))]
-				    [__ (xor-transform! data XOR_KEY)]
+				    [__ (u32-xor-transform! data XOR_KEY)]
 				    [_ (put-padding p 16)]
 				    [offset (port-position p)]
 				    [len (bytevector-length data)])
@@ -91,7 +112,7 @@
 	  (let* ([index-pos (port-position p)]
 		 [index-str (format "~s" index-data)]
 		 [index-bv (string->utf8 index-str)])
-	    (xor-transform! index-bv XOR_KEY)
+	    (u32-xor-transform! index-bv XOR_KEY)
 	    (put-bytevector p index-bv)
 	    (set-port-position! p 4)
 	    (let ([off-bv (make-bytevector 8 0)])
@@ -110,7 +131,7 @@
 	       [index-offset (bytevector-u64-ref off-bv 0 (endianness little))]
 	       [_ (set-port-position! p index-offset)]
 	       [index-bv (get-bytevector-all p)]
-	       [__ (xor-transform! index-bv XOR_KEY)]
+	       [__ (u32-xor-transform! index-bv XOR_KEY)]
 	       [index-str (utf8->string index-bv)]
 	       [raw-index (read (open-string-input-port index-str))]
 	       [table (make-hashtable (lambda (x) x) =)])
@@ -132,7 +153,7 @@
 		      [ext (caddr info)])
 		  (set-port-position! p offset)
 		  (let ([data (get-bytevector-n p len)])
-		    (xor-transform! data XOR_KEY)
+		    (u32-xor-transform! data XOR_KEY)
 		    (values (format ".~a" ext) data len)))))
 	    (values #f #f #f)))))
 

@@ -91,15 +91,10 @@
 
   (define-syntax case=
     (syntax-rules (else)
-      [(_ key-val [key body ...] ... [else else-body ...])
-       (let ([tmp key-val])
-         (cond
-          [(= tmp key) body ...] ...
-          [else else-body ...]))]
       [(_ key-val [key body ...] ...)
        (let ([tmp key-val])
          (cond
-          [(= tmp key) body ...] ...
+          [(fx= tmp key) body ...] ...
           [else (error 'case= "No Match For" tmp)]))]))
 
   (define run

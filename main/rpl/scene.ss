@@ -1,7 +1,7 @@
 (library (rpl scene)
   (export
    scene-node? make-scene-node
-   scene-node-id scene-node-type scene-node-z-index scene-node-payload
+   scene-node-id scene-node-type scene-node-z-index scene-node-payload scene-node-payload-set!
    scene-node-data scene-node-data-set!
    scene-node-x scene-node-x-set!
    scene-node-y scene-node-y-set!
