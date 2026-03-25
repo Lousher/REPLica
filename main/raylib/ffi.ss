@@ -18,7 +18,6 @@
       (let loop ()
 	(let ([res (ffi-guardian)])
 	  (when res
-	    (TraceLog 3 (format-green "Free Allocated Pointer ~a" res))
 	    (foreign-free (ftype-pointer-address res))
 	    (loop))))))
   
@@ -51,6 +50,7 @@
 		   (let* ([size (ftype-sizeof name)]
 			  [addr (foreign-alloc size)]
 			  [fptr (make-ftype-pointer name addr)])
+		     (ffi-guardian fptr)
 		     (ftype-set! name (field-name) fptr field-name) ...
 		     fptr)))
 	       #,@(map

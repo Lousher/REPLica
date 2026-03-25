@@ -27,6 +27,9 @@
 	  (let ([vm (make code consts)])
 	    (let loop ()
 	      (unless (WindowShouldClose)
+		(when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+		  (when (not (state-running? vm))
+		    (state-running?-set! vm #t)))
 		(let* ([start-time (GetTime)]
 		       [sw (GetScreenWidth)] [sh (GetScreenHeight)]
 		       [s (min (/ sw 1920.0) (/ sh 1080.0))]
@@ -34,12 +37,12 @@
 		  (run vm)
 		  (BeginDrawing)
 		  (ClearBackground BLACK)
-		  (draw vm (state-scene-root vm) 0.0 0.0 1.0)
+		  (draw vm (state-scene-root vm) 0.0 0.0 1.0 s 0.0)
 		  (EndDrawing)
 		  (ffi-collect)
 		  (let wait-loop ()
 		    (when (< (- (GetTime) start-time) frame-time)
-		      (sleep (make-time 'time-duration 1000000 0)) ; control FPS manually
+;		      (sleep (make-time 'time-duration 1000000 0)) ; control FPS manually
 		      (wait-loop)))
 		  (loop)))))))
       (uninit)))

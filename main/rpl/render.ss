@@ -18,11 +18,13 @@
       (CloseWindow)))
 
   (define draw
-    (lambda (vm node parent-x parent-y parent-alpha)
+    (lambda (vm node parent-x parent-y parent-alpha parent-scale parent-rot)
       (when (scene-node-visible? node)
-	(let* ([world-x (+ parent-x (scene-node-x node))]
-	       [world-y (+ parent-y (scene-node-y node))]
+	(let* ([world-x (+ parent-x (* (scene-node-x node) parent-scale))]
+	       [world-y (+ parent-y (* (scene-node-y node) parent-scale))]
 	       [world-alpha (* parent-alpha (scene-node-alpha node))]
+	       [world-scale (* parent-scale (scene-node-scale-x node))]
+	       [world-rot (+ parent-rot (scene-node-rotation node))]
 	       [color (scene-node-color node)])
 	  (Color-a-set! color (inexact->exact (round (* 255 world-alpha))))
 	  (case (scene-node-type node)
@@ -50,9 +52,7 @@
 				[th (Texture-height tex)]
 				[src (scene-node-src node)]
 				[dest (scene-node-dest node)]
-				[origin (scene-node-origin node)]
-				[s (scene-node-scale-x node)]
-				[rot (scene-node-rotation node)])
+				[origin (scene-node-origin node)])
 			   ;; 按需更新源矩形 (仅初始化一次)
 			   (when (zero? (Rectangle-width src))
 			     (Rectangle-width-set! src (inexact tw))
@@ -60,10 +60,10 @@
 			   ;; 每帧更新目标位置
 			   (Rectangle-x-set! dest (inexact world-x))
 			   (Rectangle-y-set! dest (inexact world-y))
-			   (Rectangle-width-set! dest (* tw s))
-			   (Rectangle-height-set! dest (* th s))
+			   (Rectangle-width-set! dest (* tw world-scale))
+			   (Rectangle-height-set! dest (* th world-scale))
 			   ;; 渲染
-			   (DrawTexturePro tex src dest origin (inexact rot) color))))]
+			   (DrawTexturePro tex src dest origin (inexact world-rot) color))))]
 	    [(label)
 	     (let ([text (scene-node-data node)])
 	       (when (string? text)
@@ -73,7 +73,7 @@
 			   30 color)))])
 	  (for-each
 	   (lambda (child)
-	     (draw vm child world-x world-y world-alpha))
+	     (draw vm child world-x world-y world-alpha world-scale world-rot))
 	   (scene-node-children node))
 	  ))))
   )

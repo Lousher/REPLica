@@ -23,14 +23,15 @@
 	     [const-map (make-hashtable equal-hash equal?)]
 	     [const-list '()]
 	     [filtered-scripts '()]
-	     [inst-count 0])
+	     [inst-count 0] [const-count 0])
 	(define get-or-add-const!
 	  (lambda (val)
 	    (cond
 	     [(hashtable-ref const-map val #f) => (lambda (idx) idx)]
 	     [else
-	      (let ([idx (length const-list)])
-		(set! const-list (append const-list (list val)))
+	      (let ([idx const-count])
+		(set! const-list (cons val const-list))
+		(set! const-count (+ const-count 1))
 		(hashtable-set! const-map val idx)
 		idx)])))
 	; Collect Label and filter persudo cmd
@@ -42,14 +43,15 @@
 	    [else
 	     (when (eq? (car line) 'LOADK)
 	       (get-or-add-const! (caddr line)))
-	     (set! filtered-scripts (append filtered-scripts (list line)))
+	     (set! filtered-scripts (cons line filtered-scripts))
 	     (set! inst-count (+ inst-count 1))]))
 	 scripts)
+	(set! filtered-scripts (reverse filtered-scripts))
 	; Generate Code?
 	(let ([bv (make-bytevector (* inst-count 4))])
 	  (let loop ([lines filtered-scripts] [pc 0])
 	    (if (null? lines)
-		(values bv (list->vector const-list))
+		(values bv (list->vector (reverse const-list)))
 		(let* ([line (car lines)]
 		       [op-sym (car line)]
 		       [op-val (cdr (assq op-sym OP-MAP))]

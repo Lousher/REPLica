@@ -20,6 +20,23 @@
 	  (tool bundle) ; resource pack
 	  (raylib ffi)) ; raylib function
 
+  ;; queue for controling asset thread
+  (define *asset-queue* '())
+  (define *queue-mutex* (make-mutex))
+  (define *queue-cond* (make-condition))
+
+  (define find-resource-in-bundles
+    (lambda (bundles path)
+      (let loop ([bs bundles])
+	(if (null? bs)
+	    (values #f #f #f) ; ext data size
+	    (let-values ([(ext data len) (ref (car bs) path)])
+	      (if data
+		  (values ext data len)
+		  (loop (cdr bs))))))))
+
+  
+
   (define-isa (MOVE LOADK SHOW WAIT JMP
 		    ADD SUB MUL DIV
 		    EQ LT LE TEXT
@@ -45,7 +62,7 @@
   (define make
     (lambda (bytecode constants)
       (make-state 0 bytecode constants
-		  (make-vector 32 #f) #t
+		  (make-vector (expt 2 8) #f) #t
 		  0 1.0 0
 		  (make-node-root)
 		  (make-hashtable symbol-hash symbol=?) ;assets table
@@ -53,27 +70,24 @@
 		  (make-mutex) ;asset-mutex
 		  )))
 
-  (define find-resource-in-bundles
-    (lambda (bundles path)
-      (let loop ([bs bundles])
-	(if (null? bs)
-	    (values #f #f #f) ; ext data size
-	    (let-values ([(ext data len) (ref (car bs) path)])
-	      (if data
-		  (values ext data len)
-		  (loop (cdr bs))))))))
-
-  (define spawn-asset-thread!
-    (lambda (vm type id paths)
-      (let ([assets (state-assets vm)]
-	    [mtx (state-asset-mutex vm)]
-	    [bundles (state-bundles vm)])
-	(unless (with-mutex mtx (hashtable-contains? assets id))
-	  (let ([cond-var (make-condition)])
-	    ; EX: #'(texture '("a.png" "b.png") 'loading #f CONDVAR)
-	    (with-mutex mtx (hashtable-set! assets id (vector type paths 'loading #f cond-var)))
-	    (fork-thread
-	     (lambda ()
+  (define _init
+    (fork-thread
+     (lambda ()
+       (let loop ()
+	 (let ([task (with-mutex *queue-mutex*
+		       (let wait-loop ()
+			 (if (null? *asset-queue*)
+			     (begin
+			       (condition-wait *queue-cond* *queue-mutex*)
+			       (wait-loop))
+			     (let ([t (car *asset-queue*)])
+			       (set! *asset-queue* (cdr *asset-queue*))
+			       t))))])
+	   (let ([vm (car task)] [type (cadr task)] [id (caddr task)] [paths (cadddr task)])
+	     (let ([assets (state-assets vm)]
+		   [mtx (state-asset-mutex vm)]
+		   [bundles (state-bundles vm)])
+	       (TraceLog 3 (format "ASSET: Loading ~a Resource ~a" type id))
 	       (case type
 		 [(texture)
 		  (let-values ([(ext data len) (find-resource-in-bundles bundles (car paths))])
@@ -83,11 +97,23 @@
 			    (let ([entry (hashtable-ref assets id #f)])
 			      (vector-set! entry 2 'image-ready)
 			      (vector-set! entry 3 img)
-			      (condition-broadcast cond-var))))))]
-		 ;; add more cases to support more asset type
-		 )))
-	    ))
-	)))
+			      (condition-broadcast (vector-ref entry 4)))))
+			(TraceLog 5 (format "ASSET: Not a valid texture ~a" (car paths)))))]
+		 ))))
+	 (loop)
+	 ))))
+
+  (define spawn-asset-thread!
+    (lambda (vm type id paths)
+      (let ([assets (state-assets vm)]
+	    [mtx (state-asset-mutex vm)])
+	(unless (with-mutex mtx (hashtable-contains? assets id))
+	  (let ([cond-var (make-condition)])
+	    ; EX: #'(texture '("a.png" "b.png") 'loading #f CONDVAR)
+	    (with-mutex mtx (hashtable-set! assets id (vector type paths 'loading #f cond-var)))
+	    (with-mutex *queue-mutex*
+	      (set! *asset-queue* (cons (list vm type id paths) *asset-queue*))
+	      (condition-signal *queue-cond*)))))))
 
   (define-syntax case=
     (syntax-rules (else)
@@ -150,7 +176,7 @@
 			 (loop (+ next-ip 4)) ;; 不匹配：跳过 JMP
 			 ))]
 	       [TEXT (let* ([id-str (vector-ref regs a)]
-			    [target-id (if (string? id-str) (string->symbol id-str) id-str)]
+			    [target-id id-str]
 			    [str (vector-ref regs b)]
 			    [txt-node (find-node root target-id)])
 		       (if txt-node
@@ -192,8 +218,7 @@
                 (state-ip-set! vm next-ip)
                 (state-running?-set! vm #f)
                 (printf "VM Paused.\n")]
-	       [BUNDLE (let* ([path-id (vector-ref regs a)]
-			      [path (if (symbol? path-id) (symbol->string path-id) path-id)]
+	       [BUNDLE (let* ([path (vector-ref regs a)]
 			      [b (mount path)])
 			 (printf "[VM] Mounted Bundle: ~a\n" path)
 			 (state-bundles-set! vm (cons b (state-bundles vm)))
