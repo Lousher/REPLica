@@ -1,66 +1,77 @@
 (library (rpl render)
-  (export cache-ref cache-ref init uninit draw)
+  (export init uninit draw)
   (import (chezscheme)
 	  (raylib ffi)
 	  (raylib constant)
-	  (rpl scene))
-
-  (define *cache* (make-hashtable string-hash string=?))
-
-  (define cache-ref
-    (lambda (path)
-      (let ([cached (hashtable-ref *cache* path #f)])
-	(if cached cached
-	    (let ([tex (LoadTexture path)])
-	      (hashtable-set! *cache* path tex)
-	      tex)))))
+	  (rpl scene)
+	  (vm main))
 
   (define init
     (lambda ()
+;      (SetConfigFlags FLAG_VSYNC_HINT)
       (InitWindow 1280 720 "REPLica Engine")
-      (SetTargetFPS 60)))
+      ;(SetTargetFPS 60) 影响异步资源加载速度
+      ))
 
   (define uninit
     (lambda ()
       (CloseWindow)))
 
   (define draw
-    (lambda (node parent-x parent-y parent-alpha)
+    (lambda (vm node parent-x parent-y parent-alpha)
       (when (scene-node-visible? node)
 	(let* ([world-x (+ parent-x (scene-node-x node))]
 	       [world-y (+ parent-y (scene-node-y node))]
 	       [world-alpha (* parent-alpha (scene-node-alpha node))]
 	       [color (scene-node-color node)])
+	  (Color-a-set! color (inexact->exact (round (* 255 world-alpha))))
 	  (case (scene-node-type node)
 	    [(texture)
 	     (let* ([payload-id (scene-node-payload node)]
-		    [tex-path (if (symbol? payload-id) (symbol->string payload-id) payload-id)]
-		    [tex (cache-ref tex-path)]
-		    [tw (Texture-width tex)]
-		    [th (Texture-height tex)]
-		    [src (scene-node-src node)]
-		    [dest (scene-node-dest node)]
-		    [origin (scene-node-origin node)]
-		    [s (scene-node-scale-x node)]
-		    [rot (scene-node-rotation node)])
-	       (when (zero? (Rectangle-width src))
-		 (Rectangle-width-set! src (inexact tw))
-		 (Rectangle-height-set! src (inexact th)))
-	       (Rectangle-x-set! dest (inexact world-x))
-	       (Rectangle-y-set! dest (inexact world-y))
-	       (Rectangle-width-set! dest (* tw s))
-	       (Rectangle-height-set! dest (* th s))
-	       (DrawTexturePro tex src dest origin (inexact rot) color))]
-	    [(label)
-	     (let ([text (scene-node-data node)])
-	       (when (string? text)
-		 (DrawText text
-			   (inexact->exact (round world-x))
-			   (inexact->exact (round world-y))
-			   30 color)))])
+		    [assets (state-assets vm)]
+		    [mtx (state-asset-mutex vm)]
+		    [entry (with-mutex mtx (hashtable-ref assets payload-id #f))])
+	       (when entry
+		 (let ([status (vector-ref entry 2)])
+		   (case status
+		     [(image-ready)
+		      (let* ([img (vector-ref entry 3)]
+			     [tex (LoadTextureFromImage img)])
+			(SetTextureFilter tex 1)
+			(UnloadImage img)
+			(with-mutex mtx
+			  (vector-set! entry 2 'texture-ready)
+			  (vector-set! entry 3 tex)))]
+		     [(texture-ready)
+		      (let* ([tex (vector-ref entry 3)]
+                             [tw (Texture-width tex)]
+                             [th (Texture-height tex)]
+                             [src (scene-node-src node)]
+                             [dest (scene-node-dest node)]
+                             [origin (scene-node-origin node)]
+                             [s (scene-node-scale-x node)]
+                             [rot (scene-node-rotation node)])
+                        ;; 按需更新源矩形 (仅初始化一次)
+                        (when (zero? (Rectangle-width src))
+                          (Rectangle-width-set! src (inexact tw))
+                          (Rectangle-height-set! src (inexact th)))
+                        ;; 每帧更新目标位置
+                        (Rectangle-x-set! dest (inexact world-x))
+                        (Rectangle-y-set! dest (inexact world-y))
+                        (Rectangle-width-set! dest (* tw s))
+                        (Rectangle-height-set! dest (* th s))
+                        ;; 渲染
+                        (DrawTexturePro tex src dest origin (inexact rot) color))]))))]
+	     [(label)
+	      (let ([text (scene-node-data node)])
+		(when (string? text)
+		  (DrawText text
+			    (inexact->exact (round world-x))
+			    (inexact->exact (round world-y))
+			    30 color)))])
 	  (for-each
 	   (lambda (child)
-	     (draw child world-x world-y world-alpha))
+	     (draw vm child world-x world-y world-alpha))
 	   (scene-node-children node))
 	  ))))
   )

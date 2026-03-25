@@ -1,6 +1,8 @@
-(prefab show-b ()
-	(show "b.png"))
-(show "a.png")
-(scale 0.5
-       (rotate 45
-	       (at 100 200 (show-b))))
+(bundle "main-menu.rpk")
+(assets
+ (texture kv "key-visual")
+ (texture start "btn-start"))
+
+(scale 0.3 (show kv))
+(at 100 100 (show start))
+

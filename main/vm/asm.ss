@@ -11,10 +11,11 @@
 
   (define-map OP-MAP
     (MOVE LOADK SHOW WAIT JMP
-		    ADD SUB MUL DIV
-		    EQ LT LE TEXT
-		    AND OR NOT CONCAT RAND
-		    SETZ SETS SETR))
+	  ADD SUB MUL DIV
+	  EQ LT LE TEXT
+	  AND OR NOT CONCAT RAND
+	  SETZ SETS SETR
+	  BUNDLE ASSET))
 
   (define assemble
     (lambda (scripts)
@@ -56,7 +57,7 @@
 		       [inst-val
 			(case op-sym
 			  ; ABC
-			  [(ADD SUB MUL DIV EQ LT LE SHOW MOVE AND OR CONCAT)
+			  [(ADD SUB MUL DIV EQ LT LE SHOW MOVE AND OR CONCAT BUNDLE ASSET)
 			   (make-instruction-ABC op-val (car args) (cadr args) (caddr args))]
 			  [(LOADK)
 			   (let* ([reg (car args)]

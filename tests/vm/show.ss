@@ -9,7 +9,13 @@
 	(rpl compile))
 (define dsl
   (compile-dsl
-   '))
+   '((prefab show-b ()
+	     (show "b.png"))
+     (show "a.png")
+     (scale 0.5
+	    (rotate 45
+	    (at 100 200 (show-b))))
+      )))
 (define-values (code consts)
   (assemble dsl)
   )
@@ -18,7 +24,7 @@
     (init)
     (let ([vm (make code consts)])
       (let loop ()
-	(unless (WindowShouldClosen)
+	(unless (WindowShouldClose)
 	  (when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
 	    (when (not (state-running? vm))
 	      (state-running?-set! vm #t)))

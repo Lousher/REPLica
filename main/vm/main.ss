@@ -5,19 +5,27 @@
 	  EQ LT LE TEXT
 	  AND OR NOT CONCAT RAND
 	  SETZ SETS SETR
+	  BUNDLE ASSET
 	  state-scene-root
 	  state-running?
 	  state-running?-set!
+	  state-assets
+	  state-asset-mutex
+	  state-bundles
+	  state-bundles-set!
 	  )
   (import (chezscheme)
 	  (vm isa)
-	  (rpl scene))
+	  (rpl scene)
+	  (tool bundle) ; resource pack
+	  (raylib ffi)) ; raylib function
 
   (define-isa (MOVE LOADK SHOW WAIT JMP
 		    ADD SUB MUL DIV
 		    EQ LT LE TEXT
 		    AND OR NOT CONCAT RAND
-		    SETZ SETS SETR))
+		    SETZ SETS SETR
+		    BUNDLE ASSET))
 
   (define-record-type state
     (fields
@@ -29,14 +37,57 @@
      (mutable z-index)
      (mutable scale)
      (mutable rotation)
-     (mutable scene-root)))
+     (mutable scene-root)
+     (mutable assets)
+     (mutable bundles)
+     (mutable asset-mutex)))
 
   (define make
     (lambda (bytecode constants)
       (make-state 0 bytecode constants
 		  (make-vector 32 #f) #t
 		  0 1.0 0
-		  (make-node-root))))
+		  (make-node-root)
+		  (make-hashtable symbol-hash symbol=?) ;assets table
+		  '() ; bundles
+		  (make-mutex) ;asset-mutex
+		  )))
+
+  (define find-resource-in-bundles
+    (lambda (bundles path)
+      (let loop ([bs bundles])
+	(if (null? bs)
+	    (values #f #f #f) ; ext data size
+	    (let-values ([(ext data len) (ref (car bs) path)])
+	      (if data
+		  (values ext data len)
+		  (loop (cdr bs))))))))
+
+  (define spawn-asset-thread!
+    (lambda (vm type id paths)
+      (let ([assets (state-assets vm)]
+	    [mtx (state-asset-mutex vm)]
+	    [bundles (state-bundles vm)])
+	(unless (with-mutex mtx (hashtable-contains? assets id))
+	  (let ([cond-var (make-condition)])
+	    ; EX: #'(texture '("a.png" "b.png") 'loading #f CONDVAR)
+	    (with-mutex mtx (hashtable-set! assets id (vector type paths 'loading #f cond-var)))
+	    (fork-thread
+	     (lambda ()
+	       (case type
+		 [(texture)
+		  (let-values ([(ext data len) (find-resource-in-bundles bundles (car paths))])
+		    (if data
+			(let ([img (LoadImageFromMemory ext data len)])
+			  (with-mutex mtx
+			    (let ([entry (hashtable-ref assets id #f)])
+			      (vector-set! entry 2 'image-ready)
+			      (vector-set! entry 3 img)
+			      (condition-broadcast cond-var))))))]
+		 ;; add more cases to support more asset type
+		 )))
+	    ))
+	)))
 
   (define-syntax case=
     (syntax-rules (else)
@@ -59,7 +110,7 @@
 	     [len (bytevector-length code)]
 	     [root (state-scene-root vm)]) ; get scene root for updating
 	(let loop ([ip (state-ip vm)])
-          (when (and (state-running? vm) (< ip len))
+          (if (and (state-running? vm) (< ip len))
             (let* ([inst (bytevector-u32-native-ref code ip)]
                    [next-ip (+ ip 4)] [op  (decode-op inst)]
                    [a   (decode-a inst)] [b   (decode-b inst)]
@@ -132,7 +183,7 @@
 			     [x  (vector-ref regs b)]
 			     [y  (vector-ref regs c)]
 			     [z (state-z-index vm)]
-			     [new-node (make-node (string->symbol id) 'texture (+ z 1) id)])
+			     [new-node (make-node id 'texture (+ z 1) id)])
 			(state-z-index-set! vm (+ z 1))
 			(scene-node-x-set! new-node (inexact x))
 			(scene-node-y-set! new-node (inexact y))
@@ -145,7 +196,20 @@
 	       [WAIT  ;; 挂起时必须将 ip 同步回 vm 记录，以便之后恢复 
                 (state-ip-set! vm next-ip)
                 (state-running?-set! vm #f)
-                (printf "VM Paused.\n")])
-              ))))))
+                (printf "VM Paused.\n")]
+	       [BUNDLE (let* ([path-id (vector-ref regs a)]
+			      [path (if (symbol? path-id) (symbol->string path-id) path-id)]
+			      [b (mount path)])
+			 (printf "[VM] Mounted Bundle: ~a\n" path)
+			 (state-bundles-set! vm (cons b (state-bundles vm)))
+			 (loop next-ip))]
+	       [ASSET (let* ([type (vector-ref regs a)]
+			     [id-sym (vector-ref regs b)]
+			     [id (if (string? id-sym) (string->symbol id-sym) id-sym)]
+			     [paths (vector-ref regs c)])
+			(printf "[VM] Assets Loading [~a] ~a\n" type id)
+			(spawn-asset-thread! vm type id paths)
+			(loop next-ip))]))
+	    (state-ip-set! vm ip))))))
   
   )
