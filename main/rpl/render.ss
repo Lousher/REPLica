@@ -12,7 +12,7 @@
   (define init
     (lambda ()
 ;      (SetConfigFlags FLAG_VSYNC_HINT)
-      (InitWindow 1280 720 "REPLica Engine")
+      (InitWindow 1920 1080 "REPLica Engine")
       (InitAudioDevice)
       (set! *sdf-shader* (LoadShader #f "main/sdf.fs"))
       (set! *label-dest* (make-rectangle 0.0 0.0 0.0 0.0))

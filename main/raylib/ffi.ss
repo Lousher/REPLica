@@ -6,9 +6,11 @@
   (define _init
     (case (machine-type)
       [(tarm64osx)
-       (load-shared-object "libraylib.5.5.0.dylib")]
+       (load-shared-object "./libraylib.5.5.0.dylib")]
       [(ta6nt)
-       (load-shared-object "raylib.dll")]))
+       (load-shared-object "./raylib.dll")]
+      [(ta6le)
+       (load-shared-object "./libraylib.so.5.5.0")]))
 
   					; syntax Extension
   (define ffi-guardian (make-guardian))
