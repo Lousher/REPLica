@@ -11,11 +11,14 @@
 
   (define-map OP-MAP
     (MOVE LOADK SHOW WAIT JMP
-	  ADD SUB MUL DIV
-	  EQ LT LE TEXT
-	  AND OR NOT CONCAT RAND
-	  SETZ SETS SETR
-	  BUNDLE ASSET))
+		    ADD SUB MUL DIV
+		    EQ LT LE TEXT
+		    AND OR NOT CONCAT RAND
+		    SETZ SETS SETR SETA SETC SETF SETP
+		    LABEL PLAY
+		    IN_BEG IN_CASE IN_END GRP_END
+		    BUNDLE ASSET)
+    )
 
   (define assemble
     (lambda (scripts)
@@ -38,7 +41,7 @@
 	(for-each
 	 (lambda (line)
 	   (cond
-	    [(eq? (car line) 'LABEL)
+	    [(eq? (car line) 'LBL)
 	     (hashtable-set! labels (cadr line) inst-count)]
 	    [else
 	     (when (eq? (car line) 'LOADK)
@@ -59,8 +62,11 @@
 		       [inst-val
 			(case op-sym
 			  ; ABC
-			  [(ADD SUB MUL DIV EQ LT LE SHOW MOVE AND OR CONCAT BUNDLE ASSET)
+			  [(ADD SUB MUL DIV EQ LT LE SHOW MOVE AND OR CONCAT BUNDLE ASSET
+				LABEL PLAY IN_BEG IN_CASE)
 			   (make-instruction-ABC op-val (car args) (cadr args) (caddr args))]
+			  [(SETP)
+			   (make-instruction-ABC op-val (car args) (cadr args) 0)]
 			  [(LOADK)
 			   (let* ([reg (car args)]
 				  [literal (cadr args)]
@@ -74,8 +80,8 @@
 				       target)])
 			     (make-instruction-AsBx JMP 0 offset))]
 			  [(TEXT) (make-instruction-ABC TEXT (car args) (cadr args) 0)]
-			  [(WAIT) (make-instruction-ABC WAIT 0 0 0)]
-			  [(SETZ SETR SETS) (make-instruction-ABC op-val (car args) 0 0)]
+			  [(WAIT IN_END GRP_END) (make-instruction-ABC op-val 0 0 0)]
+			  [(SETZ SETR SETS SETA SETC SETF) (make-instruction-ABC op-val (car args) 0 0)]
 			  [(RAND) (make-instruction-ABC RAND (car args) (cadr args) 0)]
 			  [else (error 'asm "Unknow opcode" op-sym)])])
 		  (bytevector-u32-native-set! bv (* pc 4) inst-val)

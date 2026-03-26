@@ -221,7 +221,7 @@
 			 (loop (+ next-ip 4)) ;; 不匹配：跳过 JMP
 			 ))]
 	       [LT (let ([val-b (vector-ref regs b)] [val-c (vector-ref regs c)])
-		     (if (eqv? (< val-b val-c) (not (zero? a)))
+p		     (if (eqv? (< val-b val-c) (not (zero? a)))
 			 (loop next-ip)       ;; 匹配：继续执行下一条 JMP
 			 (loop (+ next-ip 4)) ;; 不匹配：跳过 JMP
 			 ))]

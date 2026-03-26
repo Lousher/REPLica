@@ -1,5 +1,5 @@
-(bundle "common.rpk")
-(bundle "main-menu.rpk")
+(bundle "pack/common.rpk")
+(bundle "pack/main-menu.rpk")
 
 (assets
  (texture kv "key-visual")
@@ -39,11 +39,11 @@
 	(parallel
 	 (show kv)
 	 (show contract)))
-(rotate 0
-(scale 5
-(color 0 255 10 100
+(rotate 45
+(scale 10
+(color 0 255 0 100
 (typeface main-font
- (label "因缘动心 以饲达契")))))
+ (label "这只是个测试")))))
  
  (at 710 250
      (scale 0.5

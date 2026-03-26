@@ -33,11 +33,12 @@
 		(let* ([start-time (GetTime)]
 		       [sw (GetScreenWidth)] [sh (GetScreenHeight)]
 		       [s (min (/ sw 1920.0) (/ sh 1080.0))]
-		       [ox (/ (- sw (* 1920.0 s)) 2.0)] [oy (/ (- sh (* 1080.0 s)) 2.0)])
+		       [ox (/ (- sw (* 1920.0 s)) 2.0)] [oy (/ (- sh (* 1080.0 s)) 2.0)]
+		       [mx (/ (- (GetMouseX) ox) s)] [my (/ (- (GetMouseY) oy) s)])
 		  (run vm)
 		  (BeginDrawing)
 		  (ClearBackground BLACK)
-		  (draw vm (state-scene-root vm) 0.0 0.0 1.0 s 0.0)
+		  (draw vm (state-scene-root vm) mx my s ox oy)
 		  (EndDrawing)
 		  (ffi-collect)
 		  (let wait-loop ()
