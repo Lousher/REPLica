@@ -43,8 +43,9 @@
 		  (ffi-collect)
 		  (let wait-loop ()
 		    (when (< (- (GetTime) start-time) frame-time)
-;		      (sleep (make-time 'time-duration 1000000 0)) ; control FPS manually
+					;		      (sleep (make-time 'time-duration 1000000 0)) ; control FPS manually
 		      (wait-loop)))
 		  (loop)))))))
       (uninit)))
   )
+
