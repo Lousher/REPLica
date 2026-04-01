@@ -1,0 +1,39 @@
+(library (entry)
+  (export run)
+  (import (chezscheme)
+          (raylib ffi)
+          (raylib constant)
+          (state)
+          (runtime)
+          (render))
+
+  (define (run)
+    (InitWindow 800 600 "RPL Engine Base")
+    (let ([game (make-game-state)])
+      ;; 硬编码剧本
+      (define (script)
+        (show! game 'bg)
+        (text! game "你好，世界")
+        (wait! game)
+        (clear! game)
+        (text! game "这是第二句话")
+        (wait! game)
+        (clear! game)
+        (text! game "游戏结束")
+        (wait! game))
+
+      (script)  ; 初始化执行，但 wait 后需要点击驱动
+
+      (let loop ()
+        (unless (WindowShouldClose)
+          (when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+            (when (eq? (state-waiting game) 'text)
+              (state-waiting-set! game 'none)
+              (script)))   ; 简化：每次点击重新执行整个 script，实际应改为状态机
+          (BeginDrawing)
+          (ClearBackground BLACK)
+          (draw game)
+          (EndDrawing)
+          (loop))))
+
+    (CloseWindow)))
