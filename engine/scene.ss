@@ -2,19 +2,26 @@
   (export make-scene-node
 	  node?
 	  node-id
+	  node-id-set!
 	  node-type
-	  node-resource
-	  node-data
-          node-x node-y
-	  node-visible?
-	  node-children
-          node-id-set!
 	  node-type-set!
+	  node-resource
 	  node-resource-set!
+	  node-data
 	  node-data-set!
-          node-x-set!
+          node-x node-y
+	  node-x-set!
 	  node-y-set!
+	  node-scale node-scale-set!
+	  node-alpha node-alpha-set!
+	  node-color node-color-set!
+	  node-anchor-x node-anchor-x-set!
+	  node-anchor-y node-anchor-y-set!
+	  node-origin-x node-origin-x-set!
+	  node-origin-y node-origin-y-set!
+	  node-visible?
 	  node-visible?-set!
+	  node-children
           node-children-set!
 	  node-add!
 	  node-remove!
@@ -27,12 +34,25 @@
             (mutable resource)
             (mutable data)       ; 文本字符串
             (mutable x) (mutable y)
+	    (mutable scale)
+	    (mutable rotation)
+	    (mutable alpha)
+	    (mutable color)
+	    (mutable anchor-x)
+	    (mutable anchor-y)
+	    (mutable origin-x)
+	    (mutable origin-y)
             (mutable visible?)
             (mutable children))  ; list of child ids
     (protocol
      (lambda (new)
        (lambda (id type resource data)
-         (new id type resource data 0 0 #t '())))))
+         (new id type resource data
+	      0 0
+	      1 0 1 '(255 255 255 255)
+	      0.5 0.5
+	      0.5 0.5
+	      #t '())))))
 
   (define (make-scene-node id type resource-id data)
     (make-node id type resource-id data))
