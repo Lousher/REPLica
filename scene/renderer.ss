@@ -75,10 +75,11 @@
   (define render-node
     (lambda (node)
       (draw-node node)
-      (for-each render-node (node-children node))))
+      (for-each render-node (reverse (node-children node)))))
 
   (define render
     (lambda (root)
-      (for-each render-node (node-children root))
+      (for-each render-node
+		(reverse (node-children root)))
       ))
   )
