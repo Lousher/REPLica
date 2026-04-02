@@ -63,8 +63,8 @@
 			  [h (Texture-height tex)]
 			  [dest-w (* w scale)]
 			  [dest-h (* h scale)]
-			  [dest-x (- x (* pivot-x dest-w))]
-			  [dest-y (- y (* pivot-y dest-h))]
+			  [dest-x x]
+			  [dest-y y]
 			  [source `(0 0 ,w ,h)]
 			  [dest `(,dest-x ,dest-y ,dest-w ,dest-h)]
 			  [origin `(,(* pivot-x dest-w) ,(* pivot-y dest-h))])

@@ -51,7 +51,7 @@
 	      0					; rotation
               1                   ; alpha
               '(255 255 255 255)  ; color
-              0.0 0.0             ; pivot
+              0 0             ; pivot
               #t                  ; visible?
               '()                 ; children
               #f                  ; tag
