@@ -16,12 +16,9 @@
       (cache "test2.png")
       (let* ([root (make-root-node 1920 1080)]
 	     [game (make-state root)])
-	(story game)
 	(let loop ([time 0.0])
 	  (unless (WindowShouldClose)
-	    (when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
-	      (state-pc-set! game (+ 1 (state-pc game)))
-	      (story game))
+	    (story game)
 	    (BeginDrawing)
 	    (ClearBackground BLACK)
 	    (render root)

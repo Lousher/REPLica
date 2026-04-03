@@ -21,40 +21,48 @@
           node-remove!
           node-find-by-id
           node-find-by-tag
-          make-root-node)
+          make-root-node
+	  *at* *scale* *rotation* *alpha* *color* *pivot*)
   (import (chezscheme))
+
+  (define *at* (make-parameter '(0 . 0)))
+  (define *scale* (make-parameter 1))
+  (define *rotation* (make-parameter 0))
+  (define *alpha* (make-parameter 1))
+  (define *color* (make-parameter '(255 255 255 255)))
+  (define *pivot* (make-parameter '(0 . 0)))
 
   ;; 节点记录定义
   (define-record-type node
-    (fields (mutable id)           ; 唯一标识符（整数）
-            (mutable type)         ; 类型符号: 'root, 'image, 'text, 'button, etc.
-            (mutable resource)     ; 资源标识：纹理名、字体名、文本字符串等
-            (mutable data)         ; 附加数据：如文本内容、字体大小、按钮回调等
-            (mutable x)            ; 局部位置 X
-            (mutable y)            ; 局部位置 Y
-            (mutable scale)        ; 局部缩放（默认 1.0）
-            (mutable rotation)     ; 局部旋转角度（度，默认 0）
-            (mutable alpha)        ; 局部透明度（0-1，默认 1）
-            (mutable color)        ; 局部颜色调乘 (r g b a) 列表，默认 '(255 255 255 255)
+    (fields (mutable id)		; 唯一标识符（整数）
+            (mutable type) ; 类型符号: 'root, 'image, 'text, 'button, etc.
+            (mutable resource) ; 资源标识：纹理名、字体名、文本字符串等
+            (mutable data) ; 附加数据：如文本内容、字体大小、按钮回调等
+            (mutable x)	   ; 局部位置 X
+            (mutable y)	   ; 局部位置 Y
+            (mutable scale)		; 局部缩放（默认 1.0）
+            (mutable rotation)		; 局部旋转角度（度，默认 0）
+            (mutable alpha)		; 局部透明度（0-1，默认 1）
+            (mutable color) ; 局部颜色调乘 (r g b a) 列表，默认 '(255 255 255 255)
 	    (mutable pivot-x)
 	    (mutable pivot-y)
-            (mutable visible?)     ; 是否可见（默认 #t）
-            (mutable children)     ; 子节点列表（节点对象列表）
-            (mutable tag)          ; 标签符号，用于快速查找
-            (mutable customize))   ; 用户自定义数据（任意 Scheme 对象）
+            (mutable visible?)	  ; 是否可见（默认 #t）
+            (mutable children)	  ; 子节点列表（节点对象列表）
+            (mutable tag)	  ; 标签符号，用于快速查找
+            (mutable customize))  ; 用户自定义数据（任意 Scheme 对象）
     (protocol
      (lambda (new)
        (lambda (id type resource data)
          (new id type resource data
-              0 0                 ; x y
-	      1.5					; scale
-	      0					; rotation
-              1                   ; alpha
-              '(255 255 255 255)  ; color
-              0 0             ; pivot
-              #t                  ; visible?
-              '()                 ; children
-              #f                  ; tag
+              (car (*at*)) (cdr (*at*))	; x y
+	      (*scale*)			; scale
+	      (*rotation*)				; rotation
+              (*alpha*)				; alpha
+	      (*color*)
+              (car (*pivot*)) (cdr (*pivot*))			; pivot
+              #t			; visible?
+              '()			; children
+              #f			; tag
               #f)))))             ; customize
 
   ;; 子节点管理
@@ -94,7 +102,7 @@
 
   ;; 创建根节点（设计分辨率或窗口尺寸）
   (define (make-root-node width height)
-    (let ((root (make-node 0 'root #f #f)))
+    (let ((root (make-node -1 'root #f #f)))
       ;; 根节点不渲染，但存储尺寸到 customize 中（可选）
       (node-customize-set! root (cons width height))
       root))
