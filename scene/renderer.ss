@@ -73,7 +73,8 @@
 		    (append (list-head color 3)
 			    (list (inexact->exact (floor (* alpha (list-ref color 3)))))))
 		   (TraceLog LOG_ERROR (format "[Texture] ~a Not Found or Loaded" (node-customize node)))))])))
-      (for-each render-node (node-children node))
+      (for-each render-node
+		(reverse (node-children node)))
       ))
 
   (define render
