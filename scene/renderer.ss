@@ -48,31 +48,31 @@
 	  (case type
 	    [(root) #f]
 	    [(texture)
-	     (let* ([tex (node-resource node)]
-		    [tex-w (Texture-width tex)]
-		    [tex-h (Texture-height tex)]
-		    [x (node-x node)]
-		    [y (node-y node)]
-		    [scale (node-scale node)]
-		    [dest-w (* tex-w scale)]
-		    [dest-h (* tex-h scale)]
-		    [px (node-pivot-x node)]
-		    [py (node-pivot-y node)]
-		    [ox (* px dest-w)]
-		    [oy (* py dest-h)]
-		    [rot (node-rotation node)]
-		    [color (node-color node)]
-		    [alpha (node-alpha node)]
-		    )
-	       (if tex 
+	     (let ([tex (node-resource node)])
+	       (when (and tex (> (Texture-id tex) 0))
+		 (let* ([tex-w (Texture-width tex)]
+			[tex-h (Texture-height tex)]
+			[x (node-x node)]
+			[y (node-y node)]
+			[scale (node-scale node)]
+			[dest-w (* tex-w scale)]
+			[dest-h (* tex-h scale)]
+			[px (node-pivot-x node)]
+			[py (node-pivot-y node)]
+			[ox (* px dest-w)]
+			[oy (* py dest-h)]
+			[rot (node-rotation node)]
+			[color (node-color node)]
+			[alpha (node-alpha node)]
+			)
 		   (draw-texture-pro
 		    tex
 		    `(0 0 ,tex-w ,tex-h)
 		    `(,x ,y ,dest-w ,dest-h)
 		    `(,ox ,oy) rot
 		    (append (list-head color 3)
-			    (list (inexact->exact (floor (* alpha (list-ref color 3)))))))
-		   (TraceLog LOG_ERROR (format "[Texture] ~a Not Found or Loaded" (node-customize node)))))])))
+			    (list (inexact->exact (floor (* alpha (list-ref color 3))))))))
+		 ))])))
       (for-each render-node
 		(reverse (node-children node)))
       ))
