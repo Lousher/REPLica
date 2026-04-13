@@ -2,18 +2,48 @@
   (export replica)
   (import (chezscheme)
 	  (raylib ffi)
-	  (raylib constant))
+	  (raylib constant)
+	  (scene node)
+	  (scene renderer))
+
+					; Manually Control FPS, raylib got some issues
+  (define FPS 60)
+  (define FRAME_TARGET_TIME (/ 1.0 FPS)) 
+
+  (define test-node1)
 
   (define replica
     (lambda ()
       (InitWindow 1920 1080 "REPLica Engine")
       (InitAudioDevice)
-      (let loop ([time 0.0])
-	(unless (WindowShouldClose)
-	  (BeginDrawing)
-	  (ClearBackground BLANK)
-	  (EndDrawing)
-	  (loop (+ time (GetFrameTime)))))
+      (let ([tex (LoadTexture "test.png")])
+	(set! test-node1 (make-node 1 'texture tex #f))
+	(node-customize-set! test-node1 "test.png")
+	(node-pivot-x-set! test-node1 1)
+	(node-pivot-y-set! test-node1 1)
+	(node-x-set! test-node1 960)
+	(node-y-set! test-node1 540)
+	(node-scale-set! test-node1 0.5)
+	(node-rotation-set! test-node1 90)
+	(node-color-set! test-node1 '(255 255 255 255))
+	(node-alpha-set! test-node1 1))
+      (let ([root (make-root-node 1920 1080)])
+	(node-add! root test-node1)
+	(let loop ([time (GetTime)])
+	  (unless (WindowShouldClose)
+	    (BeginDrawing)
+	    (ClearBackground BLANK)
+	    (render root)
+	    (EndDrawing)
+					; FPS Control
+	    (let* ([current-time (GetTime)]
+		   [elapsed (- current-time time)]
+		   [sleep-time (- FRAME_TARGET_TIME elapsed)]
+		   [time-duration (make-time 'time-duration
+					     (inexact->exact (floor (* sleep-time 1e9))) 0)])
+	      (when (> sleep-time 0)
+		(sleep time-duration)))
+	    (loop (GetTime)))))
       (CloseAudioDevice)
       (CloseWindow)))
   )

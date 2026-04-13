@@ -22,15 +22,8 @@
           node-find-by-id
           node-find-by-tag
           make-root-node
-	  *at* *scale* *rotation* *alpha* *color* *pivot*)
+	  )
   (import (chezscheme))
-
-  (define *at* (make-parameter '(0 . 0)))
-  (define *scale* (make-parameter 1))
-  (define *rotation* (make-parameter 0))
-  (define *alpha* (make-parameter 1))
-  (define *color* (make-parameter '(255 255 255 255)))
-  (define *pivot* (make-parameter '(0 . 0)))
 
   ;; 节点记录定义
   (define-record-type node
@@ -54,12 +47,12 @@
      (lambda (new)
        (lambda (id type resource data)
          (new id type resource data
-              (car (*at*)) (cdr (*at*))	; x y
-	      (*scale*)			; scale
-	      (*rotation*)				; rotation
-              (*alpha*)				; alpha
-	      (*color*)
-              (car (*pivot*)) (cdr (*pivot*))			; pivot
+	      0.0 0.0
+	      1.0			; scale
+	      0				; rotation
+              1				; alpha
+	      '(255 255 255 255)        ; color
+              0.0 0.0			; pivot
               #t			; visible?
               '()			; children
               #f			; tag
@@ -105,5 +98,6 @@
     (let ((root (make-node -1 'root #f #f)))
       ;; 根节点不渲染，但存储尺寸到 customize 中（可选）
       (node-customize-set! root (cons width height))
-      root))
+      root)
+    )
   )

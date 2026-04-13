@@ -40,46 +40,44 @@
 	  (Color-b-set! color b)
 	  (Color-a-set! color a))
 	(DrawTexturePro texture source-rect dest-rect origin-vec (inexact rotation) color))))
-  
-  (define draw-node
+
+  (define render-node
     (lambda (node)
       (when (node-visible? node)
 	(let ([type (node-type node)])
 	  (case type
+	    [(root) #f]
 	    [(texture)
-	     (let ([tex (node-resource node)]
-		   [x (node-x node)]
-		   [y (node-y node)]
-		   [scale (node-scale node)]
-		   [rotation (node-rotation node)]
-		   [pivot-x (node-pivot-x node)]
-		   [pivot-y (node-pivot-y node)]
-		   [color (node-color node)]
-		   [alpha (node-alpha node)])
-	       (if tex
-		   (let* ([tint (append (list-head color 3)
-					(list (inexact->exact (round (* alpha (cadddr color))))))]
-			  [w (Texture-width tex)]
-			  [h (Texture-height tex)]
-			  [dest-w (* w scale)]
-			  [dest-h (* h scale)]
-			  [dest-x x]
-			  [dest-y y]
-			  [source `(0 0 ,w ,h)]
-			  [dest `(,dest-x ,dest-y ,dest-w ,dest-h)]
-			  [origin `(,(* pivot-x dest-w) ,(* pivot-y dest-h))])
-		     (draw-texture-pro tex source dest origin rotation tint))
-		   (TraceLog LOG_ERROR "Not Valid texture"))
-	       )])))))
-
-  (define render-node
-    (lambda (node)
-      (draw-node node)
-      (for-each render-node (reverse (node-children node)))))
+	     (let* ([tex (node-resource node)]
+		    [tex-w (Texture-width tex)]
+		    [tex-h (Texture-height tex)]
+		    [x (node-x node)]
+		    [y (node-y node)]
+		    [scale (node-scale node)]
+		    [dest-w (* tex-w scale)]
+		    [dest-h (* tex-h scale)]
+		    [px (node-pivot-x node)]
+		    [py (node-pivot-y node)]
+		    [ox (* px dest-w)]
+		    [oy (* py dest-h)]
+		    [rot (node-rotation node)]
+		    [color (node-color node)]
+		    [alpha (node-alpha node)]
+		    )
+	       (if tex 
+		   (draw-texture-pro
+		    tex
+		    `(0 0 ,tex-w ,tex-h)
+		    `(,x ,y ,dest-w ,dest-h)
+		    `(,ox ,oy) rot
+		    (append (list-head color 3)
+			    (list (inexact->exact (floor (* alpha (list-ref color 3)))))))
+		   (TraceLog LOG_ERROR (format "[Texture] ~a Not Found or Loaded" (node-customize node)))))])))
+      (for-each render-node (node-children node))
+      ))
 
   (define render
-    (lambda (root)
-      (for-each render-node
-		(reverse (node-children root)))
+    (lambda (node)
+      (render-node node)
       ))
   )
