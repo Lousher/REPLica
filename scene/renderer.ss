@@ -74,6 +74,9 @@
 		       (let* ([src-rect (vector-ref info 0)]
 			      [sx (Rectangle-x src-rect)]
 			      [sy (Rectangle-y src-rect)]
+			      [offset-x (vector-ref info 1)]
+			      [offset-y (vector-ref info 2)]
+			      [advance-x (vector-ref info 3)]
 			      [x (node-x node)]
 			      [y (node-y node)]
 			      [scale (node-scale node)]
@@ -93,7 +96,7 @@
 			 (draw-texture-pro
 			  tex
 			  `(,sx ,sy ,src-w ,src-h)
-			  `(,x ,y ,dest-w ,dest-h)
+			  `(,(+ x offset-x) ,(+ y offset-y) ,dest-w ,dest-h)
 			  `(,ox ,oy) rot
 			  (append (list-head color 3)
 				  (list (inexact->exact (floor (* alpha (list-ref color 3)))))))

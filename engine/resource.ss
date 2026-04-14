@@ -124,7 +124,6 @@
 			 (TraceLog LOG_ERROR (format "RESOURCE: Font not found: ~a" font-path)))))))))
 	node)))
 
-					; things that only done in main thread
   (define loader-update!
     (lambda (rm)
       (let ([pending (manager-pending rm)]
