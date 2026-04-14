@@ -1,12 +1,7 @@
 (library (engine resource)
   (export
    make-manager
-   ref mount unmount
-   manager-bundles manager-bundles-set!
-   manager-cache manager-cache-set!
-   manager-pending manager-pending-set!
-   manager-data manager-data-set!
-   manager-lock manager-lock-set!
+   mount unmount
    make-texture-node
    loader-update!
    )
@@ -109,7 +104,12 @@
 			   (TraceLog LOG_INFO (format "RESOURCE: Uploading texture for ~a, nodes count: ~a" path (length waiting-nodes)))
 			   (UnloadImage img)
 			   (if (zero? (Texture-id tex))
-			       (TraceLog LOG_ERROR (format "RESOURCE: Failed to create texture from memory: ~a" path))
+			       (begin
+				 (TraceLog LOG_ERROR (format "RESOURCE: Failed to create texture from memory: ~a" path))
+				 (for-each
+				  (lambda (node)
+				    (hashtable-delete! pending node))
+				  waiting-nodes))
 			       (begin
 				 (TraceLog LOG_INFO (format "RESOURCE: Texture uploaded: ~a (id=~a)" path (Texture-id tex)))
 				 (hashtable-set! cache path tex)

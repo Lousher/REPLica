@@ -10,6 +10,18 @@
   (define FPS 60)
   (define FRAME_TARGET_TIME (/ 1.0 FPS)) 
 
+  (define fps-control
+    (lambda (prev-time)
+      (let* ([current-time (GetTime)]
+	     [elapsed (- current-time prev-time)]
+	     [sleep-time (- FRAME_TARGET_TIME elapsed)]
+	     [time-duration
+	      (make-time
+	       'time-duration
+	       (inexact->exact (floor (* sleep-time 1e9))) 0)])
+	(when (> sleep-time 0)
+	  (sleep time-duration)))))
+  
   (define test-node1)
   (define test-node2)
   (define test-node3)
@@ -38,17 +50,10 @@
 	    (unless (WindowShouldClose)
 	      (loader-update! rm)
 	      (BeginDrawing)
-	      (ClearBackground BLANK)
+	      (ClearBackground BLACK)
 	      (render root)
 	      (EndDrawing)
-					; FPS Control
-	      (let* ([current-time (GetTime)]
-		     [elapsed (- current-time time)]
-		     [sleep-time (- FRAME_TARGET_TIME elapsed)]
-		     [time-duration (make-time 'time-duration
-					       (inexact->exact (floor (* sleep-time 1e9))) 0)])
-		(when (> sleep-time 0)
-		  (sleep time-duration)))
+	      (fps-control time) ; FPS control
 	      (loop (GetTime))))))
       (CloseAudioDevice)
       (CloseWindow))
