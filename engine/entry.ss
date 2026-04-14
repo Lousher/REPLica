@@ -14,22 +14,24 @@
     (lambda (prev-time)
       (let* ([current-time (GetTime)]
 	     [elapsed (- current-time prev-time)]
-	     [sleep-time (- FRAME_TARGET_TIME elapsed)]
-	     [time-duration
-	      (make-time
-	       'time-duration
-	       (inexact->exact (floor (* sleep-time 1e9))) 0)])
+	     [sleep-time (- FRAME_TARGET_TIME elapsed)])
 	(when (> sleep-time 0)
-	  (sleep time-duration)))))
+	  (let ([time-duration
+		 (make-time
+		  'time-duration
+		  (inexact->exact (floor (* sleep-time 1e9))) 0)])
+	    (sleep time-duration))))))
   
   (define test-node1)
   (define test-node2)
   (define test-node3)
+  (define char-node1)
 
   (define replica
     (lambda ()
       (InitWindow 1920 1080 "REPLica Engine")
       (InitAudioDevice)
+      (init-renderer "sdf.fs")
       (let ([rm (make-manager)])
 	(mount rm "test.rpk")
 	(begin 
@@ -41,11 +43,15 @@
 	  (node-scale-set! test-node1 0.5)
 	  (node-rotation-set! test-node1 90)
 	  (set! test-node2 (make-texture-node rm 2 "t2"))
-	  (set! test-node3 (make-texture-node rm 3 "t1")))
+	  (set! test-node3 (make-texture-node rm 3 "t1"))
+	  (set! char-node1 (make-char-node rm 4 "xiaolai" #\这))
+	  (node-scale-set! char-node1 2)
+	  )
 	(let ([root (make-root-node 1920 1080)])
 	  (node-add! root test-node1)
 	  (node-add! root test-node2)
 	  (node-add! root test-node3)
+	  (node-add! root char-node1)
 	  (let loop ([time (GetTime)])
 	    (unless (WindowShouldClose)
 	      (loader-update! rm)
@@ -53,8 +59,9 @@
 	      (ClearBackground BLACK)
 	      (render root)
 	      (EndDrawing)
-	      (fps-control time) ; FPS control
+	      (fps-control time)	; FPS control
 	      (loop (GetTime))))))
+      (uninit-renderer)
       (CloseAudioDevice)
       (CloseWindow))
     )

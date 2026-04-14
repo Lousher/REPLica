@@ -1,9 +1,24 @@
 (library (scene renderer)
-  (export render)
+  (export render init-renderer uninit-renderer)
   (import (chezscheme)
 	  (raylib ffi)
 	  (raylib constant)
 	  (scene node))
+
+  (define *sdf-shader* #f)
+
+  (define init-renderer
+    (lambda (sdf-path)
+      (set! *sdf-shader* (LoadShader #f sdf-path))
+      (if *sdf-shader*
+	  (TraceLog LOG_INFO "RESOURCE: SDF shader loaded successfully")
+	  (TraceLog LOG_ERROR "RESOURCE: Failed to load SDF shader"))))
+
+  (define uninit-renderer
+    (lambda ()
+      (when *sdf-shader*
+	(UnloadShader *sdf-shader*)
+	(set! *sdf-shader* #f))))
 
   (define draw-texture-pro
     (let ([source-rect (make-Rectangle 0.0 0.0 0.0 0.0)]
@@ -47,6 +62,45 @@
 	(let ([type (node-type node)])
 	  (case type
 	    [(root) #f]
+	    [(char)
+	     (let ([font (node-resource node)]
+		   [ch (node-data node)])
+	       (when (and font (> (Texture-id (car font)) 0))
+		 (let* ([tex (car font)]
+			[glyph-map (cdr font)]
+			[cp (char->integer ch)]
+			[info (hashtable-ref glyph-map cp #f)])
+		   (if info
+		       (let* ([src-rect (vector-ref info 0)]
+			      [sx (Rectangle-x src-rect)]
+			      [sy (Rectangle-y src-rect)]
+			      [x (node-x node)]
+			      [y (node-y node)]
+			      [scale (node-scale node)]
+			      [rot (node-rotation node)]
+			      [px (node-pivot-x node)]
+			      [py (node-pivot-y node)]
+			      [src-w (Rectangle-width src-rect)]
+			      [src-h (Rectangle-height src-rect)]
+			      [dest-w (* src-w scale)]
+			      [dest-h (* src-h scale)]
+			      [ox (* px dest-w)]
+			      [oy (* py dest-h)]
+			      [color (node-color node)]
+			      [alpha (node-alpha node)]
+			      )
+			 (BeginShaderMode *sdf-shader*)
+			 (draw-texture-pro
+			  tex
+			  `(,sx ,sy ,src-w ,src-h)
+			  `(,x ,y ,dest-w ,dest-h)
+			  `(,ox ,oy) rot
+			  (append (list-head color 3)
+				  (list (inexact->exact (floor (* alpha (list-ref color 3)))))))
+			 (EndShaderMode)
+			 )
+		       ))
+		 ))]
 	    [(texture)
 	     (let ([tex (node-resource node)])
 	       (when (and tex (> (Texture-id tex) 0))
@@ -81,4 +135,5 @@
     (lambda (node)
       (render-node node)
       ))
+  
   )

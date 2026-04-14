@@ -25,4 +25,6 @@
 
 (pack "test.rpk"
       '(("t1" "test.png")
-	("t2" "test2.png")))
+	("t2" "test2.png")
+	("xiaolai.atlas" "xiaolai.atlas.png")
+	("xiaolai.bin" "xiaolai.bin")))

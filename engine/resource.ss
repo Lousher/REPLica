@@ -3,6 +3,7 @@
    make-manager
    mount unmount
    make-texture-node
+   make-char-node
    loader-update!
    )
   (import (chezscheme)
@@ -13,9 +14,9 @@
 
   (define-record-type manager
     (fields (mutable bundles)
-	    (mutable cache)
-	    (mutable pending)
-	    (mutable data)
+	    (mutable cache) ; string
+	    (mutable pending) ;eq
+	    (mutable data) ;string
 	    (mutable lock)
 	    )
     (protocol
@@ -73,10 +74,57 @@
 			 (let ([img (LoadImageFromMemory ext data len)])
 			   (TraceLog LOG_INFO (format "RESOURCE: Decoded image: ~a (size=~a bytes)" path len))
 			   (with-mutex (manager-lock rm)
-			     (hashtable-set! (manager-data rm) path img)))
-			 (TraceLog LOG_ERROR (format "RESOURCE: Async load failed: ~a" path)))))))))
+			     (hashtable-set! (manager-data rm) path (list 'texture img))))
+			 (TraceLog LOG_ERROR (format "RESOURCE: Async load failed: ~a" path))))))))
+	  node))))
+
+  (define parse-bin-metadata
+    (lambda (bv len)
+      (let ([map (make-hashtable (lambda (x) x) =)]
+            [count (bytevector-s32-ref bv 0 (endianness little))]) ;; 读取头部的总字数
+	(let loop ([i 0] [offset 4]) ;; 从第 4 字节开始读取每个字形的数据
+          (if (< i count)
+              (let ([cp  (bytevector-s32-ref bv offset (endianness little))]
+                    [rx  (bytevector-ieee-single-ref bv (+ offset 4) (endianness little))]
+                    [ry  (bytevector-ieee-single-ref bv (+ offset 8) (endianness little))]
+                    [rw  (bytevector-ieee-single-ref bv (+ offset 12) (endianness little))]
+                    [rh  (bytevector-ieee-single-ref bv (+ offset 16) (endianness little))]
+                    [ox  (bytevector-s32-ref bv (+ offset 20) (endianness little))]
+                    [oy  (bytevector-s32-ref bv (+ offset 24) (endianness little))]
+                    [adv (bytevector-s32-ref bv (+ offset 28) (endianness little))])
+		(hashtable-set! map cp 
+				(vector (make-rectangle rx ry rw rh) ox oy adv))
+		(loop (+ i 1) (+ offset 32)))
+              map)))))
+  
+  (define make-char-node
+    (lambda (rm id font-path char)
+      (TraceLog LOG_INFO (format "RESOURCE: Create char node: id=~a path=~a" id font-path))
+      (let ([node (make-node id 'char #f char)]
+	    [cache (manager-cache rm)])
+	(let ([font (hashtable-ref cache font-path #f)])
+	  (if font
+	      (begin
+		(TraceLog LOG_INFO (format "RESOURCE: Font cache hit: path=~a" font-path))
+		(node-resource-set! node font))
+	      (begin
+		(TraceLog LOG_INFO (format "RESOURCE: Font in pending: path=~a" font-path))
+		(with-mutex (manager-lock rm)
+		  (hashtable-set! (manager-pending rm) node font-path))
+		(fork-thread
+		 (lambda ()
+		   (let*-values ([(a-ext a-data a-len) (ref rm (string-append font-path ".atlas"))]
+				 [(b-ext b-data b-len) (ref rm (string-append font-path ".bin"))])
+		     (if (and a-data b-data)
+			 (let ([img (LoadImageFromMemory a-ext a-data a-len)]
+			       [glyph-map (parse-bin-metadata b-data b-len)])
+			   (TraceLog LOG_INFO (format "RESOURCE: Font atlas and bin data loaded: path=~a" font-path))
+			   (with-mutex (manager-lock rm)
+			     (hashtable-set! (manager-data rm) font-path (list 'font img glyph-map))))
+			 (TraceLog LOG_ERROR (format "RESOURCE: Font not found: ~a" font-path)))))))))
 	node)))
 
+					; things that only done in main thread
   (define loader-update!
     (lambda (rm)
       (let ([pending (manager-pending rm)]
@@ -98,28 +146,51 @@
 	       (lambda (path)
 		 (let ([waiting-nodes (hashtable-ref path->nodes path '())])
 		   (unless (null? waiting-nodes)
-		     (let ([img (hashtable-ref data path #f)])
-		       (when img
-			 (let ([tex (LoadTextureFromImage img)])
-			   (TraceLog LOG_INFO (format "RESOURCE: Uploading texture for ~a, nodes count: ~a" path (length waiting-nodes)))
-			   (UnloadImage img)
-			   (if (zero? (Texture-id tex))
-			       (begin
-				 (TraceLog LOG_ERROR (format "RESOURCE: Failed to create texture from memory: ~a" path))
-				 (for-each
-				  (lambda (node)
-				    (hashtable-delete! pending node))
-				  waiting-nodes))
-			       (begin
-				 (TraceLog LOG_INFO (format "RESOURCE: Texture uploaded: ~a (id=~a)" path (Texture-id tex)))
-				 (hashtable-set! cache path tex)
-				 (for-each
-				  (lambda (node)
-				    (node-resource-set! node tex)
-				    (node-type-set! node 'texture)
-				    (hashtable-delete! pending node))
-				  waiting-nodes)
-				 (hashtable-delete! data path)))
-			   ))))))
-	       paths)))))))
+		     (let ([entry (hashtable-ref data path #f)])
+		       (when entry
+			 (case (car entry)
+			   [(texture)
+			    (let* ([img (cadr entry)]
+				   [tex (LoadTextureFromImage img)])
+			      (TraceLog LOG_INFO (format "RESOURCE: Uploading texture for ~a, nodes count: ~a" path (length waiting-nodes)))
+			      (UnloadImage img)
+			      (if (zero? (Texture-id tex))
+				  (begin
+				    (TraceLog LOG_ERROR (format "RESOURCE: Failed to create texture from memory: ~a" path))
+				    (for-each
+				     (lambda (node)
+				       (hashtable-delete! pending node))
+				     waiting-nodes))
+				  (begin
+				    (TraceLog LOG_INFO (format "RESOURCE: Texture uploaded: ~a (id=~a)" path (Texture-id tex)))
+				    (hashtable-set! cache path tex)
+				    (for-each
+				     (lambda (node)
+				       (node-resource-set! node tex)
+				       (node-type-set! node 'texture)
+				       (hashtable-delete! pending node))
+				     waiting-nodes)
+				    (hashtable-delete! data path)))
+			      )]
+			   [(font)
+			    (let* ([atlas (cadr entry)]
+				   [glyph-map (caddr entry)]
+				   [tex (LoadTextureFromImage atlas)])
+			      (UnloadImage atlas)
+			      (if (zero? (Texture-id tex))
+				  (TraceLog LOG_ERROR (format "RESOURCE: Failed to upload font texture: ~a" path))
+				  (begin
+				    (SetTextureFilter tex 1)
+				    (let ([font (cons tex glyph-map)])
+				      (hashtable-set! cache path font)
+				      (for-each
+				       (lambda (node)
+					 (node-resource-set! node font)
+					 (node-type-set! node 'char)
+					 (hashtable-delete! pending node))
+				       waiting-nodes)
+				      (hashtable-delete! data path)))))
+			    ]))))))
+	       paths))))))
+    )
   )
