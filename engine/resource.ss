@@ -4,6 +4,7 @@
    mount unmount
    make-texture-node
    make-char-node
+   make-text-node
    loader-update!
    )
   (import (chezscheme)
@@ -120,6 +121,15 @@
 		       [glyph-map (parse-bin-metadata b-data)])
 		   (list 'font img glyph-map))
 		 #f))))
+	node)))
+
+  (define make-text-node
+    (lambda (rm id char-nodes)
+      (let* ([chars (map node-data char-nodes)]
+	     [node (make-node id 'text #f (list->string chars))])
+	(for-each
+	 (lambda (n) (node-add! node n))
+	 char-nodes)
 	node)))
 
   (define loader-update!

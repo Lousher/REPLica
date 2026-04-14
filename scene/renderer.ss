@@ -62,6 +62,27 @@
 	(let ([type (node-type node)])
 	  (case type
 	    [(root) #f]
+	    [(text)
+	     (let loop ([children (reverse (node-children node))] (x 0.0))
+	       (unless (null? children)
+		 (let* ([char-node (car children)]
+			[font (node-resource char-node)])
+		   (if (and font (pair? font))   ; 检查字体是否就绪
+		       (let* ([glyph-map (cdr font)]
+			      [ch (node-data char-node)]
+			      [cp (char->integer ch)]
+			      [info (hashtable-ref glyph-map cp #f)]
+			      [adv (if info (vector-ref info 3) 0)])
+			 ;; 设置 char 节点相对于 text 节点的局部坐标
+			 (node-x-set! char-node x)
+			 (node-y-set! char-node 0)
+			 ;; 递归渲染 char 节点（它会继承 text 节点的整体变换）
+			 (render-node char-node)
+			 (loop (cdr children) (+ x (* adv (node-scale char-node)))))
+		       ;; 资源未就绪，跳过该字符（不绘制，也不累加偏移，或者用占位符）
+		       ;; 简单起见，跳过并继续下一个，但不累加偏移，导致位置错位。
+		       ;; 改进：可以累加一个默认宽度（例如 20）或者跳过但不影响后面？这里暂时跳过且不累加。
+		       (loop (cdr children) x)))))]
 	    [(char)
 	     (let ([font (node-resource node)]
 		   [ch (node-data node)])

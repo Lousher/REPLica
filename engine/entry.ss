@@ -30,6 +30,7 @@
   (define char-node3)
   (define char-node4)
   (define char-node5)
+  (define text-node1)
 
   (define replica
     (lambda ()
@@ -50,23 +51,20 @@
 	  (set! test-node3 (make-texture-node rm 3 "t1"))
 	  (set! char-node1 (make-char-node rm 4 "xiaolai" #\这))
 	  (set! char-node2 (make-char-node rm 5 "xiaolai" #\是))
-	  (node-x-set! char-node2 100)
 	  (set! char-node3 (make-char-node rm 6 "xiaolai" #\个))
-	  (node-x-set! char-node3 200)
 	  (set! char-node4 (make-char-node rm 7 "xiaolai" #\测))
-	  (node-x-set! char-node4 300)
 	  (set! char-node5 (make-char-node rm 8 "xiaolai" #\试))
-	  (node-x-set! char-node5 400)
+	  (set! text-node1
+		(make-text-node
+		 rm 9
+		 (list char-node1 char-node2 char-node3 char-node4 char-node5)))
+
 	  )
 	(let ([root (make-root-node 1920 1080)])
 	  (node-add! root test-node1)
 	  (node-add! root test-node2)
 	  (node-add! root test-node3)
-	  (node-add! root char-node1)
-	  (node-add! root char-node2)
-	  (node-add! root char-node3)
-	  (node-add! root char-node4)
-	  (node-add! root char-node5)
+	  (node-add! root text-node1)
 	  (let loop ([time (GetTime)])
 	    (unless (WindowShouldClose)
 	      (loader-update! rm)
