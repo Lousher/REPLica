@@ -52,40 +52,44 @@
 				      (not (eq? x b)))
 				    (manager-bundles rm)))))
 
-  (define make-texture-node
-    (lambda (rm id path)
-      (TraceLog LOG_INFO (format "RESOURCE: Creating texture node: id=~a path=~a" id path))
-      (let ([node (make-node id 'texture #f #f)]
-	    [cache (manager-cache rm)]
+  (define load-async
+    (lambda (rm node path fn)
+      (let ([cache (manager-cache rm)]
+	    [data (manager-data rm)]
 	    [lock (manager-lock rm)])
 	(with-mutex lock
-	  (let ([tex (hashtable-ref cache path #f)])
-	    (if tex
-		(node-resource-set! node tex)
-		(let ([entry (hashtable-ref (manager-data rm) path #f)])
+	  (let ([cached (hashtable-ref cache path #f)])
+	    (if cached
+		(node-resource-set! node cached)
+		(let ([entry (hashtable-ref data path #f)])
 		  (if (or (eqv? entry 'loading) (pair? entry))
 		      (hashtable-set! (manager-pending rm) node path)
 		      (begin
-			(hashtable-set! (manager-data rm) path 'loading)
+			(hashtable-set! data path 'loading)
 			(hashtable-set! (manager-pending rm) node path)
 			(fork-thread
 			 (lambda ()
-			   (let-values ([(ext data len) (ref rm path)])
-			     (if data
-				 (let ([img (LoadImageFromMemory ext data len)])
-				   (TraceLog LOG_INFO (format "RESOURCE: Decoded image: ~a (~a bytes)" path len))
-				   (with-mutex lock
-				     (hashtable-set! (manager-data rm) path (list 'texture img))
-				     ))
-				 (begin
-				   (TraceLog LOG_ERROR (format "RESOURCE: Texture not found: ~a" path))
-				   (with-mutex lock
-				     (hashtable-delete! (manager-data rm) path)))))))))))))
-	node
-	)))
+			   (let ([result (fn rm path)])
+			     (with-mutex lock
+			       (if result
+				   (hashtable-set! data path result)
+				   (hashtable-delete! data path)))))))))))))))
+
+  (define make-texture-node
+    (lambda (rm id path)
+      (let ([node (make-node id 'texture #f #f)])
+	(load-async
+	 rm node path
+	 (lambda (rm path)
+	   (let-values ([(ext data len) (ref rm path)])
+	     (if data
+		 (let ([img (LoadImageFromMemory ext data len)])
+		   (list 'texture img))
+		 #f))))
+	node)))
 
   (define parse-bin-metadata
-    (lambda (bv len)
+    (lambda (bv)
       (let ([map (make-hashtable (lambda (x) x) =)]
             [count (bytevector-s32-ref bv 0 (endianness little))]) ;; 读取头部的总字数
 	(let loop ([i 0] [offset 4]) ;; 从第 4 字节开始读取每个字形的数据
@@ -105,37 +109,17 @@
   
   (define make-char-node
     (lambda (rm id font-path char)
-      (TraceLog LOG_INFO (format "RESOURCE: Create char node: id=~a path=~a" id font-path))
-      (let ([node (make-node id 'char #f char)]
-	    [cache (manager-cache rm)]
-	    [lock (manager-lock rm)])
-	(with-mutex lock
-	  (let ([font (hashtable-ref cache font-path #f)])
-	    (if font
-		(begin
-		  (TraceLog LOG_INFO (format "RESOURCE: Font cache hit: path=~a" font-path))
-		  (node-resource-set! node font))
-		(let ([entry (hashtable-ref (manager-data rm) font-path #f)])
-		  (if (or (eqv? entry 'loading) (pair? entry))
-		      (hashtable-set! (manager-pending rm) node font-path)
-		      (begin
-			(hashtable-set! (manager-data rm) font-path 'loading)
-			(hashtable-set! (manager-pending rm) node font-path)
-			(fork-thread
-			 (lambda ()
-			   (let*-values ([(a-ext a-data a-len) (ref rm (string-append font-path ".atlas"))]
-					 [(b-ext b-data b-len) (ref rm (string-append font-path ".bin"))])
-			     (if (and a-data b-data)
-				 (let ([img (LoadImageFromMemory a-ext a-data a-len)]
-				       [glyph-map (parse-bin-metadata b-data b-len)])
-				   (TraceLog LOG_INFO (format "RESOURCE: Font data loaded: ~a" font-path))
-				   (with-mutex lock
-				     (hashtable-set! (manager-data rm) font-path (list 'font img glyph-map))))
-				 (begin
-				   (TraceLog LOG_ERROR (format "RESOURCE: Font not found: ~a" font-path))
-				   (with-mutex lock
-				     (hashtable-delete! (manager-data rm) font-path))))))))))
-		)))
+      (let ([node (make-node id 'char #f char)])
+	(load-async
+	 rm node font-path
+	 (lambda (rm path)
+	   (let*-values ([(a-ext a-data a-len) (ref rm (string-append path ".atlas"))]
+			 [(b-ext b-data b-len) (ref rm (string-append path ".bin"))])
+	     (if (and a-data b-data)
+		 (let ([img (LoadImageFromMemory a-ext a-data a-len)]
+		       [glyph-map (parse-bin-metadata b-data)])
+		   (list 'font img glyph-map))
+		 #f))))
 	node)))
 
   (define loader-update!
