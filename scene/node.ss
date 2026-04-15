@@ -60,7 +60,8 @@
 
   ;; 子节点管理
   (define (node-add! parent child)
-    (node-children-set! parent (cons child (node-children parent))))
+    (node-children-set!
+     parent (append (node-children parent) (list child))))
 
   (define (node-remove! parent child)
     (node-children-set!

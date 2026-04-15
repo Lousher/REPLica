@@ -8,7 +8,10 @@
   (define *sdf-shader* #f)
   (define *text-x* (make-parameter 0.0))
   (define *text-y* (make-parameter 0.0))
-  (define *text-spacing* (make-parameter 0.0))
+  (define *text-scale* (make-parameter 1.0))
+  (define *text-rotation* (make-parameter 0.0))
+  (define *text-alpha* (make-parameter 1.0))
+  (define *text-color* (make-parameter '(255 255 255 255)))
 
   (define init-renderer
     (lambda (sdf-path)
@@ -60,7 +63,7 @@
 	(DrawTexturePro texture source-rect dest-rect origin-vec (inexact rotation) color))))
 
   (define get-char-advance
-    (lambda (char-node)
+    (lambda (char-node default-width)
       (let* ([font-obj (node-resource char-node)]
 	     [ch (node-data char-node)]
 	     [scale (node-scale char-node)])
@@ -72,9 +75,35 @@
 		  (* (vector-ref info 3) scale)
 		  (begin
 		    (TraceLog LOG_WARNING (format "Glyph missing:~a" ch))
-		    (* scale 120))))
+		    (* scale default-width))))
 	    (begin
-	      (* scale 120))))))
+	      (* scale default-width))))))
+
+  (define (get-char-height char-node default-height)
+    (let* ([font-obj (node-resource char-node)]
+           [scale (node-scale char-node)]
+           [ch (node-data char-node)])
+      (if (and font-obj (pair? font-obj))
+          (let* ([glyph-map (cdr font-obj)]
+		 [cp (char->integer ch)]
+		 [info (hashtable-ref glyph-map cp #f)])
+            (if info
+		(* (Rectangle-height (vector-ref info 0)) scale)
+		(* scale default-height)))
+          (* scale default-height))))
+
+  (define (get-char-offset-y char-node)
+    (let* ([font-obj (node-resource char-node)]
+           [scale (node-scale char-node)]
+           [ch (node-data char-node)])
+      (if (and font-obj (pair? font-obj))
+          (let* ([glyph-map (cdr font-obj)]
+		 [cp (char->integer ch)]
+		 [info (hashtable-ref glyph-map cp #f)])
+            (if info
+		(* (vector-ref info 2) scale)   ; offset-y 是向量的第三个元素（索引2）
+		(* scale 0)))
+          0)))
 
   (define render-node
     (lambda (node)
@@ -82,25 +111,76 @@
 	(let ([type (node-type node)])
 	  (case type
 	    [(root)
-	     (for-each render-node (reverse (node-children node)))]
+	     (for-each render-node (node-children node))]
 	    [(text)
 	     (let* ([children (node-children node)]
-		    [customize (node-customize node)]
-		    [layout (cdr (assv 'layout customize))]
-		    [spacing (cdr (assv 'spacing customize))]
-		    [y (node-y node)])
-	       (let loop ([nodes (reverse children)] [x (node-x node)])
-		 (unless (null? nodes)
-		   (let* ([char-node (car nodes)]
-			  [adv (get-char-advance char-node)])
-		     (parameterize ([*text-x* (+ (*text-x*) x)]
-				    [*text-y* y]
-				    [*text-spacing* spacing])
-		       (render-node char-node))
-		     (loop (cdr nodes) (+ x adv spacing))))))]
+		    [custom (node-customize node)]
+		    [layout (cdr (assv 'layout custom))]
+		    [spacing (cdr (assv 'spacing custom))]
+		    [tx (node-x node)]
+		    [ty (node-y node)]
+		    [tscale (node-scale node)]
+		    [trot (node-rotation node)]
+		    [tpx (node-pivot-x node)]
+		    [tpy (node-pivot-y node)]
+		    [tcolor (node-color node)]
+		    [talpha (node-alpha node)]
+		    [default-advance 20]
+		    [default-height 30])
+	       (let measure ([nodes children] [x 0.0] [y 0.0] [max-w 0.0] [max-h 0.0] [positions '()])
+		 (if (null? nodes)
+		     (let* ([total-width max-w]
+			    [total-height max-h]
+			    [offset-x (case layout
+					[(left) 0]
+					[(center) (- (/ total-width 2))]
+					[(right) (- total-width)])])
+		       (let render ([nodes children]
+				    [positions (reverse positions)])
+			 (unless (null? nodes)
+			   (let* ([char-node (car nodes)]
+				  [pos (car positions)]
+				  [local-x (car pos)]
+				  [local-y (cdr pos)]
+				  [pivot-x (* tpx total-width)]
+				  [pivot-y (* tpy total-height)]
+				  [dx (- (+ local-x offset-x) pivot-x)]
+				  [dy (- local-y pivot-y)]
+				  [rad (* trot (/ (atan 0 -1) 180))]
+				  [cos-t (cos rad)]
+				  [sin-t (sin rad)]
+				  [rotated-x (- (* dx cos-t) (* dy sin-t))]
+				  [rotated-y (+ (* dy cos-t) (* dx sin-t))]
+				  [world-x (+ tx (* tscale rotated-x))]
+				  [world-y (+ ty (* tscale rotated-y))])
+			     (parameterize ([*text-x* world-x]
+					    [*text-y* world-y]
+					    [*text-scale* tscale]
+					    [*text-rotation* trot]
+					    [*text-alpha* talpha]
+					    [*text-color* tcolor])
+			       (render-node char-node))
+			     (render (cdr nodes) (cdr positions))
+			     ))))
+		     (let* ([char-node (car nodes)]
+			    [adv (get-char-advance char-node default-advance)]
+			    [h (get-char-height char-node default-height)]
+			    [oy (get-char-offset-y char-node)])
+		       (measure (cdr nodes)
+				(+ x adv spacing)
+				y
+				(max max-w (+ x adv))
+				(max max-h (+ h (abs oy)))
+				(cons (cons x oy) positions))))))]
 	    [(char)
-	     (let ([font (node-resource node)]
-		   [ch (node-data node)])
+	     (let* ([base-x (*text-x*)]
+		    [base-y (*text-y*)]
+		    [base-scale (*text-scale*)]
+		    [base-rot (*text-rotation*)]
+		    [base-alpha (*text-alpha*)]
+		    [base-color (*text-color*)]
+		    [font (node-resource node)]
+		    [ch (node-data node)])
 	       (when (and font (> (Texture-id (car font)) 0))
 		 (let* ([tex (car font)]
 			[glyph-map (cdr font)]
@@ -108,39 +188,50 @@
 			[info (hashtable-ref glyph-map cp #f)])
 		   (if info
 		       (let* ([src-rect (vector-ref info 0)]
-			      [sx (Rectangle-x src-rect)]
-			      [sy (Rectangle-y src-rect)]
 			      [offset-x (vector-ref info 1)]
 			      [offset-y (vector-ref info 2)]
-			      [advance-x (vector-ref info 3)]
-			      [x (+ (*text-x*) (node-x node))]
-			      [y (+ (*text-y*) (node-y node))]
-			      [scale (node-scale node)]
-			      [rot (node-rotation node)]
-			      [px (node-pivot-x node)]
-			      [py (node-pivot-y node)]
+			      [node-x (node-x node)]
+			      [node-y (node-y node)]
+			      [node-scale (node-scale node)]
+			      [node-rot (node-rotation node)]
+			      [node-color (node-color node)]
+			      [node-alpha (node-alpha node)]
 			      [src-w (Rectangle-width src-rect)]
 			      [src-h (Rectangle-height src-rect)]
-			      [dest-w (* src-w scale)]
-			      [dest-h (* src-h scale)]
+			      ;; 合并所有局部偏移
+			      [local-dx (+ node-x)]
+			      [local-dy (+ node-y)]
+			      ;; 将局部偏移按照 text 的整体旋转进行旋转
+			      [rad (* base-rot (/ (atan 0 -1) 180))]
+			      [cos-r (cos rad)]
+			      [sin-r (sin rad)]
+			      [rot-dx (- (* local-dx cos-r) (* local-dy sin-r))]
+			      [rot-dy (+ (* local-dx sin-r) (* local-dy cos-r))]
+			      ;; 最终世界坐标 = 基准坐标 + 旋转后的偏移
+			      [final-x (+ base-x rot-dx)]
+			      [final-y (+ base-y rot-dy)]
+			      [dest-w (* src-w node-scale base-scale)]
+			      [dest-h (* src-h node-scale base-scale)]
+			      [final-rot (+ base-rot node-rot)]
+			      ;; 颜色调制：分量相乘再除以255（假设0-255）
+			      [final-color (map (lambda (c1 c2) (inexact->exact (floor (/ (* c1 c2) 255))))
+						base-color node-color)]
+			      [final-alpha (* base-alpha node-alpha)]
+			      [tint (append (list-head final-color 3)
+					    (list (inexact->exact (floor (* final-alpha (list-ref final-color 3))))))]
+			      [px (node-pivot-x node)]
+			      [py (node-pivot-y node)]
 			      [ox (* px dest-w)]
-			      [oy (* py dest-h)]
-			      [color (node-color node)]
-			      [alpha (node-alpha node)]
-			      )
+			      [oy (* py dest-h)])
 			 (BeginShaderMode *sdf-shader*)
-			 (draw-texture-pro
-			  tex
-			  `(,sx ,sy ,src-w ,src-h)
-			  `(,(+ x offset-x) ,(+ y offset-y) ,dest-w ,dest-h)
-			  `(,ox ,oy) rot
-			  (append (list-head color 3)
-				  (list (inexact->exact (floor (* alpha (list-ref color 3)))))))
-			 (EndShaderMode)
-			 )
-		       ))
-		 ))
-	     ]
+			 (draw-texture-pro tex
+					   `(,(Rectangle-x src-rect) ,(Rectangle-y src-rect) ,src-w ,src-h)
+					   `(,final-x ,final-y ,dest-w ,dest-h)
+					   `(,ox ,oy)
+					   final-rot
+					   tint)
+			 (EndShaderMode))
+		       (TraceLog LOG_WARNING (format "Glyph not found: ~a" ch))))))]
 	    [(texture)
 	     (let ([tex (node-resource node)])
 	       (when (and tex (> (Texture-id tex) 0))
