@@ -124,12 +124,16 @@
 	node)))
 
   (define make-text-node
-    (lambda (rm id char-nodes)
+    (lambda (id char-nodes spacing)
       (let* ([chars (map node-data char-nodes)]
 	     [node (make-node id 'text #f (list->string chars))])
 	(for-each
 	 (lambda (n) (node-add! node n))
 	 char-nodes)
+	(node-customize-set!
+	 node
+	 (list (cons 'layout 'left)
+	       (cons 'spacing spacing)))
 	node)))
 
   (define loader-update!
@@ -153,48 +157,48 @@
 	       (lambda (path)
 		 (let ([entry (hashtable-ref data path #f)])
 		   (when (pair? entry)
-		     (let ([waiting-nodes (hashtable-ref path->nodes path '())])
-		       (if (null? waiting-nodes)
-			   (hashtable-delete! data path)
-			   (case (car entry)
-			     [(texture)
-			      (let* ([img (cadr entry)]
-				     [tex (LoadTextureFromImage img)])
-				(TraceLog LOG_INFO (format "RESOURCE: Uploading texture for ~a, nodes count: ~a" path (length waiting-nodes)))
-				(UnloadImage img)
-				(if (zero? (Texture-id tex))
-				    (TraceLog LOG_ERROR (format "RESOURCE: Failed to create texture from memory: ~a" path))
-				    (begin
-				      (TraceLog LOG_INFO (format "RESOURCE: Texture uploaded: ~a (id=~a)" path (Texture-id tex)))
-				      (hashtable-set! cache path tex)
-				      (for-each
-				       (lambda (node)
-					 (node-resource-set! node tex)
-					 (node-type-set! node 'texture)
-					 (hashtable-delete! pending node))
-				       waiting-nodes))))
-			      ]
-			     [(font)
-			      (let* ([atlas (cadr entry)]
-				     [glyph-map (caddr entry)]
-				     [tex (LoadTextureFromImage atlas)])
-				(UnloadImage atlas)
-				(if (zero? (Texture-id tex))
-				    (TraceLog LOG_ERROR (format "RESOURCE: Failed to upload font texture: ~a" path))
-				    (begin
-				      (SetTextureFilter tex 1)
-				      (let ([font (cons tex glyph-map)])
-					(hashtable-set! cache path font)
-					(for-each
-					 (lambda (node)
-					   (node-resource-set! node font)
-					   (node-type-set! node 'char)
-					   (hashtable-delete! pending node))
-					 waiting-nodes)))))
-			      ]
-			     [else
-			      (TraceLog LOG_ERROR (format "RESOURCE: Unknown data type ~a" (car entry)))])
-			   )
+		     (let ([waiting-nodes (hashtable-ref path->nodes path '())]
+			   (if (null? waiting-nodes)
+			       (hashtable-delete! data path)
+			       (case (car entry)
+				 [(texture)
+				  (let* ([img (cadr entry)]
+					 [tex (LoadTextureFromImage img)])
+				    (TraceLog LOG_INFO (format "RESOURCE: Uploading texture for ~a, nodes count: ~a" path (length waiting-nodes)))
+				    (UnloadImage img)
+				    (if (zero? (Texture-id tex))
+					(TraceLog LOG_ERROR (format "RESOURCE: Failed to create texture from memory: ~a" path))
+					(begin
+					  (TraceLog LOG_INFO (format "RESOURCE: Texture uploaded: ~a (id=~a)" path (Texture-id tex)))
+					  (hashtable-set! cache path tex)
+					  (for-each
+					   (lambda (node)
+					     (node-resource-set! node tex)
+					     (node-type-set! node 'texture)
+					     (hashtable-delete! pending node))
+					   waiting-nodes))))
+				  ]
+				 [(font)
+				  (let* ([atlas (cadr entry)]
+					 [glyph-map (caddr entry)]
+					 [tex (LoadTextureFromImage atlas)])
+				    (UnloadImage atlas)
+				    (if (zero? (Texture-id tex))
+					(TraceLog LOG_ERROR (format "RESOURCE: Failed to upload font texture: ~a" path))
+					(begin
+					  (SetTextureFilter tex 1)
+					  (let ([font (cons tex glyph-map)])
+					    (hashtable-set! cache path font)
+					    (for-each
+					     (lambda (node)
+					       (node-resource-set! node font)
+					       (node-type-set! node 'char)
+					       (hashtable-delete! pending node))
+					     waiting-nodes)))))
+				  ]
+				 [else
+				  (TraceLog LOG_ERROR (format "RESOURCE: Unknown data type ~a" (car entry)))])
+			       ))
 		       (hashtable-delete! data path)))))
 	       paths))))))
     )

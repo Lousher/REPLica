@@ -30,6 +30,9 @@
   (define char-node3)
   (define char-node4)
   (define char-node5)
+  (define char-node6)
+  (define char-node7)
+  (define char-node8)
   (define text-node1)
 
   (define replica
@@ -54,11 +57,16 @@
 	  (set! char-node3 (make-char-node rm 6 "xiaolai" #\个))
 	  (set! char-node4 (make-char-node rm 7 "xiaolai" #\测))
 	  (set! char-node5 (make-char-node rm 8 "xiaolai" #\试))
+	  (set! char-node6 (make-char-node rm 9 "xiaolai" #\真))
+	  (set! char-node7 (make-char-node rm 10 "xiaolai" #\好))
+	  (set! char-node8 (make-char-node rm 11 "xiaolai" #\啊))
 	  (set! text-node1
 		(make-text-node
-		 rm 9
-		 (list char-node1 char-node2 char-node3 char-node4 char-node5)))
-
+		 12
+		 (list char-node1 char-node2 char-node3 char-node4 char-node5 char-node6 char-node7 char-node8) 10))
+	  (node-x-set! text-node1 500)
+	  (node-y-set! text-node1 200)
+	  (node-scale-set! text-node1 2)
 	  )
 	(let ([root (make-root-node 1920 1080)])
 	  (node-add! root test-node1)
