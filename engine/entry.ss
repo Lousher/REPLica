@@ -7,6 +7,7 @@
 	  (scene renderer)
 	  (engine resource)
 	  (engine animation)
+	  (engine event)
 	  (engine easing) ;test
 	  )
 					; Manually Control FPS, raylib got some issues
@@ -37,21 +38,47 @@
   (define char-node7)
   (define char-node8)
   (define text-node1)
+  (define interact-node1)
 
   (define replica
     (lambda ()
-      (InitWindow 1920 1080 "REPLica Engine")
+      (InitWindow 500 500 "REPLica Engine")
       (InitAudioDevice)
       (init-renderer "sdf.fs")
       (let ([rm (make-manager)])
 	(mount rm "test.rpk")
-	(begin 
+	(begin
 	  (set! test-node1 (make-texture-node rm 1 "t1"))
 	  (node-x-set! test-node1 500)
 	  (node-y-set! test-node1 500)
-	  (animate test-node1 'x 500 1000 2.0
-		   `(easing . ,ease-in-out-quad)
-		   `(pingpong? . ,#t))
+	  (set! interact-node1
+		(make-interact-node
+		 13 100 100
+		 (let ([clicked-count 0])
+		   (lambda ()
+		     (animate text-node1 'scale 1 2 1.0
+			      `(easing . ,ease-in-out-quad)
+			      `(pingpong? . ,#t))
+		     (set! clicked-count (+ clicked-count 1))
+		     (TraceLog LOG_INFO
+			       (format "INTERACT: Clicked ~a" clicked-count))))
+		 (let ([hovered-count 0])
+		   (lambda ()
+		     (animate test-node1 'x 500 1000 1.0
+			      `(easing . ,ease-in-out-quad)
+			      `(pingpong? . ,#t))
+		     (set! hovered-count (+ hovered-count 1))
+		     (TraceLog LOG_INFO
+			       (format "INTERACT: Hovered ~a" hovered-count))))
+		 (let ([leaved-count 0])
+		   (lambda ()
+		     (animate text-node1 'rotation 0 90 1.0
+			      `(easing . ,ease-in-out-sine)
+			      `(pingpong? . ,#t))
+		     (set! leaved-count (+ leaved-count 1))
+		     (TraceLog LOG_INFO
+			       (format "INTERACT: Leaved ~a" leaved-count))))
+		 ))
 	  (node-scale-set! test-node1 0.5)
 					;	  (set! test-node2 (make-texture-node rm 2 "t2"))
 					;	  (set! test-node3 (make-texture-node rm 3 "t1"))
@@ -70,20 +97,25 @@
 	  (node-x-set! text-node1 400)
 	  (node-y-set! text-node1 200)
 	  (node-scale-set! text-node1 1)
+	  
 	  (node-rotation-set! text-node1 0)
+	  
 	  )
 	(let ([root (make-root-node 1920 1080)])
 	  (node-add! root test-node1)
 					;	  (node-add! root test-node2)
 					;	  (node-add! root test-node3)
 	  (node-add! root text-node1)
+	  (node-add! root interact-node1)
 	  (let loop ([time (GetTime)])
 	    (unless (WindowShouldClose)
 	      (loader-update! rm)
+	      (clear-interact-regions!)
 	      (animations-update!)
 	      (BeginDrawing)
 	      (ClearBackground BLACK)
 	      (render root)
+	      (events-update!)
 	      (EndDrawing)
 	      (fps-control time)	; FPS control
 	      (loop (GetTime))))))

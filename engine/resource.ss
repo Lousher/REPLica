@@ -5,6 +5,7 @@
    make-texture-node
    make-char-node
    make-text-node
+   make-interact-node
    loader-update!
    )
   (import (chezscheme)
@@ -135,6 +136,14 @@
 	 (list (cons 'layout 'left)
 	       (cons 'spacing spacing)
 	       (cons 'width #f)))
+	node)))
+
+  (define make-interact-node
+    (lambda (id w h click-cb hover-cb leave-cb)
+      (let ([node (make-node id 'interact #f (cons w h))])
+	(node-customize-set! node (list (cons 'click click-cb)
+					(cons 'hover hover-cb)
+					(cons 'leave leave-cb)))
 	node)))
 
   (define loader-update!

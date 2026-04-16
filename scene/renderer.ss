@@ -3,7 +3,8 @@
   (import (chezscheme)
 	  (raylib ffi)
 	  (raylib constant)
-	  (scene node))
+	  (scene node)
+	  (engine event))
 
   (define *sdf-shader* #f)
   (define *text-x* (make-parameter 0.0))
@@ -112,6 +113,23 @@
 	  (case type
 	    [(root)
 	     (for-each render-node (node-children node))]
+	    [(interact)
+	     (let* ([data (node-data node)]
+		    [w (car data)]
+		    [h (cdr data)]
+		    [x (node-x node)]
+		    [y (node-y node)]
+		    [cbs (node-customize node)]
+		    [click (assv 'click cbs)]
+		    [hover (assv 'hover cbs)]
+		    [leave (assv 'leave cbs)])
+	       (register-interact-region
+		(node-id node)
+		x y w h
+		(if click (cdr click) #f)
+		(if hover (cdr hover) #f)
+		(if leave (cdr leave) #f))
+	       (for-each render-node (node-children node)))]
 	    [(text)
 	     (let* ([children (node-children node)]
 		    [custom (node-customize node)]

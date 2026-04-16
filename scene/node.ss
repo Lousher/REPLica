@@ -8,7 +8,7 @@
           node-x node-x-set!
           node-y node-y-set!
           node-scale node-scale-set!
-          node-rotation node-rotation-set!
+	  node-rotation node-rotation-set!
           node-alpha node-alpha-set!
           node-color node-color-set!
           node-pivot-x node-pivot-x-set!
