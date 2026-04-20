@@ -8,11 +8,13 @@
 	  (engine resource)
 	  (engine animation)
 	  (engine event)
+	  (engine state)
 	  (engine easing) ;test
 	  )
 					; Manually Control FPS, raylib got some issues
   (define FPS 60)
-  (define FRAME_TARGET_TIME (/ 1.0 FPS)) 
+  (define FRAME_TARGET_TIME (/ 1.0 FPS))
+  (define *current-manager* (make-parameter #f))
 
   (define fps-control
     (lambda (prev-time)
@@ -25,93 +27,60 @@
 		  'time-duration
 		  (inexact->exact (floor (* sleep-time 1e9))) 0)])
 	    (sleep time-duration))))))
-  
-  (define test-node1)
-  (define test-node2)
-  (define test-node3)
-  (define char-node1)
-  (define char-node2)
-  (define char-node3)
-  (define char-node4)
-  (define char-node5)
-  (define char-node6)
-  (define char-node7)
-  (define char-node8)
-  (define text-node1)
-  (define interact-node1)
+
+  (define run-script
+    (lambda (game)
+      (let ([rm (*current-manager*)])
+	(case (state-pc game)
+	  [(0)
+	   (let ([root (state-root game)])
+	     (let ([tex-node1 (make-texture-node rm 1 "t1")])
+	       (node-x-set! tex-node1 500)
+	       (node-y-set! tex-node1 500)
+	       (node-scale-set! tex-node1 0.5)
+	       (node-add! root tex-node1)))
+	   (state-pc-set! game 1)]
+	  [(1)
+	   (when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+	     (state-pc-set! game 2))]
+	  [(2)
+	   (let ([root (state-root game)])
+	     (let ([char-node1 (make-char-node rm 4 "xiaolai" #\A)]
+		   [char-node2 (make-char-node rm 5 "xiaolai" #\g)]
+		   [char-node3 (make-char-node rm 6 "xiaolai" #\y)]
+		   [char-node4 (make-char-node rm 7 "xiaolai" #\j)]
+		   [char-node5 (make-char-node rm 8 "xiaolai" #\p)]
+		   [char-node6 (make-char-node rm 9 "xiaolai" #\q)]
+		   [char-node7 (make-char-node rm 10 "xiaolai" #\好)]
+		   [char-node8 (make-char-node rm 11 "xiaolai" #\啊)])
+	       (let ([text-node1
+		      (make-text-node
+		       12
+		       (list char-node1 char-node2 char-node3 char-node4 char-node5 char-node6 char-node7 char-node8) 10)])
+		 (node-x-set! text-node1 100)
+		 (node-y-set! text-node1 200)
+		 (node-scale-set! text-node1 0.5)
+		 (node-add! root text-node1)
+		 )))
+	   (state-pc-set! game 3)]
+	  [(3) (void)]
+	  ))))
 
   (define replica
     (lambda ()
-      (InitWindow 500 500 "REPLica Engine")
+      (InitWindow 1920 1080 "REPLica Engine")
       (InitAudioDevice)
       (init-renderer "sdf.fs")
-      (let ([rm (make-manager)])
-	(mount rm "test.rpk")
-	(begin
-	  (set! test-node1 (make-texture-node rm 1 "t1"))
-	  (node-x-set! test-node1 500)
-	  (node-y-set! test-node1 500)
-	  (set! interact-node1
-		(make-interact-node
-		 13 100 100
-		 (let ([clicked-count 0])
-		   (lambda ()
-		     (animate text-node1 'scale 1 2 1.0
-			      `(easing . ,ease-in-out-quad)
-			      `(pingpong? . ,#t))
-		     (set! clicked-count (+ clicked-count 1))
-		     (TraceLog LOG_INFO
-			       (format "INTERACT: Clicked ~a" clicked-count))))
-		 (let ([hovered-count 0])
-		   (lambda ()
-		     (animate test-node1 'x 500 1000 1.0
-			      `(easing . ,ease-in-out-quad)
-			      `(pingpong? . ,#t))
-		     (set! hovered-count (+ hovered-count 1))
-		     (TraceLog LOG_INFO
-			       (format "INTERACT: Hovered ~a" hovered-count))))
-		 (let ([leaved-count 0])
-		   (lambda ()
-		     (animate text-node1 'rotation 0 90 1.0
-			      `(easing . ,ease-in-out-sine)
-			      `(pingpong? . ,#t))
-		     (set! leaved-count (+ leaved-count 1))
-		     (TraceLog LOG_INFO
-			       (format "INTERACT: Leaved ~a" leaved-count))))
-		 ))
-	  (node-scale-set! test-node1 0.5)
-					;	  (set! test-node2 (make-texture-node rm 2 "t2"))
-					;	  (set! test-node3 (make-texture-node rm 3 "t1"))
-	  (set! char-node1 (make-char-node rm 4 "xiaolai" #\A))
-	  (set! char-node2 (make-char-node rm 5 "xiaolai" #\g))
-	  (set! char-node3 (make-char-node rm 6 "xiaolai" #\y))
-	  (set! char-node4 (make-char-node rm 7 "xiaolai" #\j))
-	  (set! char-node5 (make-char-node rm 8 "xiaolai" #\p))
-	  (set! char-node6 (make-char-node rm 9 "xiaolai" #\q))
-	  (set! char-node7 (make-char-node rm 10 "xiaolai" #\好))
-	  (set! char-node8 (make-char-node rm 11 "xiaolai" #\啊))
-	  (set! text-node1
-		(make-text-node
-		 12
-		 (list char-node1 char-node2 char-node3 char-node4 char-node5 char-node6 char-node7 char-node8) 10))
-	  (node-x-set! text-node1 400)
-	  (node-y-set! text-node1 200)
-	  (node-scale-set! text-node1 1)
-	  
-	  (node-rotation-set! text-node1 0)
-	  
-	  )
-	(let ([root (make-root-node 1920 1080)])
-	  (node-add! root test-node1)
-					;	  (node-add! root test-node2)
-					;	  (node-add! root test-node3)
-	  (node-add! root text-node1)
-	  (node-add! root interact-node1)
+      (parameterize ([*current-manager* (make-manager)])
+	(mount (*current-manager*) "test.rpk")
+	(let* ([root (make-root-node 1920 1080)]
+	       [game (make-state root)])
 	  (let loop ([time (GetTime)])
 	    (unless (WindowShouldClose)
-	      (loader-update! rm)
-	      (clear-interact-regions!)
+	      (loader-update! (*current-manager*))
 	      (animations-update!)
+	      (clear-interact-regions!)
+	      (run-script game)
 	      (BeginDrawing)
 	      (ClearBackground BLACK)
 	      (render root)
