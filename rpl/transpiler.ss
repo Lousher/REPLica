@@ -1,6 +1,7 @@
 (library (rpl transpiler)
   (export transpile)
-  (import (chezscheme))
+  (import (chezscheme)
+	  )
 
   (define reads
     (lambda (p)
@@ -38,8 +39,8 @@
       (let* ([stages (transpile-body body 0)]
 	     [max-pc (if (null? stages) 0
 			 (apply max (map car stages)))])
-	`(define (,name rm)
-	   (lambda (game)
+	`(define (,name game)
+	   (let ([rm (*current-manager*)])
 	     (case (state-pc game)
 	       ,@(map
 		  (lambda (st)
@@ -92,7 +93,7 @@
 				     (engine resource)
 				     (engine state)
 				     (engine event)
-					;(rpl runtime)
+				     (rpl runtime)
 				     )
 			     ,@stage-defs)])
 		(with-output-to-file out

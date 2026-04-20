@@ -23,11 +23,8 @@
           node-find-by-tag
           make-root-node
 	  node-clear!
-	  node-id-gen
 	  )
   (import (chezscheme))
-
-  (define *next-node-id* 0)
 
   ;; 节点记录定义
   (define-record-type node
@@ -77,12 +74,6 @@
   (define node-clear!
     (lambda (r)
       (node-children-set! r '())))
-
-  (define node-id-gen
-    (lambda ()
-      (let ([id *next-node-id*])
-	(set! *next-node-id* (+ id 1))
-	id)))
 
   ;; 通过 ID 查找节点（深度优先）
   (define (node-find-by-id root id)
