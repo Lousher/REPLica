@@ -67,20 +67,21 @@
 	  ))))
 
   (define replica
-    (lambda ()
+    (lambda (case-fn)
       (InitWindow 1920 1080 "REPLica Engine")
       (InitAudioDevice)
       (init-renderer "sdf.fs")
       (parameterize ([*current-manager* (make-manager)])
 	(mount (*current-manager*) "test.rpk")
 	(let* ([root (make-root-node 1920 1080)]
-	       [game (make-state root)])
+	       [game (make-state root)]
+	       [case-ready (case-fn (*current-manager*))])
 	  (let loop ([time (GetTime)])
 	    (unless (WindowShouldClose)
 	      (loader-update! (*current-manager*))
 	      (animations-update!)
 	      (clear-interact-regions!)
-	      (run-script game)
+	      (case-ready game)
 	      (BeginDrawing)
 	      (ClearBackground BLACK)
 	      (render root)
