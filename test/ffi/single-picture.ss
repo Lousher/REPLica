@@ -1,6 +1,7 @@
 (load-shared-object "ffi/raylib/libraylib.so.6.0.0")
 
 (import (ffi raylib binding))
+(import (core type))
 (import (design color))
 
 (define main

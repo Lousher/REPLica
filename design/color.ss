@@ -1,51 +1,9 @@
 (library (design color)
   (export
-   color->Color Color->color
    lightgray gray darkgray yellow gold orange pink red maroon green lime darkgreen skyblue blue darkblue purple violet darkpurple beige brown drakbrwon white black blank magenta raywhite)
   (import
    (chezscheme)
-   (only (ffi raylib binding) Color))
-
-  (define uint8?
-    (lambda (x)
-      (and (fixnum? x)
-	   (<= 0 x 255))))
-
-  (define-record-type color
-    (fields
-     (immutable r)
-     (immutable g)
-     (immutable b)
-     (immutable a))
-    (protocol
-     (lambda (new)
-       (lambda (r g b a)
-	 (assert (uint8? r))
-	 (assert (uint8? g))
-	 (assert (uint8? b))
-	 (assert (uint8? a))
-	 (new r g b a)))))
-
-  (define color->Color
-    (lambda (c)
-      (assert (color? c))
-      (let ([Color-fptr (make-ftype-pointer Color (foreign-alloc (ftype-sizeof Color)))])
-	(ftype-set! Color (r) Color-fptr (color-r c))
-	(ftype-set! Color (g) Color-fptr (color-g c))
-	(ftype-set! Color (b) Color-fptr (color-b c))
-	(ftype-set! Color (a) Color-fptr (color-a c))
-	Color-fptr)
-      ))
-
-  (define Color->color
-    (lambda (C)
-      (assert (ftype-pointer? C)) ;Not accurate
-      (let ([r (ftype-ref Color (r) C)]
-	    [g (ftype-ref Color (g) C)]
-	    [b (ftype-ref Color (b) C)]
-	    [a (ftype-ref Color (a) C)])
-	(make-color r g b a)))
-    )
+   (only (core type) make-color))
 
   (define lightgray
     (make-color 200 200 200 255))
