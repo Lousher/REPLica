@@ -1,6 +1,8 @@
 *~
 .DS_Store
-assets/
-stories/
 *.so
 \#*\#
+*.a
+*.so*
+*.tar*
+raylib-6.0*/
