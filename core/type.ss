@@ -9,6 +9,7 @@
    make-texture texture?
    texture-name texture-pointer texture-source texture-source-set!
    texture-origin texture-origin-set! texture-tint texture-tint-set!
+   texture-width texture-height
    )
   (import
    (chezscheme)
@@ -147,4 +148,14 @@
 	     (exact->inexact width)
 	     (exact->inexact height))
 	    origin white))))))
+
+  (define texture-width
+    (lambda (tex)
+      (exact->inexact
+       (ftype-ref Texture2D (width) (texture-pointer tex)))))
+
+  (define texture-height
+    (lambda (tex)
+      (exact->inexact
+       (ftype-ref Texture2D (height) (texture-pointer tex)))))
   )

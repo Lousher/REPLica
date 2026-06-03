@@ -14,21 +14,22 @@
     (let* ([lena (LoadTexture "test/ffi/lenna.png")]
 	   [tex-in (make-texture "lenna" lena)]
 	   [lena-pic (texture->picture tex-in)]
+	   [final-pic (beside (above lena-pic lena-pic 0.5)
+			      (above lena-pic lena-pic 0.5)
+			      0.5)]
 	   [fr (make-frame
-		125.0 125.0
-		(texture-width tex-in)
-		(texture-height tex-in)
-		(make-vector2 0.5 0.5)
-		90.0)]
+		0.0 0.0 400.0 400.0
+		(make-vector2 0.0 0.0)
+		0.0)]
 	   [BLANK (color->Color blank)]
 	   )
-      (let loop ([width 0.0])
+      (let loop ()
 	(unless (WindowShouldClose)
 	  (BeginDrawing)
 	  (ClearBackground BLANK)
-	  (lena-pic fr)
+	  (final-pic fr)
 	  (EndDrawing)
-	  (loop (+ width (* 0.1 (GetTime)))))
+	  (loop))
 	)
       (UnloadTexture lena))
     (CloseWindow)))
