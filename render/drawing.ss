@@ -2,7 +2,6 @@
   (export draw-texture-pro)
   (import (chezscheme)
 	  (ffi raylib binding)
-	  (render resource)
 	  (core type))
 
   (define-syntax ftype-alloc
@@ -16,7 +15,7 @@
 	  [origin-fptr (ftype-alloc Vector2)]
 	  [tint-fptr (ftype-alloc Color)])
       (lambda (tex src dest origin rotation tint)
-	(assert (asset? tex))
+	(assert (texture? tex))
 	(assert (rectangle? src))
 	(assert (rectangle? dest))
 	(assert (vector2? origin))
@@ -29,7 +28,7 @@
 	(color->Color tint tint-fptr)
 	
 	(DrawTexturePro
-	 (asset-pointer tex)
+	 (texture-pointer tex)
 	 src-fptr
 	 dest-fptr
 	 origin-fptr

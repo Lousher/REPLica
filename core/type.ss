@@ -6,10 +6,13 @@
    vector2-x vector2-y
    make-rectangle rectangle->Rectangle Rectangle->rectangle rectangle?
    rectangle-x rectangle-y rectangle-width rectangle-height
+   make-texture texture?
+   texture-name texture-pointer texture-source texture-source-set!
+   texture-origin texture-origin-set! texture-tint texture-tint-set!
    )
   (import
    (chezscheme)
-   (only (ffi raylib binding) Color Rectangle Vector2)
+   (only (ffi raylib binding) Color Rectangle Vector2 Texture2D)
    )
 
   (define-syntax ftype-alloc
@@ -121,4 +124,27 @@
 	    [a (ftype-ref Color (a) C)])
 	(make-color r g b a)))
     )
+
+  (define-record-type texture
+    (fields
+     (immutable name)
+     (immutable pointer)
+     (mutable source)
+     (mutable origin)
+     (mutable tint))
+    (protocol
+     (lambda (new)
+       (lambda (name fptr)
+	 (assert (ftype-pointer? fptr))
+	 (let ([width (ftype-ref Texture2D (width) fptr)]
+	       [height (ftype-ref Texture2D (height) fptr)]
+	       [origin (make-vector2 0.0 0.0)]
+	       [white (make-color 255 255 255 255)])
+	   (new
+	    name fptr
+	    (make-rectangle
+	     0.0 0.0
+	     (exact->inexact width)
+	     (exact->inexact height))
+	    origin white))))))
   )
