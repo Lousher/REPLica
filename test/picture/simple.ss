@@ -15,10 +15,12 @@
 	   [tex-in (make-texture "lenna" lena)]
 	   [lena-pic (texture->picture tex-in)]
 	   [fr (make-frame
-		125.0 125.0
 		(texture-width tex-in)
 		(texture-height tex-in)
-		(make-vector2 0.5 0.5)
+		(make-vector2 (/ (texture-width tex-in) 2)
+			      (/ (texture-height tex-in) 2))
+		(make-vector2 (/ (texture-width tex-in) 2)
+			      (/ (texture-height tex-in) 2))
 		90.0)]
 	   [BLANK (color->Color blank)]
 	   )

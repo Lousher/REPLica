@@ -1,10 +1,11 @@
 (library (core frame)
   (export
    frame? make-frame
-   frame-x frame-y frame-width frame-height
-   frame-x-set! frame-y-set! frame-width-set! frame-height-set!
-   frame-rotation frame-rotation-set!
-   frame-pivot frame-pivot-set!
+   frame-width frame-height frame-anchor frame-origin frame-rotation
+   frame-width-set! frame-height-set!
+   frame-rotation-set!
+   frame-origin-set!
+   frame-anchor-set!
    )
   (import
    (chezscheme)
@@ -12,16 +13,15 @@
 
   (define-record-type frame
     (fields
-     (mutable x)
-     (mutable y)
      (mutable width)
      (mutable height)
-     (mutable pivot)
+     (mutable anchor)
+     (mutable origin)
      (mutable rotation))
     (protocol
      (lambda (new)
-       (lambda (x y w h piv rot)
-	 (assert (for-all flonum? (list x y w h rot)))
-	 (assert (vector2? piv))
-	 (new x y w h piv rot)))))
+       (lambda (w h anchor ori rot)
+	 (assert (for-all flonum? (list w h rot)))
+	 (assert (for-all vector2? (list anchor ori)))
+	 (new w h anchor ori rot)))))
   )

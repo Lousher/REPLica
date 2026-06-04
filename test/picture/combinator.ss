@@ -14,12 +14,14 @@
     (let* ([lena (LoadTexture "test/ffi/lenna.png")]
 	   [tex-in (make-texture "lenna" lena)]
 	   [lena-pic (texture->picture tex-in)]
-	   [final-pic (beside (above lena-pic lena-pic 0.5)
+	   [final-pic (beside (above
+			       lena-pic lena-pic 0.5)
 			      (above lena-pic lena-pic 0.5)
 			      0.5)]
 	   [fr (make-frame
-		0.0 0.0 400.0 400.0
-		(make-vector2 0.0 0.0)
+		250.0 250.0
+		(make-vector2 125.0 125.0)
+		(make-vector2 125.0 125.0)
 		0.0)]
 	   [BLANK (color->Color blank)]
 	   )
