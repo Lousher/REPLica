@@ -15,13 +15,6 @@
 	  [origin-fptr (ftype-alloc Vector2)]
 	  [tint-fptr (ftype-alloc Color)])
       (lambda (tex src dest origin rotation tint)
-	(assert (texture? tex))
-	(assert (rectangle? src))
-	(assert (rectangle? dest))
-	(assert (vector2? origin))
-	(assert (flonum? rotation))
-	(assert (color? tint))
-
 	(rectangle->Rectangle src src-fptr)
 	(rectangle->Rectangle dest dest-fptr)
 	(vector2->Vector2 origin origin-fptr)

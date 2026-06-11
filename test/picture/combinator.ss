@@ -3,6 +3,8 @@
 (import (core type))
 (import (core frame))
 (import (core picture))
+(import (core animator))
+(import (prefix (core rate) rate:))
 (import (design color))
 
 (import (ffi raylib binding))
@@ -20,18 +22,20 @@
 			      0.5)]
 	   [fr (make-frame
 		250.0 250.0
-		(make-vector2 125.0 125.0)
+		(make-vector2 480.0 270.0)
 		(make-vector2 125.0 125.0)
 		0.0)]
 	   [BLANK (color->Color blank)]
+	   [ani (spin final-pic (rate:sine 180 2))]
 	   )
       (let loop ()
 	(unless (WindowShouldClose)
-	  (BeginDrawing)
-	  (ClearBackground BLANK)
-	  (final-pic fr)
-	  (EndDrawing)
-	  (loop))
+	  (parameterize ([*PASSED* (GetTime)])
+	    (BeginDrawing)
+	    (ClearBackground BLANK)
+	    (ani fr)
+	    (EndDrawing)
+	    (loop)))
 	)
       (UnloadTexture lena))
     (CloseWindow)))
