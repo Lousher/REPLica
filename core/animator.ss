@@ -1,11 +1,14 @@
 (library (core animator)
   (export *PASSED*
-	  static spin shock)
+	  static spin shock crossfade)
   (import
    (ffi raylib binding)
    (core frame)
    (core type)
-   (chezscheme))
+   (only (core picture) *TINT*)
+   (chezscheme)
+   (design color)
+   )
 
   (define *FPS* 60)
   (define *PASSED* (make-parameter 0.0))
@@ -19,7 +22,7 @@
       (let ([start #f])
 	(lambda (f)
 	  (unless start
-	    (set! start (GetTime)))
+	    (set! start (*PASSED*)))
 	  (let ([passed (*PASSED*)]
 		[w (frame-width f)]
 		[h (frame-height f)]
@@ -37,7 +40,7 @@
       (let ([start #f])
 	(lambda (f)
 	  (unless start
-	    (set! start (GetTime)))
+	    (set! start (*PASSED*)))
 	  (let ([elapsed (- (*PASSED*) start)])
 	    (if (>= elapsed duration)
 		(pic f)
@@ -56,4 +59,27 @@
 		      (make-vector2 (+ dx (vector2-x ori))
 				    (+ dy (vector2-y ori))) rot))
 		    ))))))))
+
+  (define color-alpha 
+    (lambda (c a)
+      (make-color (color-r c)
+		  (color-g c)
+		  (color-b c)
+		  (inexact->exact a))))
+  
+  (define crossfade
+    (lambda (ani1 ani2 duration easing)
+      (let ([start #f])
+	(lambda (fr)
+	  (unless start
+	    (set! start (*PASSED*)))
+	  (let* ([elapsed (- (*PASSED*) start)]
+		 [t (min 1.0 (/ elapsed duration))]
+		 [progress (easing t)]
+		 [alpha1 (floor (* (- 1 progress) 255))]
+		 [alpha2 (floor (* progress 255))])
+	    (parameterize ([*TINT* (color-alpha white alpha1)])
+	      (ani1 fr))
+	    (parameterize ([*TINT* (color-alpha white alpha2)])
+	      (ani2 fr)))))))
   )

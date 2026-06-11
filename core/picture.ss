@@ -1,5 +1,5 @@
 (library (core picture)
-  (export texture->picture beside above)
+  (export texture->picture beside above *TINT*)
   (import
    (chezscheme)
    (render drawing)
@@ -7,6 +7,14 @@
    (core frame)
    (design color))
 
+  (define *TINT* (make-parameter white))
+
+  (define (color-multiply c1 c2)
+    (make-color (floor (/ (* (color-r c1) (color-r c2)) 255))
+		(floor (/ (* (color-g c1) (color-g c2)) 255))
+		(floor (/ (* (color-b c1) (color-b c2)) 255))
+		(floor (/ (* (color-a c1) (color-a c2)) 255))))
+  
   (define texture->picture
     (lambda (tex)
       (assert (texture? tex))
@@ -37,7 +45,10 @@
 		acr-x acr-y
 		(frame-width fr) (frame-height fr))
 	       origin
-	       (frame-rotation fr) (texture-tint tex)
+	       (frame-rotation fr)
+	       (color-multiply
+		(texture-tint tex)
+		(*TINT*))
 	       )))))
       ))
 
