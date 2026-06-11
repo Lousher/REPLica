@@ -13,7 +13,8 @@
    )
   (import
    (chezscheme)
-   (only (ffi raylib binding) Color Rectangle Vector2 Texture2D)
+   (only (ffi raylib binding) Color Rectangle Vector2 Texture2D
+	 SetTextureFilter TEXTURE_FILTER_BILINEAR)
    )
 
   (define-syntax ftype-alloc
@@ -137,6 +138,7 @@
      (lambda (new)
        (lambda (name fptr)
 	 (assert (ftype-pointer? fptr))
+	 (SetTextureFilter fptr TEXTURE_FILTER_BILINEAR)
 	 (let ([width (ftype-ref Texture2D (width) fptr)]
 	       [height (ftype-ref Texture2D (height) fptr)]
 	       [origin (make-vector2 0.0 0.0)]

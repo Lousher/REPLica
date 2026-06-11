@@ -11,33 +11,32 @@
 
 (define main
   (lambda ()
-    (InitWindow 960 540 "Test")
+    (InitWindow 1920 1080 "Test")
     (SetTargetFPS 60)
-    (let* ([lena (LoadTexture "test/ffi/lenna.png")]
-	   [tex-in (make-texture "lenna" lena)]
-	   [lena-pic (texture->picture tex-in)]
-	   [final-pic (beside (above
-			       lena-pic lena-pic 0.5)
-			      (above lena-pic lena-pic 0.5)
-			      0.5)]
+    (let* ([tex (LoadTexture "test/store/apartment.morning.png")]
+	   [tex-in (make-texture "lenna" tex)]
+	   [pic (texture->picture tex-in)]
 	   [fr (make-frame
-		250.0 250.0
-		(make-vector2 480.0 270.0)
-		(make-vector2 125.0 125.0)
+		1920.0
+		1080.0
+		(make-vector2 960.0 540.0)
+		(make-vector2 960.0 540.0)
 		0.0)]
 	   [BLANK (color->Color blank)]
-	   [ani (spin final-pic (rate:sine 180 2))]
+	   [ani (shock pic 15 0.3)]
 	   )
-      (let loop ()
+      (let loop ([a ani])
 	(unless (WindowShouldClose)
 	  (parameterize ([*PASSED* (GetTime)])
+	    (when (IsMouseButtonPressed MOUSE_BUTTON_LEFT)
+	      (set! a (shock pic 15 0.3)))
 	    (BeginDrawing)
 	    (ClearBackground BLANK)
-	    (ani fr)
+	    (a fr)
 	    (EndDrawing)
-	    (loop)))
+	    (loop a)))
 	)
-      (UnloadTexture lena))
+      (UnloadTexture tex))
     (CloseWindow)))
 
 (main)
