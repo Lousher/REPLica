@@ -1,13 +1,14 @@
 (library (core picture)
   (export texture->picture beside above
-	  rotate layer stroke fade
+	  rotate layer stroke fade cache
 	  *TINT*)
   (import
    (chezscheme)
    (render drawing)
    (core type)
    (core frame)
-   (design color))
+   (design color)
+   (ffi raylib binding))
 
   (define *TINT* (make-parameter white))
   
@@ -152,4 +153,30 @@
 	  (parameterize ([*TINT* (color-multiply (*TINT*) local)])
 	    (pic fr))))
       ))
+
+  (define cache
+    (lambda (pic w h)
+      (let ([rt (LoadRenderTexture w h)]
+	    [cached #f])
+	(lambda (fr)
+	  (unless cached
+	    (BeginTextureMode rt)
+	    (ClearBackground (color->Color blank))
+	    (pic (make-frame (inexact w)
+			     (inexact (- h))
+			     (make-vector2 0.0 0.0)
+			     (make-vector2 0.0 0.0)
+			     0.0))
+	    (EndTextureMode)
+	    (let* ([img (LoadImageFromTexture (ftype-&ref RenderTexture2D (texture) rt))]
+		   [tex (LoadTextureFromImage img)])
+	      (UnloadImage img)
+	      (UnloadRenderTexture rt)
+	      (set! cached
+		    (texture->picture
+		     (make-texture
+		      "rt cache" tex
+		      )))))
+	  (cached fr)
+	  ))))
   )

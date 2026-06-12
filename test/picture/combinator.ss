@@ -14,27 +14,25 @@
   (lambda ()
     (SetConfigFlags FLAG_MSAA_4X_HINT)
     (InitWindow 1920 1080 "Test")
-
     (SetTargetFPS 60)
     (let* ([tex (LoadTexture "test/store/apartment.morning.png")]
 	   [tex2 (LoadTexture "test/store/apartment.afternoon.png")]
-	   [paper-img (GenImageColor 764 1080 (color->Color (make-color 240 238 230 255)))]
-	   [paper-tex (LoadTextureFromImage paper-img)]
 	   [tex-in (make-texture "morning" tex)]
 	   [tex2-in (make-texture "afternoon" tex2)]
-	   [paper-tex-in (make-texture "paper" paper-tex)]
+	   [paper-tex-in (color->texture white 1 1)]
 	   [noise-tex (make-perlin-noise-texture 256 256 0 0 3.0)]
 	   [noise-tex2 (make-perlin-noise-texture 256 256 0 0 8.0)]
-	   [pic (texture->picture tex-in)]
+	   [pic (cache (texture->picture tex-in) 1920 1080)]
 	   [pic2 (texture->picture tex2-in)]
 	   [noise-pic (texture->picture noise-tex)]
 	   [noise-pic2 (texture->picture noise-tex2)]
 	   [paper-pic
-	    (layer
-	     (stroke (texture->picture paper-tex-in) 0.5 gray)
-	     (fade noise-pic 10)
-	     (fade noise-pic2 10)
-	     )]
+	    (cache
+	     (layer
+	      (stroke (texture->picture paper-tex-in) 0.5 gray)
+	      (fade noise-pic 15)
+	      (fade noise-pic2 15)
+	      ) 764 1080)]
 	   [fr (make-frame
 		1920.0
 		1080.0
@@ -58,7 +56,6 @@
 		   (rotate paper-pic 0)
 		   ))]
 	   )
-      (UnloadImage paper-img)
       (let loop ([a ani])
 	(unless (WindowShouldClose)
 	  (parameterize ([*PASSED* (GetTime)])
