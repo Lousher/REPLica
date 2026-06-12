@@ -1,6 +1,7 @@
 (library (core picture)
   (export texture->picture beside above
 	  rotate layer stroke fade cache
+	  resize at origin
 	  *TINT*)
   (import
    (chezscheme)
@@ -107,6 +108,42 @@
 	      [acr (frame-anchor fr)]
 	      [rot (frame-rotation fr)])
 	  (pic (make-frame w h acr ori (+ rot angle)))
+	  ))))
+
+  (define at
+    (lambda (pic x y)
+      (lambda (fr)
+	(let ([w (frame-width fr)]
+	      [h (frame-height fr)]
+	      [acr (frame-anchor fr)]
+	      [ori (frame-origin fr)]
+	      [rot (frame-rotation fr)])
+	  (pic (make-frame w h (make-vector2
+				(+ x (vector2-x acr))
+				(+ y (vector2-y acr))) ori rot))
+	  ))))
+
+  (define origin
+    (lambda (pic ox oy)
+      (lambda (fr)
+	(let ([w (frame-width fr)]
+	      [h (frame-height fr)]
+	      [acr (frame-anchor fr)]
+	      [ori (frame-origin fr)]
+	      [rot (frame-rotation fr)])
+	  (pic (make-frame w h acr
+			   (make-vector2
+			    (+ (vector2-x ori) ox)
+			    (+ (vector2-y ori) oy)) rot))
+	  ))))
+
+  (define resize
+    (lambda (pic w h)
+      (lambda (fr)
+	(let ([ori (frame-origin fr)]
+	      [acr (frame-anchor fr)]
+	      [rot (frame-rotation fr)])
+	  (pic (make-frame (inexact w) (inexact h) acr ori rot))
 	  ))))
 
   (define stroke

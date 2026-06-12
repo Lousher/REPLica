@@ -1,6 +1,6 @@
 (library (core animator)
   (export *PASSED*
-	  static spin shock crossfade)
+	  static spin shake crossfade overlay)
   (import
    (ffi raylib binding)
    (core frame)
@@ -35,15 +35,15 @@
 	    ))))
     )
 
-  (define shock
-    (lambda (pic intensity duration)
+  (define shake
+    (lambda (ani intensity duration)
       (let ([start #f])
 	(lambda (f)
 	  (unless start
 	    (set! start (*PASSED*)))
 	  (let ([elapsed (- (*PASSED*) start)])
 	    (if (>= elapsed duration)
-		(pic f)
+		(ani f)
 		(let* ([decay (- 1 (/ elapsed duration))]
 		       [angle (* elapsed 70.0)]
 		       [dx (* intensity (sin angle) decay)]
@@ -53,7 +53,7 @@
 			[acr (frame-anchor f)]
 			[ori (frame-origin f)]
 			[rot (frame-rotation f)])
-		    (pic
+		    (ani
 		     (make-frame
 		      w h acr
 		      (make-vector2 (+ dx (vector2-x ori))
@@ -75,4 +75,12 @@
 	      (ani1 fr))
 	    (parameterize ([*TINT* (color-alpha white alpha2)])
 	      (ani2 fr)))))))
+
+  (define overlay
+    (lambda anis
+      (lambda (fr)
+	(for-each
+	 (lambda (ani) (ani fr))
+	 anis))
+      ))
   )
