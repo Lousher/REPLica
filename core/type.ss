@@ -8,9 +8,10 @@
    make-rectangle rectangle->Rectangle Rectangle->rectangle rectangle?
    rectangle-x rectangle-y rectangle-width rectangle-height
    make-texture texture? make-perlin-noise-texture
-   texture-name texture-pointer texture-source texture-source-set!
+   texture-path texture-pointer texture-source texture-source-set!
    texture-origin texture-origin-set! texture-tint texture-tint-set!
    texture-width texture-height
+   texture-pointer-set!
    )
   (import
    (chezscheme)
@@ -129,27 +130,32 @@
 
   (define-record-type texture
     (fields
-     (immutable name)
-     (immutable pointer)
+     (immutable path)
+     (mutable pointer)
      (mutable source)
      (mutable origin)
      (mutable tint))
     (protocol
      (lambda (new)
-       (lambda (name fptr)
-	 (assert (ftype-pointer? fptr))
-	 (SetTextureFilter fptr TEXTURE_FILTER_BILINEAR)
-	 (let ([width (ftype-ref Texture2D (width) fptr)]
-	       [height (ftype-ref Texture2D (height) fptr)]
-	       [origin (make-vector2 0.0 0.0)]
-	       [white (make-color 255 255 255 255)])
-	   (new
-	    name fptr
-	    (make-rectangle
-	     0.0 0.0
-	     (exact->inexact width)
-	     (exact->inexact height))
-	    origin white))))))
+       (case-lambda
+	 [(path)
+	  (assert (file-exists? path))
+	  (new path #f #f (make-vector2 0.0 0.0)
+	       (make-color 255 255 255 255))]
+	 [(name fptr)
+	  (assert (ftype-pointer? fptr))
+	  (SetTextureFilter fptr TEXTURE_FILTER_BILINEAR)
+	  (let ([width (ftype-ref Texture2D (width) fptr)]
+		[height (ftype-ref Texture2D (height) fptr)]
+		[origin (make-vector2 0.0 0.0)]
+		[white (make-color 255 255 255 255)])
+	    (new
+	     name fptr
+	     (make-rectangle
+	      0.0 0.0
+	      (exact->inexact width)
+	      (exact->inexact height))
+	     origin white))]))))
 
   (define color->hex-string
     (lambda (c)

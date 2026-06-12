@@ -1,0 +1,25 @@
+(library (engine game)
+  (export make-game)
+  (import
+   (chezscheme)
+   (core frame)
+   (core type)
+   (ffi raylib binding))
+
+  (define make-game
+    (lambda (title w h)
+      (SetConfigFlags FLAG_MSAA_4X_HINT)
+      (InitWindow w h title)
+      (SetTargetFPS 60)
+      (InitAudioDevice)
+      (lambda (stage)
+	(let ([window-frame (make-frame
+			     (inexact w)
+			     (inexact h)
+			     (make-vector2 0.0 0.0)
+			     (make-vector2 0.0 0.0)
+			     0.0)])
+	  (stage window-frame))
+	(CloseAudioDevice)
+	(CloseWindow))
+      )))
