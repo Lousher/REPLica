@@ -1,5 +1,7 @@
 (library (core picture)
-  (export texture->picture beside above *TINT*)
+  (export texture->picture beside above
+	  rotate layer stroke fade
+	  *TINT*)
   (import
    (chezscheme)
    (render drawing)
@@ -8,12 +10,6 @@
    (design color))
 
   (define *TINT* (make-parameter white))
-
-  (define (color-multiply c1 c2)
-    (make-color (floor (/ (* (color-r c1) (color-r c2)) 255))
-		(floor (/ (* (color-g c1) (color-g c2)) 255))
-		(floor (/ (* (color-b c1) (color-b c2)) 255))
-		(floor (/ (* (color-a c1) (color-a c2)) 255))))
   
   (define texture->picture
     (lambda (tex)
@@ -95,4 +91,65 @@
 	      (pic-a fr-a)
 	      (pic-b fr-b)))))))
 
+  (define layer
+    (lambda pics
+      (lambda (fr)
+	(for-each (lambda (p) (p fr)) pics))
+      ))
+
+  (define rotate
+    (lambda (pic angle)
+      (lambda (fr)
+	(let ([w (frame-width fr)]
+	      [h (frame-height fr)]
+	      [ori (frame-origin fr)]
+	      [acr (frame-anchor fr)]
+	      [rot (frame-rotation fr)])
+	  (pic (make-frame w h acr ori (+ rot angle)))
+	  ))))
+
+  (define stroke
+    (lambda (pic thickness color)
+      (lambda (fr)
+	(let ([c-tex (color->texture color 1 1)]
+	      [w (frame-width fr)]
+	      [h (frame-height fr)]
+	      [ori (frame-origin fr)]
+	      [acr (frame-anchor fr)]
+	      [rot (frame-rotation fr)]
+	      [thick (* 1.0 thickness)])
+	  (let ([x (vector2-x ori)]
+		[y (vector2-y ori)]
+		[acr-x (vector2-x acr)]
+		[acr-y (vector2-y acr)]
+		[line-pic (texture->picture c-tex)])
+	    (let ([top-fr (make-frame
+			   w thick
+			   acr ori rot)]
+		  [bottom-fr (make-frame
+			      w thick
+			      acr
+			      (make-vector2 x (+ y (- thick h)))
+			      rot)]
+		  [left-fr (make-frame
+			    thick h
+			    acr ori rot)]
+		  [right-fr (make-frame
+			     thick h
+			     acr (make-vector2 (+ x (- thick w)) y)
+			     rot)])
+	      (pic fr)
+	      (line-pic top-fr)
+	      (line-pic bottom-fr)
+	      (line-pic left-fr)
+	      (line-pic right-fr)))
+	  ))))
+
+  (define fade
+    (lambda (pic alpha)
+      (lambda (fr)
+	(let ([local (color-alpha white alpha)])
+	  (parameterize ([*TINT* (color-multiply (*TINT*) local)])
+	    (pic fr))))
+      ))
   )

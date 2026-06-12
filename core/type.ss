@@ -1,20 +1,20 @@
 (library (core type)
   (export
    make-color color->Color Color->color color?
+   color->texture
    color-r color-g color-b color-a
    make-vector2 vector2->Vector2 Vector2->vector2 vector2?
    vector2-x vector2-y
    make-rectangle rectangle->Rectangle Rectangle->rectangle rectangle?
    rectangle-x rectangle-y rectangle-width rectangle-height
-   make-texture texture?
+   make-texture texture? make-perlin-noise-texture
    texture-name texture-pointer texture-source texture-source-set!
    texture-origin texture-origin-set! texture-tint texture-tint-set!
    texture-width texture-height
    )
   (import
    (chezscheme)
-   (only (ffi raylib binding) Color Rectangle Vector2 Texture2D
-	 SetTextureFilter TEXTURE_FILTER_BILINEAR)
+   (ffi raylib binding)
    )
 
   (define-syntax ftype-alloc
@@ -151,6 +151,33 @@
 	     (exact->inexact height))
 	    origin white))))))
 
+  (define color->hex-string
+    (lambda (c)
+      (format "#~2,'0x~2,'0x~2,'0x~2,'0x"
+	      (color-r c)
+	      (color-g c)
+	      (color-b c)
+	      (color-a c))))
+
+  (define color->texture
+    (lambda (c w h)
+      (let* ([c-img (GenImageColor w h (color->Color c))]
+	     [c-tex (LoadTextureFromImage c-img)])
+	(UnloadImage c-img)
+	(make-texture (color->hex-string c) c-tex))))
+
+  (define make-perlin-noise-texture
+    (lambda (w h ox oy s)
+      (assert (for-all integer? (list w h ox oy)))
+      (assert (flonum? s))
+      (let ([n-img (GenImagePerlinNoise w h ox oy s)])
+	(ImageFormat n-img PIXELFORMAT_UNCOMPRESSED_GRAYSCALE)
+	(let ([n-tex (LoadTextureFromImage n-img)])
+	  (UnloadImage n-img)
+	  (SetTextureWrap n-tex TEXTURE_WRAP_REPEAT)
+	  (make-texture "perlin" n-tex))
+	)))
+  
   (define texture-width
     (lambda (tex)
       (exact->inexact

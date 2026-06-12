@@ -1,9 +1,24 @@
 (library (design color)
   (export
-   lightgray gray darkgray yellow gold orange pink red maroon green lime darkgreen skyblue blue darkblue purple violet darkpurple beige brown drakbrwon white black blank magenta raywhite)
+   color-alpha color-multiply
+   lightgray gray darkgray yellow gold orange pink red maroon green lime darkgreen skyblue blue darkblue purple violet darkpurple beige brown drakbrwon white black blank magenta raywhite
+   )
   (import
    (chezscheme)
-   (only (core type) make-color))
+   (core type))
+
+  (define (color-multiply c1 c2)
+    (make-color (floor (/ (* (color-r c1) (color-r c2)) 255))
+		(floor (/ (* (color-g c1) (color-g c2)) 255))
+		(floor (/ (* (color-b c1) (color-b c2)) 255))
+		(floor (/ (* (color-a c1) (color-a c2)) 255))))
+
+  (define color-alpha 
+    (lambda (c a)
+      (make-color (color-r c)
+		  (color-g c)
+		  (color-b c)
+		  (inexact->exact a))))
 
   (define lightgray
     (make-color 200 200 200 255))

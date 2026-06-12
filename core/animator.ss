@@ -59,13 +59,6 @@
 		      (make-vector2 (+ dx (vector2-x ori))
 				    (+ dy (vector2-y ori))) rot))
 		    ))))))))
-
-  (define color-alpha 
-    (lambda (c a)
-      (make-color (color-r c)
-		  (color-g c)
-		  (color-b c)
-		  (inexact->exact a))))
   
   (define crossfade
     (lambda (ani1 ani2 duration easing)
