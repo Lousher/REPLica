@@ -12,6 +12,8 @@
    texture-origin texture-origin-set! texture-tint texture-tint-set!
    texture-width texture-height
    texture-pointer-set!
+   make-glyph glyph?
+   glyph-codepoint glyph-coord glyph-offset glyph-advance
    )
   (import
    (chezscheme)
@@ -24,6 +26,7 @@
        (make-ftype-pointer ftype (foreign-alloc (ftype-sizeof ftype)))]))  
   
   (define-record-type rectangle
+    (nongenerative rectangle)
     (fields
      (immutable x)
      (immutable y)
@@ -60,6 +63,7 @@
     )
 
   (define-record-type vector2
+    (nongenerative vector2)
     (fields
      (immutable x)
      (immutable y)
@@ -193,4 +197,13 @@
     (lambda (tex)
       (exact->inexact
        (ftype-ref Texture2D (height) (texture-pointer tex)))))
+
+  (define-record-type glyph
+    (nongenerative glyph)
+    (fields
+     (immutable codepoint)
+     (immutable coord)
+     (immutable offset)
+     (immutable advance))
+    )
   )

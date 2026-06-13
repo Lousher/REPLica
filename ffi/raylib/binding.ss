@@ -1,5 +1,6 @@
 (library (ffi raylib binding)
-  (export RAYLIB_VERSION_MAJOR RAYLIB_VERSION_MINOR
+  (export
+   RAYLIB_VERSION_MAJOR RAYLIB_VERSION_MINOR
    RAYLIB_VERSION_PATCH RAYLIB_VERSION PI FLAG_VSYNC_HINT
    FLAG_FULLSCREEN_MODE FLAG_WINDOW_RESIZABLE
    FLAG_WINDOW_UNDECORATED FLAG_WINDOW_HIDDEN
@@ -118,7 +119,7 @@
    CAMERA_FIRST_PERSON CAMERA_THIRD_PERSON CAMERA_PERSPECTIVE
    CAMERA_ORTHOGRAPHIC NPATCH_NINE_PATCH
    NPATCH_THREE_PATCH_VERTICAL NPATCH_THREE_PATCH_HORIZONTAL
-   Vector2 Vector3 Vector4 Matrix Color Rectangle Image Texture
+   Vector2 Vector3 Vector4 Matrix Color Rectangle *Rectangle Image Texture
    RenderTexture NPatchInfo GlyphInfo Font Camera3D Camera2D
    Mesh Shader MaterialMap Material Transform BoneInfo
    ModelSkeleton Model ModelAnimation Ray RayCollision
@@ -865,8 +866,8 @@
       [events (* AutomationEvent)]))
   (define InitWindow
     (foreign-procedure #f "InitWindow"
-      (integer-32 integer-32 string)
-      void))
+		       (integer-32 integer-32 string)
+		       void))
   (define CloseWindow
     (foreign-procedure #f "CloseWindow" () void))
   (define WindowShouldClose
@@ -887,14 +888,14 @@
     (foreign-procedure #f "IsWindowResized" () boolean))
   (define IsWindowState
     (foreign-procedure #f "IsWindowState"
-      (unsigned-32)
-      boolean))
+		       (unsigned-32)
+		       boolean))
   (define SetWindowState
     (foreign-procedure #f "SetWindowState" (unsigned-32) void))
   (define ClearWindowState
     (foreign-procedure #f "ClearWindowState"
-      (unsigned-32)
-      void))
+		       (unsigned-32)
+		       void))
   (define ToggleFullscreen
     (foreign-procedure #f "ToggleFullscreen" () void))
   (define ToggleBorderlessWindowed
@@ -909,32 +910,32 @@
     (foreign-procedure #f "SetWindowIcon" ((& Image)) void))
   (define SetWindowIcons
     (foreign-procedure #f "SetWindowIcons"
-      ((* Image) integer-32)
-      void))
+		       ((* Image) integer-32)
+		       void))
   (define SetWindowTitle
     (foreign-procedure #f "SetWindowTitle" (string) void))
   (define SetWindowPosition
     (foreign-procedure #f "SetWindowPosition"
-      (integer-32 integer-32)
-      void))
+		       (integer-32 integer-32)
+		       void))
   (define SetWindowMonitor
     (foreign-procedure #f "SetWindowMonitor" (integer-32) void))
   (define SetWindowMinSize
     (foreign-procedure #f "SetWindowMinSize"
-      (integer-32 integer-32)
-      void))
+		       (integer-32 integer-32)
+		       void))
   (define SetWindowMaxSize
     (foreign-procedure #f "SetWindowMaxSize"
-      (integer-32 integer-32)
-      void))
+		       (integer-32 integer-32)
+		       void))
   (define SetWindowSize
     (foreign-procedure #f "SetWindowSize"
-      (integer-32 integer-32)
-      void))
+		       (integer-32 integer-32)
+		       void))
   (define SetWindowOpacity
     (foreign-procedure #f "SetWindowOpacity"
-      (single-float)
-      void))
+		       (single-float)
+		       void))
   (define SetWindowFocused
     (foreign-procedure #f "SetWindowFocused" () void))
   (define GetWindowHandle
@@ -953,52 +954,52 @@
     (foreign-procedure #f "GetCurrentMonitor" () integer-32))
   (define GetMonitorPosition
     (let ([proc (foreign-procedure #f "GetMonitorPosition"
-                  (integer-32)
-                  (& Vector2))])
+				   (integer-32)
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetMonitorWidth
     (foreign-procedure #f "GetMonitorWidth"
-      (integer-32)
-      integer-32))
+		       (integer-32)
+		       integer-32))
   (define GetMonitorHeight
     (foreign-procedure #f "GetMonitorHeight"
-      (integer-32)
-      integer-32))
+		       (integer-32)
+		       integer-32))
   (define GetMonitorPhysicalWidth
     (foreign-procedure #f "GetMonitorPhysicalWidth"
-      (integer-32)
-      integer-32))
+		       (integer-32)
+		       integer-32))
   (define GetMonitorPhysicalHeight
     (foreign-procedure #f "GetMonitorPhysicalHeight"
-      (integer-32)
-      integer-32))
+		       (integer-32)
+		       integer-32))
   (define GetMonitorRefreshRate
     (foreign-procedure #f "GetMonitorRefreshRate"
-      (integer-32)
-      integer-32))
+		       (integer-32)
+		       integer-32))
   (define GetWindowPosition
     (let ([proc (foreign-procedure #f "GetWindowPosition"
-                  ()
-                  (& Vector2))])
+				   ()
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetWindowScaleDPI
     (let ([proc (foreign-procedure #f "GetWindowScaleDPI"
-                  ()
-                  (& Vector2))])
+				   ()
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetMonitorName
@@ -1009,12 +1010,12 @@
     (foreign-procedure #f "GetClipboardText" () string))
   (define GetClipboardImage
     (let ([proc (foreign-procedure #f "GetClipboardImage"
-                  ()
-                  (& Image))])
+				   ()
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define EnableEventWaiting
@@ -1049,8 +1050,8 @@
     (foreign-procedure #f "EndMode3D" () void))
   (define BeginTextureMode
     (foreign-procedure #f "BeginTextureMode"
-      ((& RenderTexture2D))
-      void))
+		       ((& RenderTexture2D))
+		       void))
   (define EndTextureMode
     (foreign-procedure #f "EndTextureMode" () void))
   (define BeginShaderMode
@@ -1063,156 +1064,156 @@
     (foreign-procedure #f "EndBlendMode" () void))
   (define BeginScissorMode
     (foreign-procedure #f "BeginScissorMode"
-      (integer-32 integer-32 integer-32 integer-32)
-      void))
+		       (integer-32 integer-32 integer-32 integer-32)
+		       void))
   (define EndScissorMode
     (foreign-procedure #f "EndScissorMode" () void))
   (define BeginVrStereoMode
     (foreign-procedure #f "BeginVrStereoMode"
-      ((& VrStereoConfig))
-      void))
+		       ((& VrStereoConfig))
+		       void))
   (define EndVrStereoMode
     (foreign-procedure #f "EndVrStereoMode" () void))
   (define LoadVrStereoConfig
     (let ([proc (foreign-procedure #f "LoadVrStereoConfig"
-                  ((& VrDeviceInfo))
-                  (& VrStereoConfig))])
+				   ((& VrDeviceInfo))
+				   (& VrStereoConfig))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         VrStereoConfig
-                         (foreign-alloc (ftype-sizeof VrStereoConfig)))])
+                        VrStereoConfig
+                        (foreign-alloc (ftype-sizeof VrStereoConfig)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define UnloadVrStereoConfig
     (foreign-procedure #f "UnloadVrStereoConfig"
-      ((& VrStereoConfig))
-      void))
+		       ((& VrStereoConfig))
+		       void))
   (define LoadShader
     (let ([proc (foreign-procedure #f "LoadShader"
-                  (string string)
-                  (& Shader))])
+				   (string string)
+				   (& Shader))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Shader
-                         (foreign-alloc (ftype-sizeof Shader)))])
+                        Shader
+                        (foreign-alloc (ftype-sizeof Shader)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadShaderFromMemory
     (let ([proc (foreign-procedure #f "LoadShaderFromMemory"
-                  (string string)
-                  (& Shader))])
+				   (string string)
+				   (& Shader))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Shader
-                         (foreign-alloc (ftype-sizeof Shader)))])
+                        Shader
+                        (foreign-alloc (ftype-sizeof Shader)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define IsShaderValid
     (foreign-procedure #f "IsShaderValid" ((& Shader)) boolean))
   (define GetShaderLocation
     (foreign-procedure #f "GetShaderLocation"
-      ((& Shader) string)
-      integer-32))
+		       ((& Shader) string)
+		       integer-32))
   (define GetShaderLocationAttrib
     (foreign-procedure #f "GetShaderLocationAttrib"
-      ((& Shader) string)
-      integer-32))
+		       ((& Shader) string)
+		       integer-32))
   (define SetShaderValue
     (foreign-procedure #f "SetShaderValue"
-      ((& Shader) integer-32 void* integer-32)
-      void))
+		       ((& Shader) integer-32 void* integer-32)
+		       void))
   (define SetShaderValueV
     (foreign-procedure #f "SetShaderValueV"
-      ((& Shader) integer-32 void* integer-32 integer-32)
-      void))
+		       ((& Shader) integer-32 void* integer-32 integer-32)
+		       void))
   (define SetShaderValueMatrix
     (foreign-procedure #f "SetShaderValueMatrix"
-      ((& Shader) integer-32 (& Matrix))
-      void))
+		       ((& Shader) integer-32 (& Matrix))
+		       void))
   (define SetShaderValueTexture
     (foreign-procedure #f "SetShaderValueTexture"
-      ((& Shader) integer-32 (& Texture2D))
-      void))
+		       ((& Shader) integer-32 (& Texture2D))
+		       void))
   (define UnloadShader
     (foreign-procedure #f "UnloadShader" ((& Shader)) void))
   (define GetScreenToWorldRay
     (let ([proc (foreign-procedure #f "GetScreenToWorldRay"
-                  ((& Vector2) (& Camera))
-                  (& Ray))])
+				   ((& Vector2) (& Camera))
+				   (& Ray))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Ray
-                         (foreign-alloc (ftype-sizeof Ray)))])
+                        Ray
+                        (foreign-alloc (ftype-sizeof Ray)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetScreenToWorldRayEx
     (let ([proc (foreign-procedure #f "GetScreenToWorldRayEx"
-                  ((& Vector2) (& Camera) integer-32 integer-32)
-                  (& Ray))])
+				   ((& Vector2) (& Camera) integer-32 integer-32)
+				   (& Ray))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Ray
-                         (foreign-alloc (ftype-sizeof Ray)))])
+                        Ray
+                        (foreign-alloc (ftype-sizeof Ray)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetWorldToScreen
     (let ([proc (foreign-procedure #f "GetWorldToScreen"
-                  ((& Vector3) (& Camera))
-                  (& Vector2))])
+				   ((& Vector3) (& Camera))
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetWorldToScreenEx
     (let ([proc (foreign-procedure #f "GetWorldToScreenEx"
-                  ((& Vector3) (& Camera) integer-32 integer-32)
-                  (& Vector2))])
+				   ((& Vector3) (& Camera) integer-32 integer-32)
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetWorldToScreen2D
     (let ([proc (foreign-procedure #f "GetWorldToScreen2D"
-                  ((& Vector2) (& Camera2D))
-                  (& Vector2))])
+				   ((& Vector2) (& Camera2D))
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetScreenToWorld2D
     (let ([proc (foreign-procedure #f "GetScreenToWorld2D"
-                  ((& Vector2) (& Camera2D))
-                  (& Vector2))])
+				   ((& Vector2) (& Camera2D))
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetCameraMatrix
     (let ([proc (foreign-procedure #f "GetCameraMatrix"
-                  ((& Camera))
-                  (& Matrix))])
+				   ((& Camera))
+				   (& Matrix))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Matrix
-                         (foreign-alloc (ftype-sizeof Matrix)))])
+                        Matrix
+                        (foreign-alloc (ftype-sizeof Matrix)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetCameraMatrix2D
     (let ([proc (foreign-procedure #f "GetCameraMatrix2D"
-                  ((& Camera2D))
-                  (& Matrix))])
+				   ((& Camera2D))
+				   (& Matrix))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Matrix
-                         (foreign-alloc (ftype-sizeof Matrix)))])
+                        Matrix
+                        (foreign-alloc (ftype-sizeof Matrix)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define SetTargetFPS
@@ -1233,16 +1234,16 @@
     (foreign-procedure #f "SetRandomSeed" (unsigned-32) void))
   (define GetRandomValue
     (foreign-procedure #f "GetRandomValue"
-      (integer-32 integer-32)
-      integer-32))
+		       (integer-32 integer-32)
+		       integer-32))
   (define LoadRandomSequence
     (foreign-procedure #f "LoadRandomSequence"
-      (unsigned-32 integer-32 integer-32)
-      (* integer-32)))
+		       (unsigned-32 integer-32 integer-32)
+		       (* integer-32)))
   (define UnloadRandomSequence
     (foreign-procedure #f "UnloadRandomSequence"
-      ((* integer-32))
-      void))
+		       ((* integer-32))
+		       void))
   (define TakeScreenshot
     (foreign-procedure #f "TakeScreenshot" (string) void))
   (define SetConfigFlags
@@ -1255,86 +1256,86 @@
     (foreign-procedure #f "TraceLog" (integer-32 string) void))
   (define SetTraceLogCallback
     (foreign-procedure #f "SetTraceLogCallback"
-      ((* TraceLogCallback))
-      void))
+		       ((* TraceLogCallback))
+		       void))
   (define MemAlloc
     (foreign-procedure #f "MemAlloc" (unsigned-32) void*))
   (define MemRealloc
     (foreign-procedure #f "MemRealloc"
-      (void* unsigned-32)
-      void*))
+		       (void* unsigned-32)
+		       void*))
   (define MemFree
     (foreign-procedure #f "MemFree" (void*) void))
   (define LoadFileData
     (foreign-procedure #f "LoadFileData"
-      (string (* integer-32))
-      (* unsigned-8)))
+		       (string (* integer-32))
+		       (* unsigned-8)))
   (define UnloadFileData
     (foreign-procedure #f "UnloadFileData"
-      ((* unsigned-8))
-      void))
+		       ((* unsigned-8))
+		       void))
   (define SaveFileData
     (foreign-procedure #f "SaveFileData"
-      (string void* integer-32)
-      boolean))
+		       (string void* integer-32)
+		       boolean))
   (define ExportDataAsCode
     (foreign-procedure #f "ExportDataAsCode"
-      ((* unsigned-8) integer-32 string)
-      boolean))
+		       ((* unsigned-8) integer-32 string)
+		       boolean))
   (define LoadFileText
     (foreign-procedure #f "LoadFileText" (string) string))
   (define UnloadFileText
     (foreign-procedure #f "UnloadFileText" (string) void))
   (define SaveFileText
     (foreign-procedure #f "SaveFileText"
-      (string string)
-      boolean))
+		       (string string)
+		       boolean))
   (define SetLoadFileDataCallback
     (foreign-procedure #f "SetLoadFileDataCallback"
-      ((* LoadFileDataCallback))
-      void))
+		       ((* LoadFileDataCallback))
+		       void))
   (define SetSaveFileDataCallback
     (foreign-procedure #f "SetSaveFileDataCallback"
-      ((* SaveFileDataCallback))
-      void))
+		       ((* SaveFileDataCallback))
+		       void))
   (define SetLoadFileTextCallback
     (foreign-procedure #f "SetLoadFileTextCallback"
-      ((* LoadFileTextCallback))
-      void))
+		       ((* LoadFileTextCallback))
+		       void))
   (define SetSaveFileTextCallback
     (foreign-procedure #f "SetSaveFileTextCallback"
-      ((* SaveFileTextCallback))
-      void))
+		       ((* SaveFileTextCallback))
+		       void))
   (define FileRename
     (foreign-procedure #f "FileRename"
-      (string string)
-      integer-32))
+		       (string string)
+		       integer-32))
   (define FileRemove
     (foreign-procedure #f "FileRemove" (string) integer-32))
   (define FileCopy
     (foreign-procedure #f "FileCopy"
-      (string string)
-      integer-32))
+		       (string string)
+		       integer-32))
   (define FileMove
     (foreign-procedure #f "FileMove"
-      (string string)
-      integer-32))
+		       (string string)
+		       integer-32))
   (define FileTextReplace
     (foreign-procedure #f "FileTextReplace"
-      (string string string)
-      integer-32))
+		       (string string string)
+		       integer-32))
   (define FileTextFindIndex
     (foreign-procedure #f "FileTextFindIndex"
-      (string string)
-      integer-32))
+		       (string string)
+		       integer-32))
   (define FileExists
     (foreign-procedure #f "FileExists" (string) boolean))
   (define DirectoryExists
     (foreign-procedure #f "DirectoryExists" (string) boolean))
   (define IsFileExtension
     (foreign-procedure #f "IsFileExtension"
-      (string string)
-      boolean))
+		       (string string)
+		       boolean))
   (define GetFileLength
     (foreign-procedure #f "GetFileLength" (string) integer-32))
   (define GetFileModTime
@@ -1345,14 +1346,14 @@
     (foreign-procedure #f "GetFileName" (string) string))
   (define GetFileNameWithoutExt
     (foreign-procedure #f "GetFileNameWithoutExt"
-      (string)
-      string))
+		       (string)
+		       string))
   (define GetDirectoryPath
     (foreign-procedure #f "GetDirectoryPath" (string) string))
   (define GetPrevDirectoryPath
     (foreign-procedure #f "GetPrevDirectoryPath"
-      (string)
-      string))
+		       (string)
+		       string))
   (define GetWorkingDirectory
     (foreign-procedure #f "GetWorkingDirectory" () string))
   (define GetApplicationDirectory
@@ -1367,129 +1368,129 @@
     (foreign-procedure #f "IsFileNameValid" (string) boolean))
   (define LoadDirectoryFiles
     (let ([proc (foreign-procedure #f "LoadDirectoryFiles"
-                  (string)
-                  (& FilePathList))])
+				   (string)
+				   (& FilePathList))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         FilePathList
-                         (foreign-alloc (ftype-sizeof FilePathList)))])
+                        FilePathList
+                        (foreign-alloc (ftype-sizeof FilePathList)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadDirectoryFilesEx
     (let ([proc (foreign-procedure #f "LoadDirectoryFilesEx"
-                  (string string boolean)
-                  (& FilePathList))])
+				   (string string boolean)
+				   (& FilePathList))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         FilePathList
-                         (foreign-alloc (ftype-sizeof FilePathList)))])
+                        FilePathList
+                        (foreign-alloc (ftype-sizeof FilePathList)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define UnloadDirectoryFiles
     (foreign-procedure #f "UnloadDirectoryFiles"
-      ((& FilePathList))
-      void))
+		       ((& FilePathList))
+		       void))
   (define IsFileDropped
     (foreign-procedure #f "IsFileDropped" () boolean))
   (define LoadDroppedFiles
     (let ([proc (foreign-procedure #f "LoadDroppedFiles"
-                  ()
-                  (& FilePathList))])
+				   ()
+				   (& FilePathList))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         FilePathList
-                         (foreign-alloc (ftype-sizeof FilePathList)))])
+                        FilePathList
+                        (foreign-alloc (ftype-sizeof FilePathList)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define UnloadDroppedFiles
     (foreign-procedure #f "UnloadDroppedFiles"
-      ((& FilePathList))
-      void))
+		       ((& FilePathList))
+		       void))
   (define GetDirectoryFileCount
     (foreign-procedure #f "GetDirectoryFileCount"
-      (string)
-      unsigned-32))
+		       (string)
+		       unsigned-32))
   (define GetDirectoryFileCountEx
     (foreign-procedure #f "GetDirectoryFileCountEx"
-      (string string boolean)
-      unsigned-32))
+		       (string string boolean)
+		       unsigned-32))
   (define CompressData
     (foreign-procedure #f "CompressData"
-      ((* unsigned-8) integer-32 (* integer-32))
-      (* unsigned-8)))
+		       ((* unsigned-8) integer-32 (* integer-32))
+		       (* unsigned-8)))
   (define DecompressData
     (foreign-procedure #f "DecompressData"
-      ((* unsigned-8) integer-32 (* integer-32))
-      (* unsigned-8)))
+		       ((* unsigned-8) integer-32 (* integer-32))
+		       (* unsigned-8)))
   (define EncodeDataBase64
     (foreign-procedure #f "EncodeDataBase64"
-      ((* unsigned-8) integer-32 (* integer-32))
-      string))
+		       ((* unsigned-8) integer-32 (* integer-32))
+		       string))
   (define DecodeDataBase64
     (foreign-procedure #f "DecodeDataBase64"
-      (string (* integer-32))
-      (* unsigned-8)))
+		       (string (* integer-32))
+		       (* unsigned-8)))
   (define ComputeCRC32
     (foreign-procedure #f "ComputeCRC32"
-      ((* unsigned-8) integer-32)
-      unsigned-32))
+		       ((* unsigned-8) integer-32)
+		       unsigned-32))
   (define ComputeMD5
     (foreign-procedure #f "ComputeMD5"
-      ((* unsigned-8) integer-32)
-      (* unsigned-32)))
+		       ((* unsigned-8) integer-32)
+		       (* unsigned-32)))
   (define ComputeSHA1
     (foreign-procedure #f "ComputeSHA1"
-      ((* unsigned-8) integer-32)
-      (* unsigned-32)))
+		       ((* unsigned-8) integer-32)
+		       (* unsigned-32)))
   (define ComputeSHA256
     (foreign-procedure #f "ComputeSHA256"
-      ((* unsigned-8) integer-32)
-      (* unsigned-32)))
+		       ((* unsigned-8) integer-32)
+		       (* unsigned-32)))
   (define LoadAutomationEventList
     (let ([proc (foreign-procedure #f "LoadAutomationEventList"
-                  (string)
-                  (& AutomationEventList))])
+				   (string)
+				   (& AutomationEventList))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         AutomationEventList
-                         (foreign-alloc
-                           (ftype-sizeof AutomationEventList)))])
+                        AutomationEventList
+                        (foreign-alloc
+                         (ftype-sizeof AutomationEventList)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define UnloadAutomationEventList
     (foreign-procedure #f "UnloadAutomationEventList"
-      ((& AutomationEventList))
-      void))
+		       ((& AutomationEventList))
+		       void))
   (define ExportAutomationEventList
     (foreign-procedure #f "ExportAutomationEventList"
-      ((& AutomationEventList) string)
-      boolean))
+		       ((& AutomationEventList) string)
+		       boolean))
   (define SetAutomationEventList
     (foreign-procedure #f "SetAutomationEventList"
-      ((* AutomationEventList))
-      void))
+		       ((* AutomationEventList))
+		       void))
   (define SetAutomationEventBaseFrame
     (foreign-procedure #f "SetAutomationEventBaseFrame"
-      (integer-32)
-      void))
+		       (integer-32)
+		       void))
   (define StartAutomationEventRecording
     (foreign-procedure #f "StartAutomationEventRecording"
-      ()
-      void))
+		       ()
+		       void))
   (define StopAutomationEventRecording
     (foreign-procedure #f "StopAutomationEventRecording"
-      ()
-      void))
+		       ()
+		       void))
   (define PlayAutomationEvent
     (foreign-procedure #f "PlayAutomationEvent"
-      ((& AutomationEvent))
-      void))
+		       ((& AutomationEvent))
+		       void))
   (define IsKeyPressed
     (foreign-procedure #f "IsKeyPressed" (integer-32) boolean))
   (define IsKeyPressedRepeat
     (foreign-procedure #f "IsKeyPressedRepeat"
-      (integer-32)
-      boolean))
+		       (integer-32)
+		       boolean))
   (define IsKeyDown
     (foreign-procedure #f "IsKeyDown" (integer-32) boolean))
   (define IsKeyReleased
@@ -1506,108 +1507,108 @@
     (foreign-procedure #f "SetExitKey" (integer-32) void))
   (define IsGamepadAvailable
     (foreign-procedure #f "IsGamepadAvailable"
-      (integer-32)
-      boolean))
+		       (integer-32)
+		       boolean))
   (define GetGamepadName
     (foreign-procedure #f "GetGamepadName" (integer-32) string))
   (define IsGamepadButtonPressed
     (foreign-procedure #f "IsGamepadButtonPressed"
-      (integer-32 integer-32)
-      boolean))
+		       (integer-32 integer-32)
+		       boolean))
   (define IsGamepadButtonDown
     (foreign-procedure #f "IsGamepadButtonDown"
-      (integer-32 integer-32)
-      boolean))
+		       (integer-32 integer-32)
+		       boolean))
   (define IsGamepadButtonReleased
     (foreign-procedure #f "IsGamepadButtonReleased"
-      (integer-32 integer-32)
-      boolean))
+		       (integer-32 integer-32)
+		       boolean))
   (define IsGamepadButtonUp
     (foreign-procedure #f "IsGamepadButtonUp"
-      (integer-32 integer-32)
-      boolean))
+		       (integer-32 integer-32)
+		       boolean))
   (define GetGamepadButtonPressed
     (foreign-procedure #f "GetGamepadButtonPressed"
-      ()
-      integer-32))
+		       ()
+		       integer-32))
   (define GetGamepadAxisCount
     (foreign-procedure #f "GetGamepadAxisCount"
-      (integer-32)
-      integer-32))
+		       (integer-32)
+		       integer-32))
   (define GetGamepadAxisMovement
     (foreign-procedure #f "GetGamepadAxisMovement"
-      (integer-32 integer-32)
-      single-float))
+		       (integer-32 integer-32)
+		       single-float))
   (define SetGamepadMappings
     (foreign-procedure #f "SetGamepadMappings"
-      (string)
-      integer-32))
+		       (string)
+		       integer-32))
   (define SetGamepadVibration
     (foreign-procedure #f "SetGamepadVibration"
-      (integer-32 single-float single-float single-float)
-      void))
+		       (integer-32 single-float single-float single-float)
+		       void))
   (define IsMouseButtonPressed
     (foreign-procedure #f "IsMouseButtonPressed"
-      (integer-32)
-      boolean))
+		       (integer-32)
+		       boolean))
   (define IsMouseButtonDown
     (foreign-procedure #f "IsMouseButtonDown"
-      (integer-32)
-      boolean))
+		       (integer-32)
+		       boolean))
   (define IsMouseButtonReleased
     (foreign-procedure #f "IsMouseButtonReleased"
-      (integer-32)
-      boolean))
+		       (integer-32)
+		       boolean))
   (define IsMouseButtonUp
     (foreign-procedure #f "IsMouseButtonUp"
-      (integer-32)
-      boolean))
+		       (integer-32)
+		       boolean))
   (define GetMouseX
     (foreign-procedure #f "GetMouseX" () integer-32))
   (define GetMouseY
     (foreign-procedure #f "GetMouseY" () integer-32))
   (define GetMousePosition
     (let ([proc (foreign-procedure #f "GetMousePosition"
-                  ()
-                  (& Vector2))])
+				   ()
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetMouseDelta
     (let ([proc (foreign-procedure #f "GetMouseDelta"
-                  ()
-                  (& Vector2))])
+				   ()
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define SetMousePosition
     (foreign-procedure #f "SetMousePosition"
-      (integer-32 integer-32)
-      void))
+		       (integer-32 integer-32)
+		       void))
   (define SetMouseOffset
     (foreign-procedure #f "SetMouseOffset"
-      (integer-32 integer-32)
-      void))
+		       (integer-32 integer-32)
+		       void))
   (define SetMouseScale
     (foreign-procedure #f "SetMouseScale"
-      (single-float single-float)
-      void))
+		       (single-float single-float)
+		       void))
   (define GetMouseWheelMove
     (foreign-procedure #f "GetMouseWheelMove" () single-float))
   (define GetMouseWheelMoveV
     (let ([proc (foreign-procedure #f "GetMouseWheelMoveV"
-                  ()
-                  (& Vector2))])
+				   ()
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define SetMouseCursor
@@ -1618,524 +1619,524 @@
     (foreign-procedure #f "GetTouchY" () integer-32))
   (define GetTouchPosition
     (let ([proc (foreign-procedure #f "GetTouchPosition"
-                  (integer-32)
-                  (& Vector2))])
+				   (integer-32)
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetTouchPointId
     (foreign-procedure #f "GetTouchPointId"
-      (integer-32)
-      integer-32))
+		       (integer-32)
+		       integer-32))
   (define GetTouchPointCount
     (foreign-procedure #f "GetTouchPointCount" () integer-32))
   (define SetGesturesEnabled
     (foreign-procedure #f "SetGesturesEnabled"
-      (unsigned-32)
-      void))
+		       (unsigned-32)
+		       void))
   (define IsGestureDetected
     (foreign-procedure #f "IsGestureDetected"
-      (unsigned-32)
-      boolean))
+		       (unsigned-32)
+		       boolean))
   (define GetGestureDetected
     (foreign-procedure #f "GetGestureDetected" () integer-32))
   (define GetGestureHoldDuration
     (foreign-procedure #f "GetGestureHoldDuration"
-      ()
-      single-float))
+		       ()
+		       single-float))
   (define GetGestureDragVector
     (let ([proc (foreign-procedure #f "GetGestureDragVector"
-                  ()
-                  (& Vector2))])
+				   ()
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetGestureDragAngle
     (foreign-procedure #f "GetGestureDragAngle"
-      ()
-      single-float))
+		       ()
+		       single-float))
   (define GetGesturePinchVector
     (let ([proc (foreign-procedure #f "GetGesturePinchVector"
-                  ()
-                  (& Vector2))])
+				   ()
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetGesturePinchAngle
     (foreign-procedure #f "GetGesturePinchAngle"
-      ()
-      single-float))
+		       ()
+		       single-float))
   (define UpdateCamera
     (foreign-procedure #f "UpdateCamera"
-      ((* Camera) integer-32)
-      void))
+		       ((* Camera) integer-32)
+		       void))
   (define UpdateCameraPro
     (foreign-procedure #f "UpdateCameraPro"
-      ((* Camera) (& Vector3) (& Vector3) single-float)
-      void))
+		       ((* Camera) (& Vector3) (& Vector3) single-float)
+		       void))
   (define SetShapesTexture
     (foreign-procedure #f "SetShapesTexture"
-      ((& Texture2D) (& Rectangle))
-      void))
+		       ((& Texture2D) (& Rectangle))
+		       void))
   (define GetShapesTexture
     (let ([proc (foreign-procedure #f "GetShapesTexture"
-                  ()
-                  (& Texture2D))])
+				   ()
+				   (& Texture2D))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Texture2D
-                         (foreign-alloc (ftype-sizeof Texture2D)))])
+                        Texture2D
+                        (foreign-alloc (ftype-sizeof Texture2D)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetShapesTextureRectangle
     (let ([proc (foreign-procedure #f "GetShapesTextureRectangle"
-                  ()
-                  (& Rectangle))])
+				   ()
+				   (& Rectangle))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Rectangle
-                         (foreign-alloc (ftype-sizeof Rectangle)))])
+                        Rectangle
+                        (foreign-alloc (ftype-sizeof Rectangle)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define DrawPixel
     (foreign-procedure #f "DrawPixel"
-      (integer-32 integer-32 (& Color))
-      void))
+		       (integer-32 integer-32 (& Color))
+		       void))
   (define DrawPixelV
     (foreign-procedure #f "DrawPixelV"
-      ((& Vector2) (& Color))
-      void))
+		       ((& Vector2) (& Color))
+		       void))
   (define DrawLine
     (foreign-procedure #f "DrawLine"
-      (integer-32 integer-32 integer-32 integer-32 (& Color))
-      void))
+		       (integer-32 integer-32 integer-32 integer-32 (& Color))
+		       void))
   (define DrawLineV
     (foreign-procedure #f "DrawLineV"
-      ((& Vector2) (& Vector2) (& Color))
-      void))
+		       ((& Vector2) (& Vector2) (& Color))
+		       void))
   (define DrawLineEx
     (foreign-procedure #f "DrawLineEx"
-      ((& Vector2) (& Vector2) single-float (& Color))
-      void))
+		       ((& Vector2) (& Vector2) single-float (& Color))
+		       void))
   (define DrawLineStrip
     (foreign-procedure #f "DrawLineStrip"
-      ((* Vector2) integer-32 (& Color))
-      void))
+		       ((* Vector2) integer-32 (& Color))
+		       void))
   (define DrawLineBezier
     (foreign-procedure #f "DrawLineBezier"
-      ((& Vector2) (& Vector2) single-float (& Color))
-      void))
+		       ((& Vector2) (& Vector2) single-float (& Color))
+		       void))
   (define DrawLineDashed
     (foreign-procedure #f "DrawLineDashed"
-      ((& Vector2) (& Vector2) integer-32 integer-32 (& Color))
-      void))
+		       ((& Vector2) (& Vector2) integer-32 integer-32 (& Color))
+		       void))
   (define DrawCircle
     (foreign-procedure #f "DrawCircle"
-      (integer-32 integer-32 single-float (& Color))
-      void))
+		       (integer-32 integer-32 single-float (& Color))
+		       void))
   (define DrawCircleV
     (foreign-procedure #f "DrawCircleV"
-      ((& Vector2) single-float (& Color))
-      void))
+		       ((& Vector2) single-float (& Color))
+		       void))
   (define DrawCircleGradient
     (foreign-procedure #f "DrawCircleGradient"
-      ((& Vector2) single-float (& Color) (& Color))
-      void))
+		       ((& Vector2) single-float (& Color) (& Color))
+		       void))
   (define DrawCircleSector
     (foreign-procedure #f "DrawCircleSector"
-      ((& Vector2)
-       single-float
-       single-float
-       single-float
-       integer-32
-       (& Color))
-      void))
+		       ((& Vector2)
+			single-float
+			single-float
+			single-float
+			integer-32
+			(& Color))
+		       void))
   (define DrawCircleSectorLines
     (foreign-procedure #f "DrawCircleSectorLines"
-      ((& Vector2)
-       single-float
-       single-float
-       single-float
-       integer-32
-       (& Color))
-      void))
+		       ((& Vector2)
+			single-float
+			single-float
+			single-float
+			integer-32
+			(& Color))
+		       void))
   (define DrawCircleLines
     (foreign-procedure #f "DrawCircleLines"
-      (integer-32 integer-32 single-float (& Color))
-      void))
+		       (integer-32 integer-32 single-float (& Color))
+		       void))
   (define DrawCircleLinesV
     (foreign-procedure #f "DrawCircleLinesV"
-      ((& Vector2) single-float (& Color))
-      void))
+		       ((& Vector2) single-float (& Color))
+		       void))
   (define DrawEllipse
     (foreign-procedure #f "DrawEllipse"
-      (integer-32 integer-32 single-float single-float (& Color))
-      void))
+		       (integer-32 integer-32 single-float single-float (& Color))
+		       void))
   (define DrawEllipseV
     (foreign-procedure #f "DrawEllipseV"
-      ((& Vector2) single-float single-float (& Color))
-      void))
+		       ((& Vector2) single-float single-float (& Color))
+		       void))
   (define DrawEllipseLines
     (foreign-procedure #f "DrawEllipseLines"
-      (integer-32 integer-32 single-float single-float (& Color))
-      void))
+		       (integer-32 integer-32 single-float single-float (& Color))
+		       void))
   (define DrawEllipseLinesV
     (foreign-procedure #f "DrawEllipseLinesV"
-      ((& Vector2) single-float single-float (& Color))
-      void))
+		       ((& Vector2) single-float single-float (& Color))
+		       void))
   (define DrawRing
     (foreign-procedure #f "DrawRing"
-      ((& Vector2)
-       single-float
-       single-float
-       single-float
-       single-float
-       integer-32
-       (& Color))
-      void))
+		       ((& Vector2)
+			single-float
+			single-float
+			single-float
+			single-float
+			integer-32
+			(& Color))
+		       void))
   (define DrawRingLines
     (foreign-procedure #f "DrawRingLines"
-      ((& Vector2)
-       single-float
-       single-float
-       single-float
-       single-float
-       integer-32
-       (& Color))
-      void))
+		       ((& Vector2)
+			single-float
+			single-float
+			single-float
+			single-float
+			integer-32
+			(& Color))
+		       void))
   (define DrawRectangle
     (foreign-procedure #f "DrawRectangle"
-      (integer-32 integer-32 integer-32 integer-32 (& Color))
-      void))
+		       (integer-32 integer-32 integer-32 integer-32 (& Color))
+		       void))
   (define DrawRectangleV
     (foreign-procedure #f "DrawRectangleV"
-      ((& Vector2) (& Vector2) (& Color))
-      void))
+		       ((& Vector2) (& Vector2) (& Color))
+		       void))
   (define DrawRectangleRec
     (foreign-procedure #f "DrawRectangleRec"
-      ((& Rectangle) (& Color))
-      void))
+		       ((& Rectangle) (& Color))
+		       void))
   (define DrawRectanglePro
     (foreign-procedure #f "DrawRectanglePro"
-      ((& Rectangle) (& Vector2) single-float (& Color))
-      void))
+		       ((& Rectangle) (& Vector2) single-float (& Color))
+		       void))
   (define DrawRectangleGradientV
     (foreign-procedure #f "DrawRectangleGradientV"
-      (integer-32
-       integer-32
-       integer-32
-       integer-32
-       (& Color)
-       (& Color))
-      void))
+		       (integer-32
+			integer-32
+			integer-32
+			integer-32
+			(& Color)
+			(& Color))
+		       void))
   (define DrawRectangleGradientH
     (foreign-procedure #f "DrawRectangleGradientH"
-      (integer-32
-       integer-32
-       integer-32
-       integer-32
-       (& Color)
-       (& Color))
-      void))
+		       (integer-32
+			integer-32
+			integer-32
+			integer-32
+			(& Color)
+			(& Color))
+		       void))
   (define DrawRectangleGradientEx
     (foreign-procedure #f "DrawRectangleGradientEx"
-      ((& Rectangle) (& Color) (& Color) (& Color) (& Color))
-      void))
+		       ((& Rectangle) (& Color) (& Color) (& Color) (& Color))
+		       void))
   (define DrawRectangleLines
     (foreign-procedure #f "DrawRectangleLines"
-      (integer-32 integer-32 integer-32 integer-32 (& Color))
-      void))
+		       (integer-32 integer-32 integer-32 integer-32 (& Color))
+		       void))
   (define DrawRectangleLinesEx
     (foreign-procedure #f "DrawRectangleLinesEx"
-      ((& Rectangle) single-float (& Color))
-      void))
+		       ((& Rectangle) single-float (& Color))
+		       void))
   (define DrawRectangleRounded
     (foreign-procedure #f "DrawRectangleRounded"
-      ((& Rectangle) single-float integer-32 (& Color))
-      void))
+		       ((& Rectangle) single-float integer-32 (& Color))
+		       void))
   (define DrawRectangleRoundedLines
     (foreign-procedure #f "DrawRectangleRoundedLines"
-      ((& Rectangle) single-float integer-32 (& Color))
-      void))
+		       ((& Rectangle) single-float integer-32 (& Color))
+		       void))
   (define DrawRectangleRoundedLinesEx
     (foreign-procedure #f "DrawRectangleRoundedLinesEx"
-      ((& Rectangle)
-       single-float
-       integer-32
-       single-float
-       (& Color))
-      void))
+		       ((& Rectangle)
+			single-float
+			integer-32
+			single-float
+			(& Color))
+		       void))
   (define DrawTriangle
     (foreign-procedure #f "DrawTriangle"
-      ((& Vector2) (& Vector2) (& Vector2) (& Color))
-      void))
+		       ((& Vector2) (& Vector2) (& Vector2) (& Color))
+		       void))
   (define DrawTriangleLines
     (foreign-procedure #f "DrawTriangleLines"
-      ((& Vector2) (& Vector2) (& Vector2) (& Color))
-      void))
+		       ((& Vector2) (& Vector2) (& Vector2) (& Color))
+		       void))
   (define DrawTriangleFan
     (foreign-procedure #f "DrawTriangleFan"
-      ((* Vector2) integer-32 (& Color))
-      void))
+		       ((* Vector2) integer-32 (& Color))
+		       void))
   (define DrawTriangleStrip
     (foreign-procedure #f "DrawTriangleStrip"
-      ((* Vector2) integer-32 (& Color))
-      void))
+		       ((* Vector2) integer-32 (& Color))
+		       void))
   (define DrawPoly
     (foreign-procedure #f "DrawPoly"
-      ((& Vector2) integer-32 single-float single-float (& Color))
-      void))
+		       ((& Vector2) integer-32 single-float single-float (& Color))
+		       void))
   (define DrawPolyLines
     (foreign-procedure #f "DrawPolyLines"
-      ((& Vector2) integer-32 single-float single-float (& Color))
-      void))
+		       ((& Vector2) integer-32 single-float single-float (& Color))
+		       void))
   (define DrawPolyLinesEx
     (foreign-procedure #f "DrawPolyLinesEx"
-      ((& Vector2)
-       integer-32
-       single-float
-       single-float
-       single-float
-       (& Color))
-      void))
+		       ((& Vector2)
+			integer-32
+			single-float
+			single-float
+			single-float
+			(& Color))
+		       void))
   (define DrawSplineLinear
     (foreign-procedure #f "DrawSplineLinear"
-      ((* Vector2) integer-32 single-float (& Color))
-      void))
+		       ((* Vector2) integer-32 single-float (& Color))
+		       void))
   (define DrawSplineBasis
     (foreign-procedure #f "DrawSplineBasis"
-      ((* Vector2) integer-32 single-float (& Color))
-      void))
+		       ((* Vector2) integer-32 single-float (& Color))
+		       void))
   (define DrawSplineCatmullRom
     (foreign-procedure #f "DrawSplineCatmullRom"
-      ((* Vector2) integer-32 single-float (& Color))
-      void))
+		       ((* Vector2) integer-32 single-float (& Color))
+		       void))
   (define DrawSplineBezierQuadratic
     (foreign-procedure #f "DrawSplineBezierQuadratic"
-      ((* Vector2) integer-32 single-float (& Color))
-      void))
+		       ((* Vector2) integer-32 single-float (& Color))
+		       void))
   (define DrawSplineBezierCubic
     (foreign-procedure #f "DrawSplineBezierCubic"
-      ((* Vector2) integer-32 single-float (& Color))
-      void))
+		       ((* Vector2) integer-32 single-float (& Color))
+		       void))
   (define DrawSplineSegmentLinear
     (foreign-procedure #f "DrawSplineSegmentLinear"
-      ((& Vector2) (& Vector2) single-float (& Color))
-      void))
+		       ((& Vector2) (& Vector2) single-float (& Color))
+		       void))
   (define DrawSplineSegmentBasis
     (foreign-procedure #f "DrawSplineSegmentBasis"
-      ((& Vector2)
-       (& Vector2)
-       (& Vector2)
-       (& Vector2)
-       single-float
-       (& Color))
-      void))
+		       ((& Vector2)
+			(& Vector2)
+			(& Vector2)
+			(& Vector2)
+			single-float
+			(& Color))
+		       void))
   (define DrawSplineSegmentCatmullRom
     (foreign-procedure #f "DrawSplineSegmentCatmullRom"
-      ((& Vector2)
-       (& Vector2)
-       (& Vector2)
-       (& Vector2)
-       single-float
-       (& Color))
-      void))
+		       ((& Vector2)
+			(& Vector2)
+			(& Vector2)
+			(& Vector2)
+			single-float
+			(& Color))
+		       void))
   (define DrawSplineSegmentBezierQuadratic
     (foreign-procedure #f "DrawSplineSegmentBezierQuadratic"
-      ((& Vector2) (& Vector2) (& Vector2) single-float (& Color))
-      void))
+		       ((& Vector2) (& Vector2) (& Vector2) single-float (& Color))
+		       void))
   (define DrawSplineSegmentBezierCubic
     (foreign-procedure #f "DrawSplineSegmentBezierCubic"
-      ((& Vector2)
-       (& Vector2)
-       (& Vector2)
-       (& Vector2)
-       single-float
-       (& Color))
-      void))
+		       ((& Vector2)
+			(& Vector2)
+			(& Vector2)
+			(& Vector2)
+			single-float
+			(& Color))
+		       void))
   (define GetSplinePointLinear
     (let ([proc (foreign-procedure #f "GetSplinePointLinear"
-                  ((& Vector2) (& Vector2) single-float)
-                  (& Vector2))])
+				   ((& Vector2) (& Vector2) single-float)
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetSplinePointBasis
     (let ([proc (foreign-procedure #f "GetSplinePointBasis"
-                  ((& Vector2)
-                   (& Vector2)
-                   (& Vector2)
-                   (& Vector2)
-                   single-float)
-                  (& Vector2))])
+				   ((& Vector2)
+				    (& Vector2)
+				    (& Vector2)
+				    (& Vector2)
+				    single-float)
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetSplinePointCatmullRom
     (let ([proc (foreign-procedure #f "GetSplinePointCatmullRom"
-                  ((& Vector2)
-                   (& Vector2)
-                   (& Vector2)
-                   (& Vector2)
-                   single-float)
-                  (& Vector2))])
+				   ((& Vector2)
+				    (& Vector2)
+				    (& Vector2)
+				    (& Vector2)
+				    single-float)
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetSplinePointBezierCubic
     (let ([proc (foreign-procedure #f "GetSplinePointBezierCubic"
-                  ((& Vector2)
-                   (& Vector2)
-                   (& Vector2)
-                   (& Vector2)
-                   single-float)
-                  (& Vector2))])
+				   ((& Vector2)
+				    (& Vector2)
+				    (& Vector2)
+				    (& Vector2)
+				    single-float)
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define CheckCollisionRecs
     (foreign-procedure #f "CheckCollisionRecs"
-      ((& Rectangle) (& Rectangle))
-      boolean))
+		       ((& Rectangle) (& Rectangle))
+		       boolean))
   (define CheckCollisionCircles
     (foreign-procedure #f "CheckCollisionCircles"
-      ((& Vector2) single-float (& Vector2) single-float)
-      boolean))
+		       ((& Vector2) single-float (& Vector2) single-float)
+		       boolean))
   (define CheckCollisionCircleRec
     (foreign-procedure #f "CheckCollisionCircleRec"
-      ((& Vector2) single-float (& Rectangle))
-      boolean))
+		       ((& Vector2) single-float (& Rectangle))
+		       boolean))
   (define CheckCollisionCircleLine
     (foreign-procedure #f "CheckCollisionCircleLine"
-      ((& Vector2) single-float (& Vector2) (& Vector2))
-      boolean))
+		       ((& Vector2) single-float (& Vector2) (& Vector2))
+		       boolean))
   (define CheckCollisionPointRec
     (foreign-procedure #f "CheckCollisionPointRec"
-      ((& Vector2) (& Rectangle))
-      boolean))
+		       ((& Vector2) (& Rectangle))
+		       boolean))
   (define CheckCollisionPointCircle
     (foreign-procedure #f "CheckCollisionPointCircle"
-      ((& Vector2) (& Vector2) single-float)
-      boolean))
+		       ((& Vector2) (& Vector2) single-float)
+		       boolean))
   (define CheckCollisionPointTriangle
     (foreign-procedure #f "CheckCollisionPointTriangle"
-      ((& Vector2) (& Vector2) (& Vector2) (& Vector2))
-      boolean))
+		       ((& Vector2) (& Vector2) (& Vector2) (& Vector2))
+		       boolean))
   (define CheckCollisionPointLine
     (foreign-procedure #f "CheckCollisionPointLine"
-      ((& Vector2) (& Vector2) (& Vector2) integer-32)
-      boolean))
+		       ((& Vector2) (& Vector2) (& Vector2) integer-32)
+		       boolean))
   (define CheckCollisionPointPoly
     (foreign-procedure #f "CheckCollisionPointPoly"
-      ((& Vector2) (* Vector2) integer-32)
-      boolean))
+		       ((& Vector2) (* Vector2) integer-32)
+		       boolean))
   (define CheckCollisionLines
     (foreign-procedure #f "CheckCollisionLines"
-      ((& Vector2)
-       (& Vector2)
-       (& Vector2)
-       (& Vector2)
-       (* Vector2))
-      boolean))
+		       ((& Vector2)
+			(& Vector2)
+			(& Vector2)
+			(& Vector2)
+			(* Vector2))
+		       boolean))
   (define GetCollisionRec
     (let ([proc (foreign-procedure #f "GetCollisionRec"
-                  ((& Rectangle) (& Rectangle))
-                  (& Rectangle))])
+				   ((& Rectangle) (& Rectangle))
+				   (& Rectangle))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Rectangle
-                         (foreign-alloc (ftype-sizeof Rectangle)))])
+                        Rectangle
+                        (foreign-alloc (ftype-sizeof Rectangle)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadImage
     (let ([proc (foreign-procedure #f "LoadImage"
-                  (string)
-                  (& Image))])
+				   (string)
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadImageRaw
     (let ([proc (foreign-procedure #f "LoadImageRaw"
-                  (string integer-32 integer-32 integer-32 integer-32)
-                  (& Image))])
+				   (string integer-32 integer-32 integer-32 integer-32)
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadImageAnim
     (let ([proc (foreign-procedure #f "LoadImageAnim"
-                  (string (* integer-32))
-                  (& Image))])
+				   (string (* integer-32))
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadImageAnimFromMemory
     (let ([proc (foreign-procedure #f "LoadImageAnimFromMemory"
-                  (string (* unsigned-8) integer-32 (* integer-32))
-                  (& Image))])
+				   (string (* unsigned-8) integer-32 (* integer-32))
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadImageFromMemory
     (let ([proc (foreign-procedure #f "LoadImageFromMemory"
-                  (string (* unsigned-8) integer-32)
-                  (& Image))])
+				   (string (* unsigned-8) integer-32)
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadImageFromTexture
     (let ([proc (foreign-procedure #f "LoadImageFromTexture"
-                  ((& Texture2D))
-                  (& Image))])
+				   ((& Texture2D))
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadImageFromScreen
     (let ([proc (foreign-procedure #f "LoadImageFromScreen"
-                  ()
-                  (& Image))])
+				   ()
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define IsImageValid
@@ -2144,954 +2145,954 @@
     (foreign-procedure #f "UnloadImage" ((& Image)) void))
   (define ExportImage
     (foreign-procedure #f "ExportImage"
-      ((& Image) string)
-      boolean))
+		       ((& Image) string)
+		       boolean))
   (define ExportImageToMemory
     (foreign-procedure #f "ExportImageToMemory"
-      ((& Image) string (* integer-32))
-      (* unsigned-8)))
+		       ((& Image) string (* integer-32))
+		       (* unsigned-8)))
   (define ExportImageAsCode
     (foreign-procedure #f "ExportImageAsCode"
-      ((& Image) string)
-      boolean))
+		       ((& Image) string)
+		       boolean))
   (define GenImageColor
     (let ([proc (foreign-procedure #f "GenImageColor"
-                  (integer-32 integer-32 (& Color))
-                  (& Image))])
+				   (integer-32 integer-32 (& Color))
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenImageGradientLinear
     (let ([proc (foreign-procedure #f "GenImageGradientLinear"
-                  (integer-32 integer-32 integer-32 (& Color) (& Color))
-                  (& Image))])
+				   (integer-32 integer-32 integer-32 (& Color) (& Color))
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenImageGradientRadial
     (let ([proc (foreign-procedure #f "GenImageGradientRadial"
-                  (integer-32 integer-32 single-float (& Color) (& Color))
-                  (& Image))])
+				   (integer-32 integer-32 single-float (& Color) (& Color))
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenImageGradientSquare
     (let ([proc (foreign-procedure #f "GenImageGradientSquare"
-                  (integer-32 integer-32 single-float (& Color) (& Color))
-                  (& Image))])
+				   (integer-32 integer-32 single-float (& Color) (& Color))
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenImageChecked
     (let ([proc (foreign-procedure #f "GenImageChecked"
-                  (integer-32
-                   integer-32
-                   integer-32
-                   integer-32
-                   (& Color)
-                   (& Color))
-                  (& Image))])
+				   (integer-32
+				    integer-32
+				    integer-32
+				    integer-32
+				    (& Color)
+				    (& Color))
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenImageWhiteNoise
     (let ([proc (foreign-procedure #f "GenImageWhiteNoise"
-                  (integer-32 integer-32 single-float)
-                  (& Image))])
+				   (integer-32 integer-32 single-float)
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenImagePerlinNoise
     (let ([proc (foreign-procedure #f "GenImagePerlinNoise"
-                  (integer-32
-                   integer-32
-                   integer-32
-                   integer-32
-                   single-float)
-                  (& Image))])
+				   (integer-32
+				    integer-32
+				    integer-32
+				    integer-32
+				    single-float)
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenImageCellular
     (let ([proc (foreign-procedure #f "GenImageCellular"
-                  (integer-32 integer-32 integer-32)
-                  (& Image))])
+				   (integer-32 integer-32 integer-32)
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenImageText
     (let ([proc (foreign-procedure #f "GenImageText"
-                  (integer-32 integer-32 string)
-                  (& Image))])
+				   (integer-32 integer-32 string)
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define ImageCopy
     (let ([proc (foreign-procedure #f "ImageCopy"
-                  ((& Image))
-                  (& Image))])
+				   ((& Image))
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define ImageFromImage
     (let ([proc (foreign-procedure #f "ImageFromImage"
-                  ((& Image) (& Rectangle))
-                  (& Image))])
+				   ((& Image) (& Rectangle))
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define ImageFromChannel
     (let ([proc (foreign-procedure #f "ImageFromChannel"
-                  ((& Image) integer-32)
-                  (& Image))])
+				   ((& Image) integer-32)
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define ImageText
     (let ([proc (foreign-procedure #f "ImageText"
-                  (string integer-32 (& Color))
-                  (& Image))])
+				   (string integer-32 (& Color))
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define ImageTextEx
     (let ([proc (foreign-procedure #f "ImageTextEx"
-                  ((& Font) string single-float single-float (& Color))
-                  (& Image))])
+				   ((& Font) string single-float single-float (& Color))
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define ImageFormat
     (foreign-procedure #f "ImageFormat"
-      ((* Image) integer-32)
-      void))
+		       ((* Image) integer-32)
+		       void))
   (define ImageToPOT
     (foreign-procedure #f "ImageToPOT"
-      ((* Image) (& Color))
-      void))
+		       ((* Image) (& Color))
+		       void))
   (define ImageCrop
     (foreign-procedure #f "ImageCrop"
-      ((* Image) (& Rectangle))
-      void))
+		       ((* Image) (& Rectangle))
+		       void))
   (define ImageAlphaCrop
     (foreign-procedure #f "ImageAlphaCrop"
-      ((* Image) single-float)
-      void))
+		       ((* Image) single-float)
+		       void))
   (define ImageAlphaClear
     (foreign-procedure #f "ImageAlphaClear"
-      ((* Image) (& Color) single-float)
-      void))
+		       ((* Image) (& Color) single-float)
+		       void))
   (define ImageAlphaMask
     (foreign-procedure #f "ImageAlphaMask"
-      ((* Image) (& Image))
-      void))
+		       ((* Image) (& Image))
+		       void))
   (define ImageAlphaPremultiply
     (foreign-procedure #f "ImageAlphaPremultiply"
-      ((* Image))
-      void))
+		       ((* Image))
+		       void))
   (define ImageBlurGaussian
     (foreign-procedure #f "ImageBlurGaussian"
-      ((* Image) integer-32)
-      void))
+		       ((* Image) integer-32)
+		       void))
   (define ImageKernelConvolution
     (foreign-procedure #f "ImageKernelConvolution"
-      ((* Image) (* single-float) integer-32)
-      void))
+		       ((* Image) (* single-float) integer-32)
+		       void))
   (define ImageResize
     (foreign-procedure #f "ImageResize"
-      ((* Image) integer-32 integer-32)
-      void))
+		       ((* Image) integer-32 integer-32)
+		       void))
   (define ImageResizeNN
     (foreign-procedure #f "ImageResizeNN"
-      ((* Image) integer-32 integer-32)
-      void))
+		       ((* Image) integer-32 integer-32)
+		       void))
   (define ImageResizeCanvas
     (foreign-procedure #f "ImageResizeCanvas"
-      ((* Image)
-       integer-32
-       integer-32
-       integer-32
-       integer-32
-       (& Color))
-      void))
+		       ((* Image)
+			integer-32
+			integer-32
+			integer-32
+			integer-32
+			(& Color))
+		       void))
   (define ImageMipmaps
     (foreign-procedure #f "ImageMipmaps" ((* Image)) void))
   (define ImageDither
     (foreign-procedure #f "ImageDither"
-      ((* Image) integer-32 integer-32 integer-32 integer-32)
-      void))
+		       ((* Image) integer-32 integer-32 integer-32 integer-32)
+		       void))
   (define ImageFlipVertical
     (foreign-procedure #f "ImageFlipVertical" ((* Image)) void))
   (define ImageFlipHorizontal
     (foreign-procedure #f "ImageFlipHorizontal"
-      ((* Image))
-      void))
+		       ((* Image))
+		       void))
   (define ImageRotate
     (foreign-procedure #f "ImageRotate"
-      ((* Image) integer-32)
-      void))
+		       ((* Image) integer-32)
+		       void))
   (define ImageRotateCW
     (foreign-procedure #f "ImageRotateCW" ((* Image)) void))
   (define ImageRotateCCW
     (foreign-procedure #f "ImageRotateCCW" ((* Image)) void))
   (define ImageColorTint
     (foreign-procedure #f "ImageColorTint"
-      ((* Image) (& Color))
-      void))
+		       ((* Image) (& Color))
+		       void))
   (define ImageColorInvert
     (foreign-procedure #f "ImageColorInvert" ((* Image)) void))
   (define ImageColorGrayscale
     (foreign-procedure #f "ImageColorGrayscale"
-      ((* Image))
-      void))
+		       ((* Image))
+		       void))
   (define ImageColorContrast
     (foreign-procedure #f "ImageColorContrast"
-      ((* Image) integer-32)
-      void))
+		       ((* Image) integer-32)
+		       void))
   (define ImageColorBrightness
     (foreign-procedure #f "ImageColorBrightness"
-      ((* Image) integer-32)
-      void))
+		       ((* Image) integer-32)
+		       void))
   (define ImageColorReplace
     (foreign-procedure #f "ImageColorReplace"
-      ((* Image) (& Color) (& Color))
-      void))
+		       ((* Image) (& Color) (& Color))
+		       void))
   (define LoadImageColors
     (foreign-procedure #f "LoadImageColors"
-      ((& Image))
-      (* Color)))
+		       ((& Image))
+		       (* Color)))
   (define LoadImagePalette
     (foreign-procedure #f "LoadImagePalette"
-      ((& Image) integer-32 (* integer-32))
-      (* Color)))
+		       ((& Image) integer-32 (* integer-32))
+		       (* Color)))
   (define UnloadImageColors
     (foreign-procedure #f "UnloadImageColors" ((* Color)) void))
   (define UnloadImagePalette
     (foreign-procedure #f "UnloadImagePalette"
-      ((* Color))
-      void))
+		       ((* Color))
+		       void))
   (define GetImageAlphaBorder
     (let ([proc (foreign-procedure #f "GetImageAlphaBorder"
-                  ((& Image) single-float)
-                  (& Rectangle))])
+				   ((& Image) single-float)
+				   (& Rectangle))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Rectangle
-                         (foreign-alloc (ftype-sizeof Rectangle)))])
+                        Rectangle
+                        (foreign-alloc (ftype-sizeof Rectangle)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetImageColor
     (let ([proc (foreign-procedure #f "GetImageColor"
-                  ((& Image) integer-32 integer-32)
-                  (& Color))])
+				   ((& Image) integer-32 integer-32)
+				   (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Color
-                         (foreign-alloc (ftype-sizeof Color)))])
+                        Color
+                        (foreign-alloc (ftype-sizeof Color)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define ImageClearBackground
     (foreign-procedure #f "ImageClearBackground"
-      ((* Image) (& Color))
-      void))
+		       ((* Image) (& Color))
+		       void))
   (define ImageDrawPixel
     (foreign-procedure #f "ImageDrawPixel"
-      ((* Image) integer-32 integer-32 (& Color))
-      void))
+		       ((* Image) integer-32 integer-32 (& Color))
+		       void))
   (define ImageDrawPixelV
     (foreign-procedure #f "ImageDrawPixelV"
-      ((* Image) (& Vector2) (& Color))
-      void))
+		       ((* Image) (& Vector2) (& Color))
+		       void))
   (define ImageDrawLine
     (foreign-procedure #f "ImageDrawLine"
-      ((* Image)
-       integer-32
-       integer-32
-       integer-32
-       integer-32
-       (& Color))
-      void))
+		       ((* Image)
+			integer-32
+			integer-32
+			integer-32
+			integer-32
+			(& Color))
+		       void))
   (define ImageDrawLineV
     (foreign-procedure #f "ImageDrawLineV"
-      ((* Image) (& Vector2) (& Vector2) (& Color))
-      void))
+		       ((* Image) (& Vector2) (& Vector2) (& Color))
+		       void))
   (define ImageDrawLineEx
     (foreign-procedure #f "ImageDrawLineEx"
-      ((* Image) (& Vector2) (& Vector2) integer-32 (& Color))
-      void))
+		       ((* Image) (& Vector2) (& Vector2) integer-32 (& Color))
+		       void))
   (define ImageDrawCircle
     (foreign-procedure #f "ImageDrawCircle"
-      ((* Image) integer-32 integer-32 integer-32 (& Color))
-      void))
+		       ((* Image) integer-32 integer-32 integer-32 (& Color))
+		       void))
   (define ImageDrawCircleV
     (foreign-procedure #f "ImageDrawCircleV"
-      ((* Image) (& Vector2) integer-32 (& Color))
-      void))
+		       ((* Image) (& Vector2) integer-32 (& Color))
+		       void))
   (define ImageDrawCircleLines
     (foreign-procedure #f "ImageDrawCircleLines"
-      ((* Image) integer-32 integer-32 integer-32 (& Color))
-      void))
+		       ((* Image) integer-32 integer-32 integer-32 (& Color))
+		       void))
   (define ImageDrawCircleLinesV
     (foreign-procedure #f "ImageDrawCircleLinesV"
-      ((* Image) (& Vector2) integer-32 (& Color))
-      void))
+		       ((* Image) (& Vector2) integer-32 (& Color))
+		       void))
   (define ImageDrawRectangle
     (foreign-procedure #f "ImageDrawRectangle"
-      ((* Image)
-       integer-32
-       integer-32
-       integer-32
-       integer-32
-       (& Color))
-      void))
+		       ((* Image)
+			integer-32
+			integer-32
+			integer-32
+			integer-32
+			(& Color))
+		       void))
   (define ImageDrawRectangleV
     (foreign-procedure #f "ImageDrawRectangleV"
-      ((* Image) (& Vector2) (& Vector2) (& Color))
-      void))
+		       ((* Image) (& Vector2) (& Vector2) (& Color))
+		       void))
   (define ImageDrawRectangleRec
     (foreign-procedure #f "ImageDrawRectangleRec"
-      ((* Image) (& Rectangle) (& Color))
-      void))
+		       ((* Image) (& Rectangle) (& Color))
+		       void))
   (define ImageDrawRectangleLines
     (foreign-procedure #f "ImageDrawRectangleLines"
-      ((* Image)
-       integer-32
-       integer-32
-       integer-32
-       integer-32
-       (& Color))
-      void))
+		       ((* Image)
+			integer-32
+			integer-32
+			integer-32
+			integer-32
+			(& Color))
+		       void))
   (define ImageDrawTriangle
     (foreign-procedure #f "ImageDrawTriangle"
-      ((* Image) (& Vector2) (& Vector2) (& Vector2) (& Color))
-      void))
+		       ((* Image) (& Vector2) (& Vector2) (& Vector2) (& Color))
+		       void))
   (define ImageDrawTriangleLines
     (foreign-procedure #f "ImageDrawTriangleLines"
-      ((* Image) (& Vector2) (& Vector2) (& Vector2) (& Color))
-      void))
+		       ((* Image) (& Vector2) (& Vector2) (& Vector2) (& Color))
+		       void))
   (define ImageDrawTriangleFan
     (foreign-procedure #f "ImageDrawTriangleFan"
-      ((* Image) (* Vector2) integer-32 (& Color))
-      void))
+		       ((* Image) (* Vector2) integer-32 (& Color))
+		       void))
   (define ImageDrawTriangleStrip
     (foreign-procedure #f "ImageDrawTriangleStrip"
-      ((* Image) (* Vector2) integer-32 (& Color))
-      void))
+		       ((* Image) (* Vector2) integer-32 (& Color))
+		       void))
   (define ImageDraw
     (foreign-procedure #f "ImageDraw"
-      ((* Image) (& Image) (& Rectangle) (& Rectangle) (& Color))
-      void))
+		       ((* Image) (& Image) (& Rectangle) (& Rectangle) (& Color))
+		       void))
   (define ImageDrawText
     (foreign-procedure #f "ImageDrawText"
-      ((* Image)
-       string
-       integer-32
-       integer-32
-       integer-32
-       (& Color))
-      void))
+		       ((* Image)
+			string
+			integer-32
+			integer-32
+			integer-32
+			(& Color))
+		       void))
   (define ImageDrawTextEx
     (foreign-procedure #f "ImageDrawTextEx"
-      ((* Image)
-       (& Font)
-       string
-       (& Vector2)
-       single-float
-       single-float
-       (& Color))
-      void))
+		       ((* Image)
+			(& Font)
+			string
+			(& Vector2)
+			single-float
+			single-float
+			(& Color))
+		       void))
   (define LoadTexture
     (let ([proc (foreign-procedure #f "LoadTexture"
-                  (string)
-                  (& Texture2D))])
+				   (string)
+				   (& Texture2D))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Texture2D
-                         (foreign-alloc (ftype-sizeof Texture2D)))])
+                        Texture2D
+                        (foreign-alloc (ftype-sizeof Texture2D)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadTextureFromImage
     (let ([proc (foreign-procedure #f "LoadTextureFromImage"
-                  ((& Image))
-                  (& Texture2D))])
+				   ((& Image))
+				   (& Texture2D))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Texture2D
-                         (foreign-alloc (ftype-sizeof Texture2D)))])
+                        Texture2D
+                        (foreign-alloc (ftype-sizeof Texture2D)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadTextureCubemap
     (let ([proc (foreign-procedure #f "LoadTextureCubemap"
-                  ((& Image) integer-32)
-                  (& TextureCubemap))])
+				   ((& Image) integer-32)
+				   (& TextureCubemap))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         TextureCubemap
-                         (foreign-alloc (ftype-sizeof TextureCubemap)))])
+                        TextureCubemap
+                        (foreign-alloc (ftype-sizeof TextureCubemap)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadRenderTexture
     (let ([proc (foreign-procedure #f "LoadRenderTexture"
-                  (integer-32 integer-32)
-                  (& RenderTexture2D))])
+				   (integer-32 integer-32)
+				   (& RenderTexture2D))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         RenderTexture2D
-                         (foreign-alloc (ftype-sizeof RenderTexture2D)))])
+                        RenderTexture2D
+                        (foreign-alloc (ftype-sizeof RenderTexture2D)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define IsTextureValid
     (foreign-procedure #f "IsTextureValid"
-      ((& Texture2D))
-      boolean))
+		       ((& Texture2D))
+		       boolean))
   (define UnloadTexture
     (foreign-procedure #f "UnloadTexture" ((& Texture2D)) void))
   (define IsRenderTextureValid
     (foreign-procedure #f "IsRenderTextureValid"
-      ((& RenderTexture2D))
-      boolean))
+		       ((& RenderTexture2D))
+		       boolean))
   (define UnloadRenderTexture
     (foreign-procedure #f "UnloadRenderTexture"
-      ((& RenderTexture2D))
-      void))
+		       ((& RenderTexture2D))
+		       void))
   (define UpdateTexture
     (foreign-procedure #f "UpdateTexture"
-      ((& Texture2D) void*)
-      void))
+		       ((& Texture2D) void*)
+		       void))
   (define UpdateTextureRec
     (foreign-procedure #f "UpdateTextureRec"
-      ((& Texture2D) (& Rectangle) void*)
-      void))
+		       ((& Texture2D) (& Rectangle) void*)
+		       void))
   (define GenTextureMipmaps
     (foreign-procedure #f "GenTextureMipmaps"
-      ((* Texture2D))
-      void))
+		       ((* Texture2D))
+		       void))
   (define SetTextureFilter
     (foreign-procedure #f "SetTextureFilter"
-      ((& Texture2D) integer-32)
-      void))
+		       ((& Texture2D) integer-32)
+		       void))
   (define SetTextureWrap
     (foreign-procedure #f "SetTextureWrap"
-      ((& Texture2D) integer-32)
-      void))
+		       ((& Texture2D) integer-32)
+		       void))
   (define DrawTexture
     (foreign-procedure #f "DrawTexture"
-      ((& Texture2D) integer-32 integer-32 (& Color))
-      void))
+		       ((& Texture2D) integer-32 integer-32 (& Color))
+		       void))
   (define DrawTextureV
     (foreign-procedure #f "DrawTextureV"
-      ((& Texture2D) (& Vector2) (& Color))
-      void))
+		       ((& Texture2D) (& Vector2) (& Color))
+		       void))
   (define DrawTextureEx
     (foreign-procedure #f "DrawTextureEx"
-      ((& Texture2D)
-       (& Vector2)
-       single-float
-       single-float
-       (& Color))
-      void))
+		       ((& Texture2D)
+			(& Vector2)
+			single-float
+			single-float
+			(& Color))
+		       void))
   (define DrawTextureRec
     (foreign-procedure #f "DrawTextureRec"
-      ((& Texture2D) (& Rectangle) (& Vector2) (& Color))
-      void))
+		       ((& Texture2D) (& Rectangle) (& Vector2) (& Color))
+		       void))
   (define DrawTexturePro
     (foreign-procedure #f "DrawTexturePro"
-      ((& Texture2D)
-       (& Rectangle)
-       (& Rectangle)
-       (& Vector2)
-       single-float
-       (& Color))
-      void))
+		       ((& Texture2D)
+			(& Rectangle)
+			(& Rectangle)
+			(& Vector2)
+			single-float
+			(& Color))
+		       void))
   (define DrawTextureNPatch
     (foreign-procedure #f "DrawTextureNPatch"
-      ((& Texture2D)
-       (& NPatchInfo)
-       (& Rectangle)
-       (& Vector2)
-       single-float
-       (& Color))
-      void))
+		       ((& Texture2D)
+			(& NPatchInfo)
+			(& Rectangle)
+			(& Vector2)
+			single-float
+			(& Color))
+		       void))
   (define ColorIsEqual
     (foreign-procedure #f "ColorIsEqual"
-      ((& Color) (& Color))
-      boolean))
+		       ((& Color) (& Color))
+		       boolean))
   (define Fade
     (let ([proc (foreign-procedure #f "Fade"
-                  ((& Color) single-float)
-                  (& Color))])
+				   ((& Color) single-float)
+				   (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Color
-                         (foreign-alloc (ftype-sizeof Color)))])
+                        Color
+                        (foreign-alloc (ftype-sizeof Color)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define ColorToInt
     (foreign-procedure #f "ColorToInt" ((& Color)) integer-32))
   (define ColorNormalize
     (let ([proc (foreign-procedure #f "ColorNormalize"
-                  ((& Color))
-                  (& Vector4))])
+				   ((& Color))
+				   (& Vector4))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector4
-                         (foreign-alloc (ftype-sizeof Vector4)))])
+                        Vector4
+                        (foreign-alloc (ftype-sizeof Vector4)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define ColorFromNormalized
     (let ([proc (foreign-procedure #f "ColorFromNormalized"
-                  ((& Vector4))
-                  (& Color))])
+				   ((& Vector4))
+				   (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Color
-                         (foreign-alloc (ftype-sizeof Color)))])
+                        Color
+                        (foreign-alloc (ftype-sizeof Color)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define ColorToHSV
     (let ([proc (foreign-procedure #f "ColorToHSV"
-                  ((& Color))
-                  (& Vector3))])
+				   ((& Color))
+				   (& Vector3))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector3
-                         (foreign-alloc (ftype-sizeof Vector3)))])
+                        Vector3
+                        (foreign-alloc (ftype-sizeof Vector3)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define ColorFromHSV
     (let ([proc (foreign-procedure #f "ColorFromHSV"
-                  (single-float single-float single-float)
-                  (& Color))])
+				   (single-float single-float single-float)
+				   (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Color
-                         (foreign-alloc (ftype-sizeof Color)))])
+                        Color
+                        (foreign-alloc (ftype-sizeof Color)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define ColorTint
     (let ([proc (foreign-procedure #f "ColorTint"
-                  ((& Color) (& Color))
-                  (& Color))])
+				   ((& Color) (& Color))
+				   (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Color
-                         (foreign-alloc (ftype-sizeof Color)))])
+                        Color
+                        (foreign-alloc (ftype-sizeof Color)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define ColorBrightness
     (let ([proc (foreign-procedure #f "ColorBrightness"
-                  ((& Color) single-float)
-                  (& Color))])
+				   ((& Color) single-float)
+				   (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Color
-                         (foreign-alloc (ftype-sizeof Color)))])
+                        Color
+                        (foreign-alloc (ftype-sizeof Color)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define ColorContrast
     (let ([proc (foreign-procedure #f "ColorContrast"
-                  ((& Color) single-float)
-                  (& Color))])
+				   ((& Color) single-float)
+				   (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Color
-                         (foreign-alloc (ftype-sizeof Color)))])
+                        Color
+                        (foreign-alloc (ftype-sizeof Color)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define ColorAlpha
     (let ([proc (foreign-procedure #f "ColorAlpha"
-                  ((& Color) single-float)
-                  (& Color))])
+				   ((& Color) single-float)
+				   (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Color
-                         (foreign-alloc (ftype-sizeof Color)))])
+                        Color
+                        (foreign-alloc (ftype-sizeof Color)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define ColorAlphaBlend
     (let ([proc (foreign-procedure #f "ColorAlphaBlend"
-                  ((& Color) (& Color) (& Color))
-                  (& Color))])
+				   ((& Color) (& Color) (& Color))
+				   (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Color
-                         (foreign-alloc (ftype-sizeof Color)))])
+                        Color
+                        (foreign-alloc (ftype-sizeof Color)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define ColorLerp
     (let ([proc (foreign-procedure #f "ColorLerp"
-                  ((& Color) (& Color) single-float)
-                  (& Color))])
+				   ((& Color) (& Color) single-float)
+				   (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Color
-                         (foreign-alloc (ftype-sizeof Color)))])
+                        Color
+                        (foreign-alloc (ftype-sizeof Color)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetColor
     (let ([proc (foreign-procedure #f "GetColor"
-                  (unsigned-32)
-                  (& Color))])
+				   (unsigned-32)
+				   (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Color
-                         (foreign-alloc (ftype-sizeof Color)))])
+                        Color
+                        (foreign-alloc (ftype-sizeof Color)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetPixelColor
     (let ([proc (foreign-procedure #f "GetPixelColor"
-                  (void* integer-32)
-                  (& Color))])
+				   (void* integer-32)
+				   (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Color
-                         (foreign-alloc (ftype-sizeof Color)))])
+                        Color
+                        (foreign-alloc (ftype-sizeof Color)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define SetPixelColor
     (foreign-procedure #f "SetPixelColor"
-      (void* (& Color) integer-32)
-      void))
+		       (void* (& Color) integer-32)
+		       void))
   (define GetPixelDataSize
     (foreign-procedure #f "GetPixelDataSize"
-      (integer-32 integer-32 integer-32)
-      integer-32))
+		       (integer-32 integer-32 integer-32)
+		       integer-32))
   (define GetFontDefault
     (let ([proc (foreign-procedure #f "GetFontDefault"
-                  ()
-                  (& Font))])
+				   ()
+				   (& Font))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Font
-                         (foreign-alloc (ftype-sizeof Font)))])
+                        Font
+                        (foreign-alloc (ftype-sizeof Font)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadFont
     (let ([proc (foreign-procedure #f "LoadFont"
-                  (string)
-                  (& Font))])
+				   (string)
+				   (& Font))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Font
-                         (foreign-alloc (ftype-sizeof Font)))])
+                        Font
+                        (foreign-alloc (ftype-sizeof Font)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadFontEx
     (let ([proc (foreign-procedure #f "LoadFontEx"
-                  (string integer-32 (* integer-32) integer-32)
-                  (& Font))])
+				   (string integer-32 (* integer-32) integer-32)
+				   (& Font))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Font
-                         (foreign-alloc (ftype-sizeof Font)))])
+                        Font
+                        (foreign-alloc (ftype-sizeof Font)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadFontFromImage
     (let ([proc (foreign-procedure #f "LoadFontFromImage"
-                  ((& Image) (& Color) integer-32)
-                  (& Font))])
+				   ((& Image) (& Color) integer-32)
+				   (& Font))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Font
-                         (foreign-alloc (ftype-sizeof Font)))])
+                        Font
+                        (foreign-alloc (ftype-sizeof Font)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadFontFromMemory
     (let ([proc (foreign-procedure #f "LoadFontFromMemory"
-                  (string
-                   (* unsigned-8)
-                   integer-32
-                   integer-32
-                   (* integer-32)
-                   integer-32)
-                  (& Font))])
+				   (string
+				    (* unsigned-8)
+				    integer-32
+				    integer-32
+				    (* integer-32)
+				    integer-32)
+				   (& Font))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Font
-                         (foreign-alloc (ftype-sizeof Font)))])
+                        Font
+                        (foreign-alloc (ftype-sizeof Font)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define IsFontValid
     (foreign-procedure #f "IsFontValid" ((& Font)) boolean))
   (define LoadFontData
     (foreign-procedure #f "LoadFontData"
-      ((* unsigned-8)
-       integer-32
-       integer-32
-       (* integer-32)
-       integer-32
-       integer-32
-       (* integer-32))
-      (* GlyphInfo)))
+		       (u8*
+			integer-32
+			integer-32
+			u32*
+			integer-32
+			integer-32
+			(* integer-32))
+		       (* GlyphInfo)))
   (define GenImageFontAtlas
     (let ([proc (foreign-procedure #f "GenImageFontAtlas"
-                  ((* GlyphInfo)
-                   (* *Rectangle)
-                   integer-32
-                   integer-32
-                   integer-32
-                   integer-32)
-                  (& Image))])
+				   ((* GlyphInfo)
+				    (* *Rectangle)
+				    integer-32
+				    integer-32
+				    integer-32
+				    integer-32)
+				   (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Image
-                         (foreign-alloc (ftype-sizeof Image)))])
+                        Image
+                        (foreign-alloc (ftype-sizeof Image)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define UnloadFontData
     (foreign-procedure #f "UnloadFontData"
-      ((* GlyphInfo) integer-32)
-      void))
+		       ((* GlyphInfo) integer-32)
+		       void))
   (define UnloadFont
     (foreign-procedure #f "UnloadFont" ((& Font)) void))
   (define ExportFontAsCode
     (foreign-procedure #f "ExportFontAsCode"
-      ((& Font) string)
-      boolean))
+		       ((& Font) string)
+		       boolean))
   (define DrawFPS
     (foreign-procedure #f "DrawFPS"
-      (integer-32 integer-32)
-      void))
+		       (integer-32 integer-32)
+		       void))
   (define DrawText
     (foreign-procedure #f "DrawText"
-      (string integer-32 integer-32 integer-32 (& Color))
-      void))
+		       (string integer-32 integer-32 integer-32 (& Color))
+		       void))
   (define DrawTextEx
     (foreign-procedure #f "DrawTextEx"
-      ((& Font)
-       string
-       (& Vector2)
-       single-float
-       single-float
-       (& Color))
-      void))
+		       ((& Font)
+			string
+			(& Vector2)
+			single-float
+			single-float
+			(& Color))
+		       void))
   (define DrawTextPro
     (foreign-procedure #f "DrawTextPro"
-      ((& Font)
-       string
-       (& Vector2)
-       (& Vector2)
-       single-float
-       single-float
-       single-float
-       (& Color))
-      void))
+		       ((& Font)
+			string
+			(& Vector2)
+			(& Vector2)
+			single-float
+			single-float
+			single-float
+			(& Color))
+		       void))
   (define DrawTextCodepoint
     (foreign-procedure #f "DrawTextCodepoint"
-      ((& Font) integer-32 (& Vector2) single-float (& Color))
-      void))
+		       ((& Font) integer-32 (& Vector2) single-float (& Color))
+		       void))
   (define DrawTextCodepoints
     (foreign-procedure #f "DrawTextCodepoints"
-      ((& Font)
-       (* integer-32)
-       integer-32
-       (& Vector2)
-       single-float
-       single-float
-       (& Color))
-      void))
+		       ((& Font)
+			(* integer-32)
+			integer-32
+			(& Vector2)
+			single-float
+			single-float
+			(& Color))
+		       void))
   (define SetTextLineSpacing
     (foreign-procedure #f "SetTextLineSpacing"
-      (integer-32)
-      void))
+		       (integer-32)
+		       void))
   (define MeasureText
     (foreign-procedure #f "MeasureText"
-      (string integer-32)
-      integer-32))
+		       (string integer-32)
+		       integer-32))
   (define MeasureTextEx
     (let ([proc (foreign-procedure #f "MeasureTextEx"
-                  ((& Font) string single-float single-float)
-                  (& Vector2))])
+				   ((& Font) string single-float single-float)
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define MeasureTextCodepoints
     (let ([proc (foreign-procedure #f "MeasureTextCodepoints"
-                  ((& Font)
-                   (* integer-32)
-                   integer-32
-                   single-float
-                   single-float)
-                  (& Vector2))])
+				   ((& Font)
+				    (* integer-32)
+				    integer-32
+				    single-float
+				    single-float)
+				   (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Vector2
-                         (foreign-alloc (ftype-sizeof Vector2)))])
+                        Vector2
+                        (foreign-alloc (ftype-sizeof Vector2)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetGlyphIndex
     (foreign-procedure #f "GetGlyphIndex"
-      ((& Font) integer-32)
-      integer-32))
+		       ((& Font) integer-32)
+		       integer-32))
   (define GetGlyphInfo
     (let ([proc (foreign-procedure #f "GetGlyphInfo"
-                  ((& Font) integer-32)
-                  (& GlyphInfo))])
+				   ((& Font) integer-32)
+				   (& GlyphInfo))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         GlyphInfo
-                         (foreign-alloc (ftype-sizeof GlyphInfo)))])
+                        GlyphInfo
+                        (foreign-alloc (ftype-sizeof GlyphInfo)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetGlyphAtlasRec
     (let ([proc (foreign-procedure #f "GetGlyphAtlasRec"
-                  ((& Font) integer-32)
-                  (& Rectangle))])
+				   ((& Font) integer-32)
+				   (& Rectangle))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Rectangle
-                         (foreign-alloc (ftype-sizeof Rectangle)))])
+                        Rectangle
+                        (foreign-alloc (ftype-sizeof Rectangle)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadUTF8
     (foreign-procedure #f "LoadUTF8"
-      ((* integer-32) integer-32)
-      string))
+		       ((* integer-32) integer-32)
+		       string))
   (define UnloadUTF8
     (foreign-procedure #f "UnloadUTF8" (string) void))
   (define LoadCodepoints
     (foreign-procedure #f "LoadCodepoints"
-      (string (* integer-32))
-      (* integer-32)))
+		       (string (* integer-32))
+		       (* integer-32)))
   (define UnloadCodepoints
     (foreign-procedure #f "UnloadCodepoints"
-      ((* integer-32))
-      void))
+		       ((* integer-32))
+		       void))
   (define GetCodepointCount
     (foreign-procedure #f "GetCodepointCount"
-      (string)
-      integer-32))
+		       (string)
+		       integer-32))
   (define GetCodepoint
     (foreign-procedure #f "GetCodepoint"
-      (string (* integer-32))
-      integer-32))
+		       (string (* integer-32))
+		       integer-32))
   (define GetCodepointNext
     (foreign-procedure #f "GetCodepointNext"
-      (string (* integer-32))
-      integer-32))
+		       (string (* integer-32))
+		       integer-32))
   (define GetCodepointPrevious
     (foreign-procedure #f "GetCodepointPrevious"
-      (string (* integer-32))
-      integer-32))
+		       (string (* integer-32))
+		       integer-32))
   (define CodepointToUTF8
     (foreign-procedure #f "CodepointToUTF8"
-      (integer-32 (* integer-32))
-      string))
+		       (integer-32 (* integer-32))
+		       string))
   (define LoadTextLines
     (foreign-procedure #f "LoadTextLines"
-      (string (* integer-32))
-      string))
+		       (string (* integer-32))
+		       string))
   (define UnloadTextLines
     (foreign-procedure #f "UnloadTextLines"
-      (string integer-32)
-      void))
+		       (string integer-32)
+		       void))
   (define TextCopy
     (foreign-procedure #f "TextCopy"
-      (string string)
-      integer-32))
+		       (string string)
+		       integer-32))
   (define TextIsEqual
     (foreign-procedure #f "TextIsEqual"
-      (string string)
-      boolean))
+		       (string string)
+		       boolean))
   (define TextLength
     (foreign-procedure #f "TextLength" (string) unsigned-32))
   (define TextFormat
     (foreign-procedure #f "TextFormat" (string) string))
   (define TextSubtext
     (foreign-procedure #f "TextSubtext"
-      (string integer-32 integer-32)
-      string))
+		       (string integer-32 integer-32)
+		       string))
   (define TextRemoveSpaces
     (foreign-procedure #f "TextRemoveSpaces" (string) string))
   (define GetTextBetween
     (foreign-procedure #f "GetTextBetween"
-      (string string string)
-      string))
+		       (string string string)
+		       string))
   (define TextReplace
     (foreign-procedure #f "TextReplace"
-      (string string string)
-      string))
+		       (string string string)
+		       string))
   (define TextReplaceAlloc
     (foreign-procedure #f "TextReplaceAlloc"
-      (string string string)
-      string))
+		       (string string string)
+		       string))
   (define TextReplaceBetween
     (foreign-procedure #f "TextReplaceBetween"
-      (string string string string)
-      string))
+		       (string string string string)
+		       string))
   (define TextReplaceBetweenAlloc
     (foreign-procedure #f "TextReplaceBetweenAlloc"
-      (string string string string)
-      string))
+		       (string string string string)
+		       string))
   (define TextInsert
     (foreign-procedure #f "TextInsert"
-      (string string integer-32)
-      string))
+		       (string string integer-32)
+		       string))
   (define TextInsertAlloc
     (foreign-procedure #f "TextInsertAlloc"
-      (string string integer-32)
-      string))
+		       (string string integer-32)
+		       string))
   (define TextJoin
     (foreign-procedure #f "TextJoin"
-      (string integer-32 string)
-      string))
+		       (string integer-32 string)
+		       string))
   (define TextSplit
     (foreign-procedure #f "TextSplit"
-      (string char (* integer-32))
-      string))
+		       (string char (* integer-32))
+		       string))
   (define TextAppend
     (foreign-procedure #f "TextAppend"
-      (string string (* integer-32))
-      void))
+		       (string string (* integer-32))
+		       void))
   (define TextFindIndex
     (foreign-procedure #f "TextFindIndex"
-      (string string)
-      integer-32))
+		       (string string)
+		       integer-32))
   (define TextToUpper
     (foreign-procedure #f "TextToUpper" (string) string))
   (define TextToLower
@@ -3108,146 +3109,146 @@
     (foreign-procedure #f "TextToFloat" (string) single-float))
   (define DrawLine3D
     (foreign-procedure #f "DrawLine3D"
-      ((& Vector3) (& Vector3) (& Color))
-      void))
+		       ((& Vector3) (& Vector3) (& Color))
+		       void))
   (define DrawPoint3D
     (foreign-procedure #f "DrawPoint3D"
-      ((& Vector3) (& Color))
-      void))
+		       ((& Vector3) (& Color))
+		       void))
   (define DrawCircle3D
     (foreign-procedure #f "DrawCircle3D"
-      ((& Vector3)
-       single-float
-       (& Vector3)
-       single-float
-       (& Color))
-      void))
+		       ((& Vector3)
+			single-float
+			(& Vector3)
+			single-float
+			(& Color))
+		       void))
   (define DrawTriangle3D
     (foreign-procedure #f "DrawTriangle3D"
-      ((& Vector3) (& Vector3) (& Vector3) (& Color))
-      void))
+		       ((& Vector3) (& Vector3) (& Vector3) (& Color))
+		       void))
   (define DrawTriangleStrip3D
     (foreign-procedure #f "DrawTriangleStrip3D"
-      ((* Vector3) integer-32 (& Color))
-      void))
+		       ((* Vector3) integer-32 (& Color))
+		       void))
   (define DrawCube
     (foreign-procedure #f "DrawCube"
-      ((& Vector3)
-       single-float
-       single-float
-       single-float
-       (& Color))
-      void))
+		       ((& Vector3)
+			single-float
+			single-float
+			single-float
+			(& Color))
+		       void))
   (define DrawCubeV
     (foreign-procedure #f "DrawCubeV"
-      ((& Vector3) (& Vector3) (& Color))
-      void))
+		       ((& Vector3) (& Vector3) (& Color))
+		       void))
   (define DrawCubeWires
     (foreign-procedure #f "DrawCubeWires"
-      ((& Vector3)
-       single-float
-       single-float
-       single-float
-       (& Color))
-      void))
+		       ((& Vector3)
+			single-float
+			single-float
+			single-float
+			(& Color))
+		       void))
   (define DrawCubeWiresV
     (foreign-procedure #f "DrawCubeWiresV"
-      ((& Vector3) (& Vector3) (& Color))
-      void))
+		       ((& Vector3) (& Vector3) (& Color))
+		       void))
   (define DrawSphere
     (foreign-procedure #f "DrawSphere"
-      ((& Vector3) single-float (& Color))
-      void))
+		       ((& Vector3) single-float (& Color))
+		       void))
   (define DrawSphereEx
     (foreign-procedure #f "DrawSphereEx"
-      ((& Vector3) single-float integer-32 integer-32 (& Color))
-      void))
+		       ((& Vector3) single-float integer-32 integer-32 (& Color))
+		       void))
   (define DrawSphereWires
     (foreign-procedure #f "DrawSphereWires"
-      ((& Vector3) single-float integer-32 integer-32 (& Color))
-      void))
+		       ((& Vector3) single-float integer-32 integer-32 (& Color))
+		       void))
   (define DrawCylinder
     (foreign-procedure #f "DrawCylinder"
-      ((& Vector3)
-       single-float
-       single-float
-       single-float
-       integer-32
-       (& Color))
-      void))
+		       ((& Vector3)
+			single-float
+			single-float
+			single-float
+			integer-32
+			(& Color))
+		       void))
   (define DrawCylinderEx
     (foreign-procedure #f "DrawCylinderEx"
-      ((& Vector3)
-       (& Vector3)
-       single-float
-       single-float
-       integer-32
-       (& Color))
-      void))
+		       ((& Vector3)
+			(& Vector3)
+			single-float
+			single-float
+			integer-32
+			(& Color))
+		       void))
   (define DrawCylinderWires
     (foreign-procedure #f "DrawCylinderWires"
-      ((& Vector3)
-       single-float
-       single-float
-       single-float
-       integer-32
-       (& Color))
-      void))
+		       ((& Vector3)
+			single-float
+			single-float
+			single-float
+			integer-32
+			(& Color))
+		       void))
   (define DrawCylinderWiresEx
     (foreign-procedure #f "DrawCylinderWiresEx"
-      ((& Vector3)
-       (& Vector3)
-       single-float
-       single-float
-       integer-32
-       (& Color))
-      void))
+		       ((& Vector3)
+			(& Vector3)
+			single-float
+			single-float
+			integer-32
+			(& Color))
+		       void))
   (define DrawCapsule
     (foreign-procedure #f "DrawCapsule"
-      ((& Vector3)
-       (& Vector3)
-       single-float
-       integer-32
-       integer-32
-       (& Color))
-      void))
+		       ((& Vector3)
+			(& Vector3)
+			single-float
+			integer-32
+			integer-32
+			(& Color))
+		       void))
   (define DrawCapsuleWires
     (foreign-procedure #f "DrawCapsuleWires"
-      ((& Vector3)
-       (& Vector3)
-       single-float
-       integer-32
-       integer-32
-       (& Color))
-      void))
+		       ((& Vector3)
+			(& Vector3)
+			single-float
+			integer-32
+			integer-32
+			(& Color))
+		       void))
   (define DrawPlane
     (foreign-procedure #f "DrawPlane"
-      ((& Vector3) (& Vector2) (& Color))
-      void))
+		       ((& Vector3) (& Vector2) (& Color))
+		       void))
   (define DrawRay
     (foreign-procedure #f "DrawRay" ((& Ray) (& Color)) void))
   (define DrawGrid
     (foreign-procedure #f "DrawGrid"
-      (integer-32 single-float)
-      void))
+		       (integer-32 single-float)
+		       void))
   (define LoadModel
     (let ([proc (foreign-procedure #f "LoadModel"
-                  (string)
-                  (& Model))])
+				   (string)
+				   (& Model))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Model
-                         (foreign-alloc (ftype-sizeof Model)))])
+                        Model
+                        (foreign-alloc (ftype-sizeof Model)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadModelFromMesh
     (let ([proc (foreign-procedure #f "LoadModelFromMesh"
-                  ((& Mesh))
-                  (& Model))])
+				   ((& Mesh))
+				   (& Model))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Model
-                         (foreign-alloc (ftype-sizeof Model)))])
+                        Model
+                        (foreign-alloc (ftype-sizeof Model)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define IsModelValid
@@ -3256,332 +3257,332 @@
     (foreign-procedure #f "UnloadModel" ((& Model)) void))
   (define GetModelBoundingBox
     (let ([proc (foreign-procedure #f "GetModelBoundingBox"
-                  ((& Model))
-                  (& BoundingBox))])
+				   ((& Model))
+				   (& BoundingBox))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         BoundingBox
-                         (foreign-alloc (ftype-sizeof BoundingBox)))])
+                        BoundingBox
+                        (foreign-alloc (ftype-sizeof BoundingBox)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define DrawModel
     (foreign-procedure #f "DrawModel"
-      ((& Model) (& Vector3) single-float (& Color))
-      void))
+		       ((& Model) (& Vector3) single-float (& Color))
+		       void))
   (define DrawModelEx
     (foreign-procedure #f "DrawModelEx"
-      ((& Model)
-       (& Vector3)
-       (& Vector3)
-       single-float
-       (& Vector3)
-       (& Color))
-      void))
+		       ((& Model)
+			(& Vector3)
+			(& Vector3)
+			single-float
+			(& Vector3)
+			(& Color))
+		       void))
   (define DrawModelWires
     (foreign-procedure #f "DrawModelWires"
-      ((& Model) (& Vector3) single-float (& Color))
-      void))
+		       ((& Model) (& Vector3) single-float (& Color))
+		       void))
   (define DrawModelWiresEx
     (foreign-procedure #f "DrawModelWiresEx"
-      ((& Model)
-       (& Vector3)
-       (& Vector3)
-       single-float
-       (& Vector3)
-       (& Color))
-      void))
+		       ((& Model)
+			(& Vector3)
+			(& Vector3)
+			single-float
+			(& Vector3)
+			(& Color))
+		       void))
   (define DrawBoundingBox
     (foreign-procedure #f "DrawBoundingBox"
-      ((& BoundingBox) (& Color))
-      void))
+		       ((& BoundingBox) (& Color))
+		       void))
   (define DrawBillboard
     (foreign-procedure #f "DrawBillboard"
-      ((& Camera)
-       (& Texture2D)
-       (& Vector3)
-       single-float
-       (& Color))
-      void))
+		       ((& Camera)
+			(& Texture2D)
+			(& Vector3)
+			single-float
+			(& Color))
+		       void))
   (define DrawBillboardRec
     (foreign-procedure #f "DrawBillboardRec"
-      ((& Camera)
-       (& Texture2D)
-       (& Rectangle)
-       (& Vector3)
-       (& Vector2)
-       (& Color))
-      void))
+		       ((& Camera)
+			(& Texture2D)
+			(& Rectangle)
+			(& Vector3)
+			(& Vector2)
+			(& Color))
+		       void))
   (define DrawBillboardPro
     (foreign-procedure #f "DrawBillboardPro"
-      ((& Camera)
-       (& Texture2D)
-       (& Rectangle)
-       (& Vector3)
-       (& Vector3)
-       (& Vector2)
-       (& Vector2)
-       single-float
-       (& Color))
-      void))
+		       ((& Camera)
+			(& Texture2D)
+			(& Rectangle)
+			(& Vector3)
+			(& Vector3)
+			(& Vector2)
+			(& Vector2)
+			single-float
+			(& Color))
+		       void))
   (define UploadMesh
     (foreign-procedure #f "UploadMesh" ((* Mesh) boolean) void))
   (define UpdateMeshBuffer
     (foreign-procedure #f "UpdateMeshBuffer"
-      ((& Mesh) integer-32 void* integer-32 integer-32)
-      void))
+		       ((& Mesh) integer-32 void* integer-32 integer-32)
+		       void))
   (define UnloadMesh
     (foreign-procedure #f "UnloadMesh" ((& Mesh)) void))
   (define DrawMesh
     (foreign-procedure #f "DrawMesh"
-      ((& Mesh) (& Material) (& Matrix))
-      void))
+		       ((& Mesh) (& Material) (& Matrix))
+		       void))
   (define DrawMeshInstanced
     (foreign-procedure #f "DrawMeshInstanced"
-      ((& Mesh) (& Material) (* Matrix) integer-32)
-      void))
+		       ((& Mesh) (& Material) (* Matrix) integer-32)
+		       void))
   (define GetMeshBoundingBox
     (let ([proc (foreign-procedure #f "GetMeshBoundingBox"
-                  ((& Mesh))
-                  (& BoundingBox))])
+				   ((& Mesh))
+				   (& BoundingBox))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         BoundingBox
-                         (foreign-alloc (ftype-sizeof BoundingBox)))])
+                        BoundingBox
+                        (foreign-alloc (ftype-sizeof BoundingBox)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenMeshTangents
     (foreign-procedure #f "GenMeshTangents" ((* Mesh)) void))
   (define ExportMesh
     (foreign-procedure #f "ExportMesh"
-      ((& Mesh) string)
-      boolean))
+		       ((& Mesh) string)
+		       boolean))
   (define ExportMeshAsCode
     (foreign-procedure #f "ExportMeshAsCode"
-      ((& Mesh) string)
-      boolean))
+		       ((& Mesh) string)
+		       boolean))
   (define GenMeshPoly
     (let ([proc (foreign-procedure #f "GenMeshPoly"
-                  (integer-32 single-float)
-                  (& Mesh))])
+				   (integer-32 single-float)
+				   (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Mesh
-                         (foreign-alloc (ftype-sizeof Mesh)))])
+                        Mesh
+                        (foreign-alloc (ftype-sizeof Mesh)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenMeshPlane
     (let ([proc (foreign-procedure #f "GenMeshPlane"
-                  (single-float single-float integer-32 integer-32)
-                  (& Mesh))])
+				   (single-float single-float integer-32 integer-32)
+				   (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Mesh
-                         (foreign-alloc (ftype-sizeof Mesh)))])
+                        Mesh
+                        (foreign-alloc (ftype-sizeof Mesh)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenMeshCube
     (let ([proc (foreign-procedure #f "GenMeshCube"
-                  (single-float single-float single-float)
-                  (& Mesh))])
+				   (single-float single-float single-float)
+				   (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Mesh
-                         (foreign-alloc (ftype-sizeof Mesh)))])
+                        Mesh
+                        (foreign-alloc (ftype-sizeof Mesh)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenMeshSphere
     (let ([proc (foreign-procedure #f "GenMeshSphere"
-                  (single-float integer-32 integer-32)
-                  (& Mesh))])
+				   (single-float integer-32 integer-32)
+				   (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Mesh
-                         (foreign-alloc (ftype-sizeof Mesh)))])
+                        Mesh
+                        (foreign-alloc (ftype-sizeof Mesh)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenMeshHemiSphere
     (let ([proc (foreign-procedure #f "GenMeshHemiSphere"
-                  (single-float integer-32 integer-32)
-                  (& Mesh))])
+				   (single-float integer-32 integer-32)
+				   (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Mesh
-                         (foreign-alloc (ftype-sizeof Mesh)))])
+                        Mesh
+                        (foreign-alloc (ftype-sizeof Mesh)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenMeshCylinder
     (let ([proc (foreign-procedure #f "GenMeshCylinder"
-                  (single-float single-float integer-32)
-                  (& Mesh))])
+				   (single-float single-float integer-32)
+				   (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Mesh
-                         (foreign-alloc (ftype-sizeof Mesh)))])
+                        Mesh
+                        (foreign-alloc (ftype-sizeof Mesh)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenMeshCone
     (let ([proc (foreign-procedure #f "GenMeshCone"
-                  (single-float single-float integer-32)
-                  (& Mesh))])
+				   (single-float single-float integer-32)
+				   (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Mesh
-                         (foreign-alloc (ftype-sizeof Mesh)))])
+                        Mesh
+                        (foreign-alloc (ftype-sizeof Mesh)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenMeshTorus
     (let ([proc (foreign-procedure #f "GenMeshTorus"
-                  (single-float single-float integer-32 integer-32)
-                  (& Mesh))])
+				   (single-float single-float integer-32 integer-32)
+				   (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Mesh
-                         (foreign-alloc (ftype-sizeof Mesh)))])
+                        Mesh
+                        (foreign-alloc (ftype-sizeof Mesh)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenMeshKnot
     (let ([proc (foreign-procedure #f "GenMeshKnot"
-                  (single-float single-float integer-32 integer-32)
-                  (& Mesh))])
+				   (single-float single-float integer-32 integer-32)
+				   (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Mesh
-                         (foreign-alloc (ftype-sizeof Mesh)))])
+                        Mesh
+                        (foreign-alloc (ftype-sizeof Mesh)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenMeshHeightmap
     (let ([proc (foreign-procedure #f "GenMeshHeightmap"
-                  ((& Image) (& Vector3))
-                  (& Mesh))])
+				   ((& Image) (& Vector3))
+				   (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Mesh
-                         (foreign-alloc (ftype-sizeof Mesh)))])
+                        Mesh
+                        (foreign-alloc (ftype-sizeof Mesh)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GenMeshCubicmap
     (let ([proc (foreign-procedure #f "GenMeshCubicmap"
-                  ((& Image) (& Vector3))
-                  (& Mesh))])
+				   ((& Image) (& Vector3))
+				   (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Mesh
-                         (foreign-alloc (ftype-sizeof Mesh)))])
+                        Mesh
+                        (foreign-alloc (ftype-sizeof Mesh)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadMaterials
     (foreign-procedure #f "LoadMaterials"
-      (string (* integer-32))
-      (* Material)))
+		       (string (* integer-32))
+		       (* Material)))
   (define LoadMaterialDefault
     (let ([proc (foreign-procedure #f "LoadMaterialDefault"
-                  ()
-                  (& Material))])
+				   ()
+				   (& Material))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Material
-                         (foreign-alloc (ftype-sizeof Material)))])
+                        Material
+                        (foreign-alloc (ftype-sizeof Material)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define IsMaterialValid
     (foreign-procedure #f "IsMaterialValid"
-      ((& Material))
-      boolean))
+		       ((& Material))
+		       boolean))
   (define UnloadMaterial
     (foreign-procedure #f "UnloadMaterial" ((& Material)) void))
   (define SetMaterialTexture
     (foreign-procedure #f "SetMaterialTexture"
-      ((* Material) integer-32 (& Texture2D))
-      void))
+		       ((* Material) integer-32 (& Texture2D))
+		       void))
   (define SetModelMeshMaterial
     (foreign-procedure #f "SetModelMeshMaterial"
-      ((* Model) integer-32 integer-32)
-      void))
+		       ((* Model) integer-32 integer-32)
+		       void))
   (define LoadModelAnimations
     (foreign-procedure #f "LoadModelAnimations"
-      (string (* integer-32))
-      (* ModelAnimation)))
+		       (string (* integer-32))
+		       (* ModelAnimation)))
   (define UpdateModelAnimation
     (foreign-procedure #f "UpdateModelAnimation"
-      ((& Model) (& ModelAnimation) single-float)
-      void))
+		       ((& Model) (& ModelAnimation) single-float)
+		       void))
   (define UpdateModelAnimationEx
     (foreign-procedure #f "UpdateModelAnimationEx"
-      ((& Model)
-       (& ModelAnimation)
-       single-float
-       (& ModelAnimation)
-       single-float
-       single-float)
-      void))
+		       ((& Model)
+			(& ModelAnimation)
+			single-float
+			(& ModelAnimation)
+			single-float
+			single-float)
+		       void))
   (define UnloadModelAnimations
     (foreign-procedure #f "UnloadModelAnimations"
-      ((* ModelAnimation) integer-32)
-      void))
+		       ((* ModelAnimation) integer-32)
+		       void))
   (define IsModelAnimationValid
     (foreign-procedure #f "IsModelAnimationValid"
-      ((& Model) (& ModelAnimation))
-      boolean))
+		       ((& Model) (& ModelAnimation))
+		       boolean))
   (define CheckCollisionSpheres
     (foreign-procedure #f "CheckCollisionSpheres"
-      ((& Vector3) single-float (& Vector3) single-float)
-      boolean))
+		       ((& Vector3) single-float (& Vector3) single-float)
+		       boolean))
   (define CheckCollisionBoxes
     (foreign-procedure #f "CheckCollisionBoxes"
-      ((& BoundingBox) (& BoundingBox))
-      boolean))
+		       ((& BoundingBox) (& BoundingBox))
+		       boolean))
   (define CheckCollisionBoxSphere
     (foreign-procedure #f "CheckCollisionBoxSphere"
-      ((& BoundingBox) (& Vector3) single-float)
-      boolean))
+		       ((& BoundingBox) (& Vector3) single-float)
+		       boolean))
   (define GetRayCollisionSphere
     (let ([proc (foreign-procedure #f "GetRayCollisionSphere"
-                  ((& Ray) (& Vector3) single-float)
-                  (& RayCollision))])
+				   ((& Ray) (& Vector3) single-float)
+				   (& RayCollision))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         RayCollision
-                         (foreign-alloc (ftype-sizeof RayCollision)))])
+                        RayCollision
+                        (foreign-alloc (ftype-sizeof RayCollision)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetRayCollisionBox
     (let ([proc (foreign-procedure #f "GetRayCollisionBox"
-                  ((& Ray) (& BoundingBox))
-                  (& RayCollision))])
+				   ((& Ray) (& BoundingBox))
+				   (& RayCollision))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         RayCollision
-                         (foreign-alloc (ftype-sizeof RayCollision)))])
+                        RayCollision
+                        (foreign-alloc (ftype-sizeof RayCollision)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetRayCollisionMesh
     (let ([proc (foreign-procedure #f "GetRayCollisionMesh"
-                  ((& Ray) (& Mesh) (& Matrix))
-                  (& RayCollision))])
+				   ((& Ray) (& Mesh) (& Matrix))
+				   (& RayCollision))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         RayCollision
-                         (foreign-alloc (ftype-sizeof RayCollision)))])
+                        RayCollision
+                        (foreign-alloc (ftype-sizeof RayCollision)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetRayCollisionTriangle
     (let ([proc (foreign-procedure #f "GetRayCollisionTriangle"
-                  ((& Ray) (& Vector3) (& Vector3) (& Vector3))
-                  (& RayCollision))])
+				   ((& Ray) (& Vector3) (& Vector3) (& Vector3))
+				   (& RayCollision))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         RayCollision
-                         (foreign-alloc (ftype-sizeof RayCollision)))])
+                        RayCollision
+                        (foreign-alloc (ftype-sizeof RayCollision)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define GetRayCollisionQuad
     (let ([proc (foreign-procedure #f "GetRayCollisionQuad"
-                  ((& Ray) (& Vector3) (& Vector3) (& Vector3) (& Vector3))
-                  (& RayCollision))])
+				   ((& Ray) (& Vector3) (& Vector3) (& Vector3) (& Vector3))
+				   (& RayCollision))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         RayCollision
-                         (foreign-alloc (ftype-sizeof RayCollision)))])
+                        RayCollision
+                        (foreign-alloc (ftype-sizeof RayCollision)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define InitAudioDevice
@@ -3592,68 +3593,68 @@
     (foreign-procedure #f "IsAudioDeviceReady" () boolean))
   (define SetMasterVolume
     (foreign-procedure #f "SetMasterVolume"
-      (single-float)
-      void))
+		       (single-float)
+		       void))
   (define GetMasterVolume
     (foreign-procedure #f "GetMasterVolume" () single-float))
   (define LoadWave
     (let ([proc (foreign-procedure #f "LoadWave"
-                  (string)
-                  (& Wave))])
+				   (string)
+				   (& Wave))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Wave
-                         (foreign-alloc (ftype-sizeof Wave)))])
+                        Wave
+                        (foreign-alloc (ftype-sizeof Wave)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadWaveFromMemory
     (let ([proc (foreign-procedure #f "LoadWaveFromMemory"
-                  (string (* unsigned-8) integer-32)
-                  (& Wave))])
+				   (string (* unsigned-8) integer-32)
+				   (& Wave))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Wave
-                         (foreign-alloc (ftype-sizeof Wave)))])
+                        Wave
+                        (foreign-alloc (ftype-sizeof Wave)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define IsWaveValid
     (foreign-procedure #f "IsWaveValid" ((& Wave)) boolean))
   (define LoadSound
     (let ([proc (foreign-procedure #f "LoadSound"
-                  (string)
-                  (& Sound))])
+				   (string)
+				   (& Sound))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Sound
-                         (foreign-alloc (ftype-sizeof Sound)))])
+                        Sound
+                        (foreign-alloc (ftype-sizeof Sound)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadSoundFromWave
     (let ([proc (foreign-procedure #f "LoadSoundFromWave"
-                  ((& Wave))
-                  (& Sound))])
+				   ((& Wave))
+				   (& Sound))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Sound
-                         (foreign-alloc (ftype-sizeof Sound)))])
+                        Sound
+                        (foreign-alloc (ftype-sizeof Sound)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadSoundAlias
     (let ([proc (foreign-procedure #f "LoadSoundAlias"
-                  ((& Sound))
-                  (& Sound))])
+				   ((& Sound))
+				   (& Sound))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Sound
-                         (foreign-alloc (ftype-sizeof Sound)))])
+                        Sound
+                        (foreign-alloc (ftype-sizeof Sound)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define IsSoundValid
     (foreign-procedure #f "IsSoundValid" ((& Sound)) boolean))
   (define UpdateSound
     (foreign-procedure #f "UpdateSound"
-      ((& Sound) void* integer-32)
-      void))
+		       ((& Sound) void* integer-32)
+		       void))
   (define UnloadWave
     (foreign-procedure #f "UnloadWave" ((& Wave)) void))
   (define UnloadSound
@@ -3662,12 +3663,12 @@
     (foreign-procedure #f "UnloadSoundAlias" ((& Sound)) void))
   (define ExportWave
     (foreign-procedure #f "ExportWave"
-      ((& Wave) string)
-      boolean))
+		       ((& Wave) string)
+		       boolean))
   (define ExportWaveAsCode
     (foreign-procedure #f "ExportWaveAsCode"
-      ((& Wave) string)
-      boolean))
+		       ((& Wave) string)
+		       boolean))
   (define PlaySound
     (foreign-procedure #f "PlaySound" ((& Sound)) void))
   (define StopSound
@@ -3680,60 +3681,60 @@
     (foreign-procedure #f "IsSoundPlaying" ((& Sound)) boolean))
   (define SetSoundVolume
     (foreign-procedure #f "SetSoundVolume"
-      ((& Sound) single-float)
-      void))
+		       ((& Sound) single-float)
+		       void))
   (define SetSoundPitch
     (foreign-procedure #f "SetSoundPitch"
-      ((& Sound) single-float)
-      void))
+		       ((& Sound) single-float)
+		       void))
   (define SetSoundPan
     (foreign-procedure #f "SetSoundPan"
-      ((& Sound) single-float)
-      void))
+		       ((& Sound) single-float)
+		       void))
   (define WaveCopy
     (let ([proc (foreign-procedure #f "WaveCopy"
-                  ((& Wave))
-                  (& Wave))])
+				   ((& Wave))
+				   (& Wave))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Wave
-                         (foreign-alloc (ftype-sizeof Wave)))])
+                        Wave
+                        (foreign-alloc (ftype-sizeof Wave)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define WaveCrop
     (foreign-procedure #f "WaveCrop"
-      ((* Wave) integer-32 integer-32)
-      void))
+		       ((* Wave) integer-32 integer-32)
+		       void))
   (define WaveFormat
     (foreign-procedure #f "WaveFormat"
-      ((* Wave) integer-32 integer-32 integer-32)
-      void))
+		       ((* Wave) integer-32 integer-32 integer-32)
+		       void))
   (define LoadWaveSamples
     (foreign-procedure #f "LoadWaveSamples"
-      ((& Wave))
-      (* single-float)))
+		       ((& Wave))
+		       (* single-float)))
   (define UnloadWaveSamples
     (foreign-procedure #f "UnloadWaveSamples"
-      ((* single-float))
-      void))
+		       ((* single-float))
+		       void))
   (define LoadMusicStream
     (let ([proc (foreign-procedure #f "LoadMusicStream"
-                  (string)
-                  (& Music))])
+				   (string)
+				   (& Music))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Music
-                         (foreign-alloc (ftype-sizeof Music)))])
+                        Music
+                        (foreign-alloc (ftype-sizeof Music)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define LoadMusicStreamFromMemory
     (let ([proc (foreign-procedure #f "LoadMusicStreamFromMemory"
-                  (string (* unsigned-8) integer-32)
-                  (& Music))])
+				   (string (* unsigned-8) integer-32)
+				   (& Music))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         Music
-                         (foreign-alloc (ftype-sizeof Music)))])
+                        Music
+                        (foreign-alloc (ftype-sizeof Music)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define IsMusicValid
@@ -3744,8 +3745,8 @@
     (foreign-procedure #f "PlayMusicStream" ((& Music)) void))
   (define IsMusicStreamPlaying
     (foreign-procedure #f "IsMusicStreamPlaying"
-      ((& Music))
-      boolean))
+		       ((& Music))
+		       boolean))
   (define UpdateMusicStream
     (foreign-procedure #f "UpdateMusicStream" ((& Music)) void))
   (define StopMusicStream
@@ -3756,107 +3757,107 @@
     (foreign-procedure #f "ResumeMusicStream" ((& Music)) void))
   (define SeekMusicStream
     (foreign-procedure #f "SeekMusicStream"
-      ((& Music) single-float)
-      void))
+		       ((& Music) single-float)
+		       void))
   (define SetMusicVolume
     (foreign-procedure #f "SetMusicVolume"
-      ((& Music) single-float)
-      void))
+		       ((& Music) single-float)
+		       void))
   (define SetMusicPitch
     (foreign-procedure #f "SetMusicPitch"
-      ((& Music) single-float)
-      void))
+		       ((& Music) single-float)
+		       void))
   (define SetMusicPan
     (foreign-procedure #f "SetMusicPan"
-      ((& Music) single-float)
-      void))
+		       ((& Music) single-float)
+		       void))
   (define GetMusicTimeLength
     (foreign-procedure #f "GetMusicTimeLength"
-      ((& Music))
-      single-float))
+		       ((& Music))
+		       single-float))
   (define GetMusicTimePlayed
     (foreign-procedure #f "GetMusicTimePlayed"
-      ((& Music))
-      single-float))
+		       ((& Music))
+		       single-float))
   (define LoadAudioStream
     (let ([proc (foreign-procedure #f "LoadAudioStream"
-                  (unsigned-32 unsigned-32 unsigned-32)
-                  (& AudioStream))])
+				   (unsigned-32 unsigned-32 unsigned-32)
+				   (& AudioStream))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
-                         AudioStream
-                         (foreign-alloc (ftype-sizeof AudioStream)))])
+                        AudioStream
+                        (foreign-alloc (ftype-sizeof AudioStream)))])
           (apply proc ret-res xargs)
           ret-res))))
   (define IsAudioStreamValid
     (foreign-procedure #f "IsAudioStreamValid"
-      ((& AudioStream))
-      boolean))
+		       ((& AudioStream))
+		       boolean))
   (define UnloadAudioStream
     (foreign-procedure #f "UnloadAudioStream"
-      ((& AudioStream))
-      void))
+		       ((& AudioStream))
+		       void))
   (define UpdateAudioStream
     (foreign-procedure #f "UpdateAudioStream"
-      ((& AudioStream) void* integer-32)
-      void))
+		       ((& AudioStream) void* integer-32)
+		       void))
   (define IsAudioStreamProcessed
     (foreign-procedure #f "IsAudioStreamProcessed"
-      ((& AudioStream))
-      boolean))
+		       ((& AudioStream))
+		       boolean))
   (define PlayAudioStream
     (foreign-procedure #f "PlayAudioStream"
-      ((& AudioStream))
-      void))
+		       ((& AudioStream))
+		       void))
   (define PauseAudioStream
     (foreign-procedure #f "PauseAudioStream"
-      ((& AudioStream))
-      void))
+		       ((& AudioStream))
+		       void))
   (define ResumeAudioStream
     (foreign-procedure #f "ResumeAudioStream"
-      ((& AudioStream))
-      void))
+		       ((& AudioStream))
+		       void))
   (define IsAudioStreamPlaying
     (foreign-procedure #f "IsAudioStreamPlaying"
-      ((& AudioStream))
-      boolean))
+		       ((& AudioStream))
+		       boolean))
   (define StopAudioStream
     (foreign-procedure #f "StopAudioStream"
-      ((& AudioStream))
-      void))
+		       ((& AudioStream))
+		       void))
   (define SetAudioStreamVolume
     (foreign-procedure #f "SetAudioStreamVolume"
-      ((& AudioStream) single-float)
-      void))
+		       ((& AudioStream) single-float)
+		       void))
   (define SetAudioStreamPitch
     (foreign-procedure #f "SetAudioStreamPitch"
-      ((& AudioStream) single-float)
-      void))
+		       ((& AudioStream) single-float)
+		       void))
   (define SetAudioStreamPan
     (foreign-procedure #f "SetAudioStreamPan"
-      ((& AudioStream) single-float)
-      void))
+		       ((& AudioStream) single-float)
+		       void))
   (define SetAudioStreamBufferSizeDefault
     (foreign-procedure #f "SetAudioStreamBufferSizeDefault"
-      (integer-32)
-      void))
+		       (integer-32)
+		       void))
   (define SetAudioStreamCallback
     (foreign-procedure #f "SetAudioStreamCallback"
-      ((& AudioStream) (* AudioCallback))
-      void))
+		       ((& AudioStream) (* AudioCallback))
+		       void))
   (define AttachAudioStreamProcessor
     (foreign-procedure #f "AttachAudioStreamProcessor"
-      ((& AudioStream) (* AudioCallback))
-      void))
+		       ((& AudioStream) (* AudioCallback))
+		       void))
   (define DetachAudioStreamProcessor
     (foreign-procedure #f "DetachAudioStreamProcessor"
-      ((& AudioStream) (* AudioCallback))
-      void))
+		       ((& AudioStream) (* AudioCallback))
+		       void))
   (define AttachAudioMixedProcessor
     (foreign-procedure #f "AttachAudioMixedProcessor"
-      ((* AudioCallback))
-      void))
+		       ((* AudioCallback))
+		       void))
   (define DetachAudioMixedProcessor
     (foreign-procedure #f "DetachAudioMixedProcessor"
-      ((* AudioCallback))
-      void)))
+		       ((* AudioCallback))
+		       void)))
