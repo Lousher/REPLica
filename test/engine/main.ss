@@ -18,8 +18,8 @@
 (define main-stage
   (let* ([morning-tex (load-texture "test/store/apartment.morning.png")]
 	 [afternoon-tex (load-texture "test/store/apartment.afternoon.png")]
-	 [font-tex (load-texture "xiaolai.atlas.png")]
-	 [glyphs (call-with-port (open-file-input-port "xiaolai.bin" (file-options no-fail) (buffer-mode block) #f)
+	 [font-tex (load-texture "assets/xiaolai.atlas.png")]
+	 [glyphs (call-with-port (open-file-input-port "assets/xiaolai.bin" (file-options no-fail) (buffer-mode block) #f)
 		   fasl-read)]
 	 [white-tex (color->texture white 1 1)]
 	 [black-tex (color->texture black 1 1)]
