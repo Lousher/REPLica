@@ -1,7 +1,7 @@
 (library (core picture)
   (export texture->picture beside above
 	  rotate layer stroke fade cache
-	  resize at origin
+	  resize at origin sdf
 	  *TINT*)
   (import
    (chezscheme)
@@ -12,43 +12,83 @@
    (ffi raylib binding))
 
   (define *TINT* (make-parameter white))
+  (define SDF_SHADER #f)
   
   (define texture->picture
-    (lambda (tex)
-      (assert (texture? tex))
-      (lambda (fr)
-	(when (texture-pointer tex)
-	  (let ([w (frame-width fr)]
-		[h (frame-height fr)]
-		[anchor (frame-anchor fr)]
-		[origin (frame-origin fr)]
-		[rot (frame-rotation fr)]
-		[src (texture-source tex)]
-		[tex-w (texture-width tex)]
-		[tex-h (texture-height tex)])
-	    (let ([acr-x (vector2-x anchor)]
-		  [acr-y (vector2-y anchor)]
-		  [flip-x? (negative? w)]
-		  [flip-y? (negative? h)]
-		  )
-	      (let ([src-w (if flip-x? (- tex-w) tex-w)]
-		    [src-h (if flip-y? (- tex-h) tex-h)]
-		    [src-x (if flip-x? tex-w (rectangle-x src))]
-		    [src-y (if flip-y? tex-h (rectangle-y src))])
-		(draw-texture-pro
-		 tex
-		 (make-rectangle
-		  src-x src-y src-w src-h)
-		 (make-rectangle
-		  acr-x acr-y
-		  (frame-width fr) (frame-height fr))
-		 origin
-		 (frame-rotation fr)
-		 (color-multiply
-		  (texture-tint tex)
-		  (*TINT*))
-		 ))))))
-      ))
+    (case-lambda
+      [(tex rect)
+       (lambda (fr)
+	 (when (texture-pointer tex)
+	   (let ([w (frame-width fr)]
+		 [h (frame-height fr)]
+		 [anchor (frame-anchor fr)]
+		 [origin (frame-origin fr)]
+		 [rot (frame-rotation fr)]
+		 [src (texture-source tex)]
+		 [tex-w (texture-width tex)]
+		 [tex-h (texture-height tex)]
+		 [rect-x (rectangle-x rect)]
+		 [rect-y (rectangle-y rect)]
+		 [rect-w (rectangle-width rect)]
+		 [rect-h (rectangle-height rect)]
+		 )
+	     (let ([acr-x (vector2-x anchor)]
+		   [acr-y (vector2-y anchor)]
+		   [flip-x? (negative? w)]
+		   [flip-y? (negative? h)]
+		   )
+	       (let ([src-w (if flip-x? (- rect-w) rect-w)]
+		     [src-h (if flip-y? (- rect-h) rect-h)]
+		     [src-x (if flip-x? rect-w rect-x)]
+		     [src-y (if flip-y? rect-h rect-y)])
+		 (draw-texture-pro
+		  tex
+		  (make-rectangle
+		   src-x src-y src-w src-h)
+		  (make-rectangle
+		   acr-x acr-y
+		   (frame-width fr) (frame-height fr))
+		  origin
+		  (frame-rotation fr)
+		  (color-multiply
+		   (texture-tint tex)
+		   (*TINT*))
+		  ))))))
+       ]
+      [(tex)
+       (lambda (fr)
+	 (when (texture-pointer tex)
+	   (let ([w (frame-width fr)]
+		 [h (frame-height fr)]
+		 [anchor (frame-anchor fr)]
+		 [origin (frame-origin fr)]
+		 [rot (frame-rotation fr)]
+		 [src (texture-source tex)]
+		 [tex-w (texture-width tex)]
+		 [tex-h (texture-height tex)])
+	     (let ([acr-x (vector2-x anchor)]
+		   [acr-y (vector2-y anchor)]
+		   [flip-x? (negative? w)]
+		   [flip-y? (negative? h)]
+		   )
+	       (let ([src-w (if flip-x? (- tex-w) tex-w)]
+		     [src-h (if flip-y? (- tex-h) tex-h)]
+		     [src-x (if flip-x? tex-w (rectangle-x src))]
+		     [src-y (if flip-y? tex-h (rectangle-y src))])
+		 (draw-texture-pro
+		  tex
+		  (make-rectangle
+		   src-x src-y src-w src-h)
+		  (make-rectangle
+		   acr-x acr-y
+		   (frame-width fr) (frame-height fr))
+		  origin
+		  (frame-rotation fr)
+		  (color-multiply
+		   (texture-tint tex)
+		   (*TINT*))
+		  ))))))])
+    )
 
   (define beside
     (lambda (pic-a pic-b ratio)
@@ -216,4 +256,13 @@
 		      )))))
 	  (cached fr)
 	  ))))
+
+  (define sdf
+    (lambda (pic)
+      (unless SDF_SHADER
+	(set! SDF_SHADER (LoadShader #f "assets/sdf.fs")))
+      (lambda (fr)
+	(BeginShaderMode SDF_SHADER)
+	(pic fr)
+	(EndShaderMode))))
   )
