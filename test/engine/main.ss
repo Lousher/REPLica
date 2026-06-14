@@ -20,18 +20,17 @@
 	 [aft-pic (texture->picture aft-tex)]
 	 [white-tex (color->texture white 1 1)]
 	 [white-pic (texture->picture white-tex)]
-	 [sdf-bv (call-with-port (open-file-input-port "assets/xiaolai.bin" (file-options no-fail) (buffer-mode block) #f)
-		   get-bytevector-all)]
-	 [glyphs (call-with-port (open-file-input-port "assets/xiaolai.bin" (file-options no-fail) (buffer-mode block) #f)
-		   fasl-read)]
-	 [glyph (glyph-coord (list-ref glyphs 5))]
+	 [msdf-tex (load-texture "assets/xiaolai.msdf.png")]
+	 [msdf-pic (texture->picture
+		    msdf-tex
+		    (make-rectangle
+		     3060.5 (- 8548 3724.5)
+		     (- 3120.5 3060.5)
+		     (- 3724.5 3666.5))
+		    )]
 	 )
     (animator->stage
-     (spin
-      (at
-       (resize (tint aft-pic darkgray) 500 500)
-       960 540
-       ) (rate:constant 90))
+     (static (resize (msdf msdf-pic) 200 200))
      )))
 
 (yuan main-stage)

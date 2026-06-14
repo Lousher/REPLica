@@ -105,4 +105,5 @@
           (cjk-basic-codepoints)))
 
 
-(bake-sdf "assets/xiaolai.ttf" "assets/xiaolai.atlas.png" "assets/xiaolai.bin" (ascii-codepoints) 96 12)
+					;(bake-sdf "assets/xiaolai.ttf" "assets/xiaolai.atlas.png" "assets/xiaolai.bin" (ascii-codepoints) 96 12)
+

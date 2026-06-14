@@ -1,7 +1,7 @@
 (library (core picture)
   (export texture->picture beside above
 	  rotate layer stroke fade cache
-	  resize at origin sdf tint
+	  resize at origin msdf tint
 	  *TINT*)
   (import
    (chezscheme)
@@ -234,10 +234,10 @@
 	  (cached fr)
 	  ))))
 
-  (define sdf
+  (define msdf
     (lambda (pic)
       (unless SDF_SHADER
-	(set! SDF_SHADER (LoadShader #f "assets/sdf.fs")))
+	(set! SDF_SHADER (LoadShader #f "assets/msdf.fs")))
       (lambda (fr)
 	(BeginShaderMode SDF_SHADER)
 	(pic fr)
