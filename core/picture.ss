@@ -1,7 +1,7 @@
 (library (core picture)
   (export texture->picture beside above
 	  rotate layer stroke fade cache
-	  resize at origin sdf
+	  resize at origin sdf tint
 	  *TINT*)
   (import
    (chezscheme)
@@ -242,4 +242,10 @@
 	(BeginShaderMode SDF_SHADER)
 	(pic fr)
 	(EndShaderMode))))
+
+  (define tint
+    (lambda (pic c)
+      (lambda (fr)
+	(parameterize ([*TINT* c])
+	  (pic fr)))))
   )

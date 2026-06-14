@@ -16,40 +16,22 @@
 (define yuan (make-game "Yuan" 1920 1080))
 
 (define main-stage
-  (let* ([morning-tex (load-texture "test/store/apartment.morning.png")]
-	 [afternoon-tex (load-texture "test/store/apartment.afternoon.png")]
-	 [font-tex (load-texture "assets/xiaolai.atlas.png")]
+  (let* ([aft-tex (load-texture "test/store/apartment.afternoon.png")]
+	 [aft-pic (texture->picture aft-tex)]
+	 [white-tex (color->texture white 1 1)]
+	 [white-pic (texture->picture white-tex)]
+	 [sdf-bv (call-with-port (open-file-input-port "assets/xiaolai.bin" (file-options no-fail) (buffer-mode block) #f)
+		   get-bytevector-all)]
 	 [glyphs (call-with-port (open-file-input-port "assets/xiaolai.bin" (file-options no-fail) (buffer-mode block) #f)
 		   fasl-read)]
-	 [white-tex (color->texture white 1 1)]
-	 [black-tex (color->texture black 1 1)]
-	 [morning-pic (texture->picture morning-tex)]
-	 [afternoon-pic (texture->picture afternoon-tex)]
-	 [white-pic (texture->picture white-tex)]
-	 [black-pic (texture->picture black-tex)]
-	 [char-pic (texture->picture font-tex (glyph-coord (list-ref glyphs 10)))]
-	 [morning-ani (static morning-pic)]
-	 [afternoon-ani (static afternoon-pic)]
+	 [glyph (glyph-coord (list-ref glyphs 5))]
 	 )
     (animator->stage
-     (overlay
-      (crossfade morning-pic afternoon-pic 3 ease-in-out-quad)
-      (shake
-       (spin
-	(origin
-	 (at
-	  (resize (stroke
-		   (above 
-		    (beside white-pic black-pic 0.5)
-		    (beside black-pic white-pic 0.5) 0.5)
-		   3 red) 400 400)
-	  960 540) 200 200
-	  )
-	(rate:constant 90))
-       10.0 3
-       )
-      (static
-       (resize (sdf (fade char-pic 50)) 200 200)))
+     (spin
+      (at
+       (resize (tint aft-pic darkgray) 500 500)
+       960 540
+       ) (rate:constant 90))
      )))
 
 (yuan main-stage)
