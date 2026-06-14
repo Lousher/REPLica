@@ -27,7 +27,7 @@
 	 [afternoon-pic (texture->picture afternoon-tex)]
 	 [white-pic (texture->picture white-tex)]
 	 [black-pic (texture->picture black-tex)]
-	 [char-pic (texture->picture font-tex (glyph-coord (list-ref glyphs 5)))]
+	 [char-pic (texture->picture font-tex (glyph-coord (list-ref glyphs 10)))]
 	 [morning-ani (static morning-pic)]
 	 [afternoon-ani (static afternoon-pic)]
 	 )
@@ -49,7 +49,7 @@
        10.0 3
        )
       (static
-       (resize (sdf char-pic) 200 200)))
+       (resize (sdf (fade char-pic 50)) 200 200)))
      )))
 
 (yuan main-stage)
