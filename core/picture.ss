@@ -1,7 +1,7 @@
 (library (core picture)
   (export texture->picture beside above
 	  rotate layer stroke fade cache
-	  resize at origin msdf tint
+	  resize at origin msdf tint scale
 	  *TINT*)
   (import
    (chezscheme)
@@ -163,6 +163,18 @@
 	  (pic (make-frame (inexact w) (inexact h) acr ori rot))
 	  ))))
 
+  (define scale
+    (lambda (pic ws hs)
+      (lambda (fr)
+	(let ([w (frame-width fr)]
+	      [h (frame-height fr)]
+	      [ori (frame-origin fr)]
+	      [acr (frame-anchor fr)]
+	      [rot (frame-rotation fr)])
+	  (pic (make-frame (inexact (* ws w))
+			   (inexact (* hs h)) acr ori rot))
+	  ))))
+
   (define stroke
     (lambda (pic thickness color)
       (lambda (fr)
@@ -235,9 +247,16 @@
 	  ))))
 
   (define msdf
-    (lambda (pic)
+    (lambda (pic font)
       (unless SDF_SHADER
-	(set! SDF_SHADER (LoadShader #f "assets/msdf.fs")))
+	(let* ([sh (LoadShader #f "assets/msdf.fs")]
+	       [loc (GetShaderLocation sh "pxRange")]
+	       [ptr (foreign-alloc (ftype-sizeof float))])
+	  (foreign-set!
+	   'float ptr 0
+	   (inexact (atlas-distance-range (font-meta-atlas font))))
+	  (SetShaderValue sh loc ptr SHADER_UNIFORM_FLOAT)
+	  (set! SDF_SHADER sh)))
       (lambda (fr)
 	(BeginShaderMode SDF_SHADER)
 	(pic fr)

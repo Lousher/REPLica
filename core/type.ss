@@ -12,8 +12,16 @@
    texture-origin texture-origin-set!
    texture-width texture-height
    texture-pointer-set!
-   make-glyph glyph?
-   glyph-codepoint glyph-coord glyph-offset glyph-advance
+					;make-glyph
+   glyph?
+   glyph-codepoint glyph-advance glyph-plane glyph-coord
+					;make-metrics
+   plane?
+   plane-left plane-bottom plane-right plane-top
+   font-meta? font-meta-atlas font-meta-metrics
+   atlas? atlas-type atlas-distance-range atlas-distance-range-middle atlas-size atlas-width atlas-height atlas-y-origin
+   metrics?
+   metrics-em-size metrics-line-height metrics-ascender metrics-descender metrics-underline-y metrics-underline-thickness
    )
   (import
    (chezscheme)
@@ -63,7 +71,6 @@
     )
 
   (define-record-type vector2
-    (nongenerative vector2)
     (fields
      (immutable x)
      (immutable y)
@@ -198,12 +205,29 @@
       (exact->inexact
        (ftype-ref Texture2D (height) (texture-pointer tex)))))
 
+  (define-record-type plane
+    (nongenerative plane)
+    (fields left bottom right top))
+
   (define-record-type glyph
     (nongenerative glyph)
     (fields
      (immutable codepoint)
-     (immutable coord)
-     (immutable offset)
-     (immutable advance))
+     (immutable advance)
+     (immutable plane)			;plane
+     (immutable coord)			;rectangle
+     )
     )
+  
+  (define-record-type font-meta
+    (nongenerative font-meta)
+    (fields atlas metrics))
+
+  (define-record-type atlas
+    (nongenerative atlas)
+    (fields type distance-range distance-range-middle size width height y-origin))
+
+  (define-record-type metrics
+    (nongenerative metrics)
+    (fields em-size line-height ascender descender underline-y underline-thickness))
   )
