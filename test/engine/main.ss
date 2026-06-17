@@ -37,102 +37,6 @@
       )
     ))
 
-(define char->texture
-  (lambda (ch font)
-    (let* ([cp (char->integer ch)]
-	   [meta (font-metadata font)]
-	   [sprite (font-sprite font)]
-	   [charmap (font-charmap font)]
-	   [size (atlas-size (font-meta-atlas meta))]
-	   [asc (metrics-ascender (font-meta-metrics meta))]
-	   [gly (charmap cp)]
-	   [ple (glyph-plane gly)])
-      (let* ([ple (glyph-plane gly)]
-	     [left (plane-left ple)]
-	     [right (plane-right ple)]
-	     [bottom (plane-bottom ple)]
-	     [top (plane-top ple)]
-	     [pos-x (* size left)]
-	     [pos-y (- (* size bottom) (* size asc))])
-	(at
-	 (scale 
-	  (texture->picture
-	   sprite (glyph-coord gly))
-	  (- right left)
-	  (- top bottom))
-	 pos-x pos-y)
-	))))
-
-(define load-font
-  (lambda (meta tex charmap)
-    (let ([size (atlas-size (font-meta-atlas meta))]
-	  [asc (metrics-ascender (font-meta-metrics meta))])
-      (lambda (str)
-	(let-values ([(char-pics xs)
-		      (let loop ([pics '()]
-				 [chars (string->list str)]
-				 [xs '()])
-			(if (null? chars)
-			    (values
-			     (reverse pics)
-			     (reverse xs))
-			    (let* ([ch (car chars)]
-				   [x (if (null? xs) 0.0 (car xs))]
-				   [gly (charmap (char->integer ch))]
-				   [ple (glyph-plane gly)]
-				   [left (plane-left ple)]
-				   [right (plane-right ple)]
-				   [bottom (plane-bottom ple)]
-				   [top (plane-top ple)]
-				   [pos-x (+ x (* size left))]
-				   [pos-y (- (* size bottom) (* size asc))])
-			      (loop (cons
-				     (at
-				      (scale 
-				       (texture->picture
-					tex (glyph-coord gly))
-				       (- right left)
-				       (- top bottom)
-				       )
-				      pos-x pos-y)
-				     pics)
-				    (cdr chars)
-				    (cons 
-				     (+ x
-					(* size
-					   (glyph-advance gly)))
-				     xs)))))])
-	  (lambda (fr)
-	    (let* ([width (frame-width fr)]
-		   [height (frame-height fr)]
-		   [acr (frame-anchor fr)]
-		   [ori (frame-origin fr)]
-		   [rot (frame-rotation fr)]
-		   [ori-x (vector2-x ori)]
-		   [ori-y (vector2-y ori)])
-	      (let* ([ws (let cal ([poss xs] [res '()])
-			   (if (null? (cdr poss))
-			       (cons (car xs) (reverse res))
-			       (cal
-				(cdr poss)
-				(cons (- (cadr poss) (car poss)) res))))]
-		     [frs (map
-			   (lambda (x w)
-			     (make-frame
-			      w (inexact size)
-			      acr (make-vector2 x ori-y)
-			      rot
-			      ))
-			   (cons 0.0
-				 (reverse (cdr (reverse xs)))) ws)])
-		(for-each
-		 (lambda (pic f)
-		   (pic f))
-		 char-pics
-		 frs
-		 )))))
-	))))
-
 (define main-stage
   (let* ([aft-tex (load-texture "test/store/apartment.afternoon.png")]
 	 [aft-pic (texture->picture aft-tex)]
@@ -148,8 +52,17 @@
     (animator->stage
      (overlay
       (static
-       (resize aft-pic (lambda (x) 100) (lambda (y) 100))
+       aft-pic
        )
+      (static
+       (msdf
+	(resize
+	 (at 
+	  (string->picture "The quick brown fox jumps over the lazy dog." xiaolai)
+	  (lambda (x) 0.0)
+	  (lambda (y) 0.0))
+	 (lambda (x) (* 33 32))
+	 (lambda (y) 32)) msdf-meta))
       )
      )))
 

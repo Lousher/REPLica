@@ -2,6 +2,7 @@
   (export texture->picture beside above
 	  rotate layer stroke fade cache
 	  resize at origin msdf tint
+	  char->picture string->picture
 	  *TINT*)
   (import
    (chezscheme)
@@ -67,6 +68,96 @@
        ])
     )
 
+  (define list-remove-last
+    (lambda (lst)
+      (cond
+       [(null? list) '()]
+       [(null? (cdr lst)) '()]
+       [else (cons (car lst)
+		   (list-remove-last (cdr lst)))])))
+  (define string->picture
+    (lambda (str font)
+      (let* ([chars (string->list str)]
+	     [cps (map char->integer chars)]
+	     [charmap (font-charmap font)]
+	     [glys (map charmap cps)]
+	     [advs (map glyph-advance glys)])
+	(let* ([xs-end (reverse (fold-left
+				 (lambda (acc x)
+				   (if (null? acc)
+				       (list x)
+				       (cons (+ x (car acc))
+					     acc)))
+				 '()
+				 advs))]
+	       [w-total (car (last-pair xs-end))]
+	       [ws-ratio (map (lambda (w) (/ w w-total)) advs)]
+	       [xs-start (cons 0.0 (list-remove-last xs-end))]
+	       [xs-ratio (map (lambda (x) (/ x w-total)) xs-start)])
+	  (lambda (fr)
+	    (let ([w (frame-width fr)]
+		  [h (frame-height fr)]
+		  [acr (frame-anchor fr)]
+		  [ori (frame-origin fr)]
+		  [rot (frame-rotation fr)])
+	      (let ([char-pics (map (lambda (ch) (char->picture ch font)) chars)]
+		    [char-frs (map
+			       (lambda (x-ratio w-ratio)
+				 (make-frame
+				  (* w-ratio w) h
+				  acr
+				  (make-vector2
+				   (- (vector2-x ori) (* x-ratio w))
+				   (vector2-y ori)
+				   )
+				  rot
+				  ))
+			       xs-ratio
+			       ws-ratio)])
+		(for-each
+		 (lambda (pic fr) (pic fr))
+		 char-pics
+		 char-frs))))
+	  )
+	)
+      ))
+  
+  (define char->picture
+    (lambda (ch font)
+      (let* ([cp (char->integer ch)]
+	     [meta (font-metadata font)]
+	     [sprite (font-sprite font)]
+	     [charmap (font-charmap font)]
+	     [size (atlas-size (font-meta-atlas meta))]
+	     [asc (metrics-ascender (font-meta-metrics meta))]
+	     [gly (charmap cp)]
+	     [adv (glyph-advance gly)]
+	     [ple (glyph-plane gly)])
+	(let* ([left (plane-left ple)]
+	       [right (plane-right ple)]
+	       [bottom (plane-bottom ple)]
+	       [top (plane-top ple)])
+	  (lambda (fr)
+	    (let ([w (frame-width fr)]
+		  [h (frame-height fr)])
+	      (let ([scale (if (zero? adv) 0.0 (/ w adv))])
+		(let ([pic-w (* (- right left) scale)]
+		      [pic-h (* (- top bottom) scale)]
+		      [offset-x (* left scale)]
+		      [offset-y (- (* bottom scale) (* asc scale))])
+		  ((at
+		    (resize
+		     (texture->picture
+		      sprite (glyph-coord gly))
+		     (lambda (w)
+		       pic-w)
+		     (lambda (h)
+		       pic-h))
+		    (lambda (x) (+ x offset-x))
+		    (lambda (y) (+ y offset-y)))
+		   fr))))))
+	)))
+  
   (define beside
     (lambda (pic-a pic-b ratio)
       (lambda (fr)
