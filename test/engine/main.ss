@@ -52,17 +52,13 @@
     (animator->stage
      (overlay
       (static
-       aft-pic
-       )
-      (static
-       (msdf
-	(resize
-	 (at 
-	  (string->picture "The quick brown fox jumps over the lazy dog." xiaolai)
-	  (lambda (x) 0.0)
-	  (lambda (y) 0.0))
-	 (lambda (x) (* 33 32))
-	 (lambda (y) 32)) msdf-meta))
+       (resize
+	(backdrop
+	 (msdf
+	  (string->picture "This is hello 测试世界=_+" xiaolai) msdf-meta)
+	 darkpurple)
+	(lambda (x) 600)
+	(lambda (y) 600)))
       )
      )))
 

@@ -3,6 +3,7 @@
 	  rotate layer stroke fade cache
 	  resize at origin msdf tint
 	  char->picture string->picture
+	  backdrop
 	  *TINT*)
   (import
    (chezscheme)
@@ -75,6 +76,7 @@
        [(null? (cdr lst)) '()]
        [else (cons (car lst)
 		   (list-remove-last (cdr lst)))])))
+  
   (define string->picture
     (lambda (str font)
       (let* ([chars (string->list str)]
@@ -140,7 +142,7 @@
 	  (lambda (fr)
 	    (let ([w (frame-width fr)]
 		  [h (frame-height fr)])
-	      (let ([scale (if (zero? adv) 0.0 (/ w adv))])
+	      (let ([scale (/ w adv)])
 		(let ([pic-w (* (- right left) scale)]
 		      [pic-h (* (- top bottom) scale)]
 		      [offset-x (* left scale)]
@@ -348,4 +350,13 @@
       (lambda (fr)
 	(parameterize ([*TINT* c])
 	  (pic fr)))))
+
+  (define backdrop
+    (lambda (pic color)
+      (let* ([c-tex (color->texture color 1 1)]
+	     [c-pic (texture->picture c-tex)])
+	(lambda (fr)
+	  (c-pic fr)
+	  (pic fr)
+	  ))))
   )
