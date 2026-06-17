@@ -22,6 +22,9 @@
    atlas? atlas-type atlas-distance-range atlas-distance-range-middle atlas-size atlas-width atlas-height atlas-y-origin
    metrics?
    metrics-em-size metrics-line-height metrics-ascender metrics-descender metrics-underline-y metrics-underline-thickness
+   make-font font?
+   font-metadata font-sprite font-charmap
+   
    )
   (import
    (chezscheme)
@@ -151,7 +154,9 @@
        (case-lambda
 	 [(path)
 	  (assert (file-exists? path))
-	  (new path #f #f (make-vector2 0.0 0.0)
+	  (new path #f
+	       #f
+	       (make-vector2 0.0 0.0)
 	       )]
 	 [(name fptr)
 	  (assert (ftype-pointer? fptr))
@@ -194,16 +199,45 @@
 	  (SetTextureWrap n-tex TEXTURE_WRAP_REPEAT)
 	  (make-texture "perlin" n-tex))
 	)))
+
+  (define png-size
+    (lambda (p)
+      (let ([ip (open-file-input-port p)])
+	(call-with-port ip
+	  (lambda (p)
+	    (let ([sig (get-bytevector-n p 8)]
+		  [chunk-head (get-bytevector-n p 16)]
+		  )
+	      (let ([w (bytevector-u32-ref chunk-head 8 (endianness big))]
+		    [h (bytevector-u32-ref chunk-head 12 (endianness big))])
+		(values w h))
+	      ))))))
   
   (define texture-width
     (lambda (tex)
-      (exact->inexact
-       (ftype-ref Texture2D (width) (texture-pointer tex)))))
+      (let ([p (texture-path tex)]
+	    [fptr (texture-pointer tex)])
+	(if fptr (inexact (ftype-ref Texture2D (width) fptr))
+	    (case (path-extension p)
+	      [("png")
+	       (call-with-values
+		   (lambda () (png-size p))
+		 (lambda (w h)
+		   (inexact w)))])))
+      ))
 
   (define texture-height
     (lambda (tex)
-      (exact->inexact
-       (ftype-ref Texture2D (height) (texture-pointer tex)))))
+      (let ([p (texture-path tex)]
+	    [fptr (texture-pointer tex)])
+	(if fptr (inexact (ftype-ref Texture2D (height) fptr))
+	    (case (path-extension p)
+	      [("png")
+	       (call-with-values
+		   (lambda () (png-size p))
+		 (lambda (w h)
+		   (inexact h)))])))
+      ))
 
   (define-record-type plane
     (nongenerative plane)
@@ -218,6 +252,9 @@
      (immutable coord)			;rectangle
      )
     )
+
+  (define-record-type font
+    (fields metadata sprite charmap))
   
   (define-record-type font-meta
     (nongenerative font-meta)

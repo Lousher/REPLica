@@ -1,7 +1,7 @@
 (library (core picture)
   (export texture->picture beside above
 	  rotate layer stroke fade cache
-	  resize at origin msdf tint scale
+	  resize at origin msdf tint
 	  *TINT*)
   (import
    (chezscheme)
@@ -13,7 +13,7 @@
 
   (define *TINT* (make-parameter white))
   (define SDF_SHADER #f)
-  
+
   (define texture->picture
     (case-lambda
       [(tex rect)
@@ -52,8 +52,8 @@
 		  ))))))
        ]
       [(tex)
-       (let ([pic #f])
-	 (lambda (fr)
+       (lambda (fr)
+	 (let ([pic #f])
 	   (when (texture-pointer tex)
 	     (unless pic
 	       (set! pic
@@ -117,18 +117,18 @@
       ))
 
   (define rotate
-    (lambda (pic angle)
+    (lambda (pic angle-f)
       (lambda (fr)
 	(let ([w (frame-width fr)]
 	      [h (frame-height fr)]
 	      [ori (frame-origin fr)]
 	      [acr (frame-anchor fr)]
 	      [rot (frame-rotation fr)])
-	  (pic (make-frame w h acr ori (+ rot angle)))
+	  (pic (make-frame w h acr ori (angle-f rot)))
 	  ))))
 
   (define at
-    (lambda (pic x y)
+    (lambda (pic x-f y-f)
       (lambda (fr)
 	(let ([w (frame-width fr)]
 	      [h (frame-height fr)]
@@ -136,12 +136,12 @@
 	      [ori (frame-origin fr)]
 	      [rot (frame-rotation fr)])
 	  (pic (make-frame w h (make-vector2
-				(+ x (vector2-x acr))
-				(+ y (vector2-y acr))) ori rot))
+				(x-f (vector2-x acr))
+				(y-f (vector2-y acr))) ori rot))
 	  ))))
 
   (define origin
-    (lambda (pic ox oy)
+    (lambda (pic ox-f oy-f)
       (lambda (fr)
 	(let ([w (frame-width fr)]
 	      [h (frame-height fr)]
@@ -150,29 +150,20 @@
 	      [rot (frame-rotation fr)])
 	  (pic (make-frame w h acr
 			   (make-vector2
-			    (+ (vector2-x ori) ox)
-			    (+ (vector2-y ori) oy)) rot))
+			    (ox-f (vector2-x ori))
+			    (oy-f (vector2-y ori))) rot))
 	  ))))
 
   (define resize
-    (lambda (pic w h)
-      (lambda (fr)
-	(let ([ori (frame-origin fr)]
-	      [acr (frame-anchor fr)]
-	      [rot (frame-rotation fr)])
-	  (pic (make-frame (inexact w) (inexact h) acr ori rot))
-	  ))))
-
-  (define scale
-    (lambda (pic ws hs)
+    (lambda (pic w-fn h-fn)
       (lambda (fr)
 	(let ([w (frame-width fr)]
 	      [h (frame-height fr)]
 	      [ori (frame-origin fr)]
 	      [acr (frame-anchor fr)]
 	      [rot (frame-rotation fr)])
-	  (pic (make-frame (inexact (* ws w))
-			   (inexact (* hs h)) acr ori rot))
+	  (pic (make-frame (inexact (w-fn w))
+			   (inexact (h-fn h)) acr ori rot))
 	  ))))
 
   (define stroke
@@ -242,9 +233,7 @@
 		    (texture->picture
 		     (make-texture
 		      "rt cache" tex
-		      )))))
-	  (cached fr)
-	  ))))
+		      )))))))))
 
   (define msdf
     (lambda (pic font)
@@ -260,7 +249,8 @@
       (lambda (fr)
 	(BeginShaderMode SDF_SHADER)
 	(pic fr)
-	(EndShaderMode))))
+	(EndShaderMode)
+	)))
 
   (define tint
     (lambda (pic c)
