@@ -51,7 +51,9 @@
 		  origin
 		  (frame-rotation fr)
 		  (*TINT*)
-		  ))))))
+		  )))))
+	 (values (frame-width fr)
+		 (frame-height fr)))
        ]
       [(tex)
        (lambda (fr)
@@ -65,7 +67,10 @@
 			   (texture-width tex)
 			   (texture-height tex))
 		      )))
-	     (pic fr))))
+	     (pic fr))
+	   (values
+	    (frame-width fr)
+	    (frame-height fr))))
        ])
     )
 
@@ -116,10 +121,15 @@
 				  ))
 			       xs-ratio
 			       ws-ratio)])
-		(for-each
-		 (lambda (pic fr) (pic fr))
-		 char-pics
-		 char-frs))))
+		(let ([vals (map (lambda (pic fr)
+				   (call-with-values
+				       (lambda () (pic fr))
+				     list))
+				 char-pics char-frs)])
+		  (let ([res (apply map list vals)])
+		    (values (apply + (car res))
+			    (apply max (cadr res)))))
+		)))
 	  )
 	)
       ))
@@ -132,6 +142,7 @@
 	     [charmap (font-charmap font)]
 	     [size (atlas-size (font-meta-atlas meta))]
 	     [asc (metrics-ascender (font-meta-metrics meta))]
+	     [line-h (metrics-line-height (font-meta-metrics meta))]
 	     [gly (charmap cp)]
 	     [adv (glyph-advance gly)]
 	     [ple (glyph-plane gly)])
@@ -142,7 +153,7 @@
 	  (lambda (fr)
 	    (let ([w (frame-width fr)]
 		  [h (frame-height fr)])
-	      (let ([scale (/ w adv)])
+	      (let ([scale (min (/ w adv) (/ h line-h))])
 		(let ([pic-w (* (- right left) scale)]
 		      [pic-h (* (- top bottom) scale)]
 		      [offset-x (* left scale)]
@@ -157,7 +168,8 @@
 		       pic-h))
 		    (lambda (x) (+ x offset-x))
 		    (lambda (y) (+ y offset-y)))
-		   fr))))))
+		   fr)
+		  (values (* adv scale) (* line-h scale)))))))
 	)))
   
   (define beside
@@ -179,7 +191,8 @@
 				     ori-y)
 				    rot)])
 	      (pic-a fr-a)
-	      (pic-b fr-b)))))))
+	      (pic-b fr-b)
+	      (values w h)))))))
 
   (define above
     (lambda (pic-a pic-b ratio)
@@ -201,12 +214,15 @@
 				     )
 				    rot)])
 	      (pic-a fr-a)
-	      (pic-b fr-b)))))))
+	      (pic-b fr-b)
+	      (values w h)))))))
 
   (define layer
     (lambda pics
       (lambda (fr)
-	(for-each (lambda (p) (p fr)) pics))
+	(for-each (lambda (p) (p fr)) pics)
+	(values (frame-width fr)
+		(frame-height fr)))
       ))
 
   (define rotate
@@ -218,6 +234,7 @@
 	      [acr (frame-anchor fr)]
 	      [rot (frame-rotation fr)])
 	  (pic (make-frame w h acr ori (angle-f rot)))
+	  (values w h)
 	  ))))
 
   (define at
@@ -231,6 +248,7 @@
 	  (pic (make-frame w h (make-vector2
 				(x-f (vector2-x acr))
 				(y-f (vector2-y acr))) ori rot))
+	  (values w h)
 	  ))))
 
   (define origin
@@ -245,6 +263,7 @@
 			   (make-vector2
 			    (ox-f (vector2-x ori))
 			    (oy-f (vector2-y ori))) rot))
+	  (values w h)
 	  ))))
 
   (define resize
@@ -257,6 +276,8 @@
 	      [rot (frame-rotation fr)])
 	  (pic (make-frame (inexact (w-fn w))
 			   (inexact (h-fn h)) acr ori rot))
+	  (values (w-fn w)
+		  (h-fn h))
 	  ))))
 
   (define stroke
@@ -293,7 +314,8 @@
 	      (line-pic top-fr)
 	      (line-pic bottom-fr)
 	      (line-pic left-fr)
-	      (line-pic right-fr)))
+	      (line-pic right-fr)
+	      (values w h)))
 	  ))))
 
   (define fade
@@ -301,7 +323,9 @@
       (lambda (fr)
 	(let ([local (color-alpha white alpha)])
 	  (parameterize ([*TINT* (color-multiply (*TINT*) local)])
-	    (pic fr))))
+	    (pic fr)))
+	(values (frame-width fr)
+		(frame-height fr)))
       ))
 
   (define cache
@@ -326,7 +350,9 @@
 		    (texture->picture
 		     (make-texture
 		      "rt cache" tex
-		      )))))))))
+		      )))))
+	  (cached fr)
+	  (values w h)))))
 
   (define msdf
     (lambda (pic font)
@@ -343,20 +369,30 @@
 	(BeginShaderMode SDF_SHADER)
 	(pic fr)
 	(EndShaderMode)
+	(values (frame-width fr)
+		(frame-height fr))
 	)))
 
   (define tint
     (lambda (pic c)
       (lambda (fr)
 	(parameterize ([*TINT* c])
-	  (pic fr)))))
+	  (pic fr))
+	(values (frame-width fr)
+		(frame-height fr)))))
 
   (define backdrop
     (lambda (pic color)
       (let* ([c-tex (color->texture color 1 1)]
 	     [c-pic (texture->picture c-tex)])
 	(lambda (fr)
-	  (c-pic fr)
-	  (pic fr)
-	  ))))
+	  (let-values ([(w h) (pic fr)])
+	    (c-pic (make-frame
+		    (inexact w)
+		    (inexact h)
+		    (frame-anchor fr)
+		    (frame-origin fr)
+		    (frame-rotation fr)))
+	    (pic fr)))
+	)))
   )

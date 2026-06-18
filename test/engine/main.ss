@@ -51,14 +51,14 @@
 	 )
     (animator->stage
      (overlay
-      (static
-       (resize
+      (resize
+       (static
 	(backdrop
 	 (msdf
-	  (string->picture "This is hello 测试世界=_+" xiaolai) msdf-meta)
-	 darkpurple)
-	(lambda (x) 600)
-	(lambda (y) 600)))
+	  (string->picture "标点AB=！" xiaolai) msdf-meta)
+	 darkpurple))
+       (lambda (x) (* 4 64))
+       (lambda (y) 64))
       )
      )))
 
