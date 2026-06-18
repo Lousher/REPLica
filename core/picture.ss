@@ -3,7 +3,7 @@
 	  rotate layer stroke fade cache
 	  resize at origin msdf tint
 	  char->picture string->picture
-	  backdrop
+	  backdrop widthwise heightwise
 	  *TINT*)
   (import
    (chezscheme)
@@ -52,8 +52,8 @@
 		  (frame-rotation fr)
 		  (*TINT*)
 		  )))))
-	 (values (frame-width fr)
-		 (frame-height fr)))
+	 (values (texture-width tex)
+		 (texture-height tex)))
        ]
       [(tex)
        (lambda (fr)
@@ -69,8 +69,8 @@
 		      )))
 	     (pic fr))
 	   (values
-	    (frame-width fr)
-	    (frame-height fr))))
+	    (texture-width tex)
+	    (texture-height tex))))
        ])
     )
 
@@ -169,7 +169,7 @@
 		    (lambda (x) (+ x offset-x))
 		    (lambda (y) (+ y offset-y)))
 		   fr)
-		  (values (* adv scale) (* line-h scale)))))))
+		  (values (* size adv) (* size line-h)))))))
 	)))
   
   (define beside
@@ -190,9 +190,9 @@
 				     (- ori-x (* w ratio))
 				     ori-y)
 				    rot)])
-	      (pic-a fr-a)
-	      (pic-b fr-b)
-	      (values w h)))))))
+	      (let-values ([(aw ah) (pic-a fr-a)]
+			   [(bw bh) (pic-b fr-b)])
+		(values (+ aw bw) (max ah bh)))))))))
 
   (define above
     (lambda (pic-a pic-b ratio)
@@ -213,16 +213,23 @@
 				     (- ori-y (* h ratio))
 				     )
 				    rot)])
-	      (pic-a fr-a)
-	      (pic-b fr-b)
-	      (values w h)))))))
+	      (let-values ([(aw ah) (pic-a fr-a)]
+			   [(bw bh) (pic-b fr-b)])
+		(values (max aw bw)
+			(+ ah bh)))))))))
 
   (define layer
     (lambda pics
       (lambda (fr)
-	(for-each (lambda (p) (p fr)) pics)
-	(values (frame-width fr)
-		(frame-height fr)))
+	(let ([vals (map (lambda (pic)
+			   (call-with-values
+			       (lambda () (pic fr))
+			     list))
+			 pics)])
+	  (let ([res (apply map list vals)])
+	    (values (apply max (car res))
+		    (apply max (cadr res)))))
+	)
       ))
 
   (define rotate
@@ -234,7 +241,6 @@
 	      [acr (frame-anchor fr)]
 	      [rot (frame-rotation fr)])
 	  (pic (make-frame w h acr ori (angle-f rot)))
-	  (values w h)
 	  ))))
 
   (define at
@@ -248,7 +254,6 @@
 	  (pic (make-frame w h (make-vector2
 				(x-f (vector2-x acr))
 				(y-f (vector2-y acr))) ori rot))
-	  (values w h)
 	  ))))
 
   (define origin
@@ -263,22 +268,22 @@
 			   (make-vector2
 			    (ox-f (vector2-x ori))
 			    (oy-f (vector2-y ori))) rot))
-	  (values w h)
 	  ))))
 
   (define resize
-    (lambda (pic w-fn h-fn)
-      (lambda (fr)
-	(let ([w (frame-width fr)]
-	      [h (frame-height fr)]
-	      [ori (frame-origin fr)]
-	      [acr (frame-anchor fr)]
-	      [rot (frame-rotation fr)])
-	  (pic (make-frame (inexact (w-fn w))
-			   (inexact (h-fn h)) acr ori rot))
-	  (values (w-fn w)
-		  (h-fn h))
-	  ))))
+    (lambda (pic w-f h-f)
+      (let ([w-fn (if w-f w-f (lambda (w) w))]
+	    [h-fn (if h-f h-f (lambda (h) h))])
+	(lambda (fr)
+	  (let ([w (frame-width fr)]
+		[h (frame-height fr)]
+		[ori (frame-origin fr)]
+		[acr (frame-anchor fr)]
+		[rot (frame-rotation fr)])
+	    (pic (make-frame
+		  (inexact (w-fn w))
+		  (inexact (h-fn h)) acr ori rot))
+	    )))))
 
   (define stroke
     (lambda (pic thickness color)
@@ -310,12 +315,12 @@
 			     thick h
 			     acr (make-vector2 (+ x (- thick w)) y)
 			     rot)])
-	      (pic fr)
-	      (line-pic top-fr)
-	      (line-pic bottom-fr)
-	      (line-pic left-fr)
-	      (line-pic right-fr)
-	      (values w h)))
+	      (let-values ([(pic-w pic-h) (pic fr)])
+		(line-pic top-fr)
+		(line-pic bottom-fr)
+		(line-pic left-fr)
+		(line-pic right-fr)
+		(values pic-w pic-h))))
 	  ))))
 
   (define fade
@@ -324,8 +329,7 @@
 	(let ([local (color-alpha white alpha)])
 	  (parameterize ([*TINT* (color-multiply (*TINT*) local)])
 	    (pic fr)))
-	(values (frame-width fr)
-		(frame-height fr)))
+	)
       ))
 
   (define cache
@@ -352,7 +356,7 @@
 		      "rt cache" tex
 		      )))))
 	  (cached fr)
-	  (values w h)))))
+	  ))))
 
   (define msdf
     (lambda (pic font)
@@ -367,10 +371,9 @@
 	  (set! SDF_SHADER sh)))
       (lambda (fr)
 	(BeginShaderMode SDF_SHADER)
-	(pic fr)
-	(EndShaderMode)
-	(values (frame-width fr)
-		(frame-height fr))
+	(let-values ([(pic-w pic-h) (pic fr)])
+	  (EndShaderMode)
+	  (values pic-w pic-h))
 	)))
 
   (define tint
@@ -378,8 +381,7 @@
       (lambda (fr)
 	(parameterize ([*TINT* c])
 	  (pic fr))
-	(values (frame-width fr)
-		(frame-height fr)))))
+	)))
 
   (define backdrop
     (lambda (pic color)
@@ -395,4 +397,33 @@
 		    (frame-rotation fr)))
 	    (pic fr)))
 	)))
+
+  (define widthwise
+    (lambda (pic)
+      (lambda (fr)
+	(let (
+	      [h (frame-height fr)]
+	      [acr (frame-anchor fr)]
+	      [ori (frame-origin fr)]
+	      [rot (frame-rotation fr)])
+	  (let-values ([(rw rh) (pic (make-frame 0.0 0.0 acr ori rot))])
+	    (let* ([ratio (/ rw rh)]
+		   [target-w (* h ratio)])
+	      (pic (make-frame target-w h acr ori rot))
+	      (values target-w h)))
+	  ))))
+
+  (define heightwise
+    (lambda (pic)
+      (lambda (fr)
+	(let ([w (frame-width fr)]
+	      [acr (frame-anchor fr)]
+	      [ori (frame-origin fr)]
+	      [rot (frame-rotation fr)])
+	  (let-values ([(rw rh) (pic (make-frame 0.0 0.0 acr ori rot))])
+	    (let* ([ratio (/ rh rw)]
+		   [target-h (* w ratio)])
+	      (pic (make-frame w target-h acr ori rot))
+	      (values w target-h)))
+	  ))))
   )
