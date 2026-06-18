@@ -4,6 +4,7 @@
 	  resize at origin msdf tint
 	  char->picture string->picture
 	  backdrop widthwise heightwise
+	  centred
 	  *TINT*)
   (import
    (chezscheme)
@@ -255,7 +256,7 @@
 				(x-f (vector2-x acr))
 				(y-f (vector2-y acr))) ori rot))
 	  ))))
-
+  
   (define origin
     (lambda (pic ox-f oy-f)
       (lambda (fr)
@@ -269,7 +270,7 @@
 			    (ox-f (vector2-x ori))
 			    (oy-f (vector2-y ori))) rot))
 	  ))))
-
+  
   (define resize
     (lambda (pic w-f h-f)
       (let ([w-fn (if w-f w-f (lambda (w) w))]
@@ -333,30 +334,35 @@
       ))
 
   (define cache
-    (lambda (pic w h)
-      (let ([rt (LoadRenderTexture w h)]
+    (lambda (pic)
+      (let ([rt #f]
 	    [cached #f])
-	(lambda (fr)
-	  (unless cached
-	    (BeginTextureMode rt)
-	    (ClearBackground (color->Color blank))
-	    (pic (make-frame (inexact w)
-			     (inexact (- h))
-			     (make-vector2 0.0 0.0)
-			     (make-vector2 0.0 0.0)
-			     0.0))
-	    (EndTextureMode)
-	    (let* ([img (LoadImageFromTexture (ftype-&ref RenderTexture2D (texture) rt))]
-		   [tex (LoadTextureFromImage img)])
-	      (UnloadImage img)
-	      (UnloadRenderTexture rt)
-	      (set! cached
-		    (texture->picture
-		     (make-texture
-		      "rt cache" tex
-		      )))))
-	  (cached fr)
-	  ))))
+	(let-values ([(rw rh) (pic (make-frame 0.0 0.0 (make-vector2 0.0 0.0) (make-vector2 0.0 0.0) 0.0))])
+	  (lambda (fr)
+	    (unless rt (set! rt (LoadRenderTexture
+				 (exact (round rw))
+				 (exact (round rh)))))
+	    (unless cached
+	      (BeginTextureMode rt)
+	      (ClearBackground (color->Color blank))
+	      (pic (make-frame (inexact rw)
+			       (inexact (- rh))
+			       (make-vector2 0.0 0.0)
+			       (make-vector2 0.0 0.0)
+			       0.0))
+	      (EndTextureMode)
+	      (let* ([img (LoadImageFromTexture (ftype-&ref RenderTexture2D (texture) rt))]
+		     [tex (LoadTextureFromImage img)])
+		(UnloadImage img)
+		(UnloadRenderTexture rt)
+		(set! cached
+		      (texture->picture
+		       (make-texture
+			"rt cache" tex
+			)))))
+	    (cached fr)
+	    (values rw rh)
+	    )))))
 
   (define msdf
     (lambda (pic font)
@@ -389,29 +395,45 @@
 	     [c-pic (texture->picture c-tex)])
 	(lambda (fr)
 	  (let-values ([(w h) (pic fr)])
-	    (c-pic (make-frame
-		    (inexact w)
-		    (inexact h)
-		    (frame-anchor fr)
-		    (frame-origin fr)
-		    (frame-rotation fr)))
+	    (c-pic fr)
 	    (pic fr)))
 	)))
 
-  (define widthwise
+  (define centred
     (lambda (pic)
-      (lambda (fr)
-	(let (
-	      [h (frame-height fr)]
-	      [acr (frame-anchor fr)]
-	      [ori (frame-origin fr)]
-	      [rot (frame-rotation fr)])
-	  (let-values ([(rw rh) (pic (make-frame 0.0 0.0 acr ori rot))])
-	    (let* ([ratio (/ rw rh)]
-		   [target-w (* h ratio)])
-	      (pic (make-frame target-w h acr ori rot))
-	      (values target-w h)))
-	  ))))
+      (let-values ([(rw rh)
+		    (pic (make-frame 0.0 0.0
+				     (make-vector2 0.0 0.0)
+				     (make-vector2 0.0 0.0)
+				     0.0))])
+	(lambda (fr)
+	  (let ([w (frame-width fr)]
+		[h (frame-height fr)]
+		[acr (frame-anchor fr)]
+		[rot (frame-rotation fr)]
+		[wh-ration (/ rw rh)])
+	    (pic (make-frame w h acr
+			     (make-vector2 (/ w 2)
+					   (/ h 2))
+			     rot)))))))
+
+  (define widthwise
+    (case-lambda
+      [(pic progress)
+       (lambda (fr)
+	 (let ([h (frame-height fr)]
+	       [acr (frame-anchor fr)]
+	       [ori (frame-origin fr)]
+	       [rot (frame-rotation fr)])
+	   (let-values ([(rw rh) (pic (make-frame 0.0 0.0 acr ori rot))])
+	     (let* ([ratio (if (zero? rh) 0.0 (/ rw rh))]
+		    [target-w (* progress (* h ratio))])
+	       (pic (make-frame target-w h acr ori rot))
+	       (values target-w h)))
+	   )
+	 )]
+      [(pic)
+       (widthwise pic 1)]))
 
   (define heightwise
     (lambda (pic)
@@ -421,9 +443,11 @@
 	      [ori (frame-origin fr)]
 	      [rot (frame-rotation fr)])
 	  (let-values ([(rw rh) (pic (make-frame 0.0 0.0 acr ori rot))])
-	    (let* ([ratio (/ rh rw)]
+	    (let* ([ratio (if (zero? rw) 0.0 (/ rh rw))]
 		   [target-h (* w ratio)])
 	      (pic (make-frame w target-h acr ori rot))
 	      (values w target-h)))
 	  ))))
+
+
   )

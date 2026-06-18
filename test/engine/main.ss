@@ -50,17 +50,22 @@
 	 [xiaolai (make-font msdf-meta msdf-tex msdf-charpmap)]
 	 )
     (animator->stage
-     (overlay
-      (static
-       (backdrop
-	(msdf
-	 (resize
-	  (widthwise
-	   (string->picture "这样的话是不是舒服多了？啊哈哈" xiaolai))
-	  #f (lambda (h) (* h 1/20)))
-	 msdf-meta)
-	darkpurple))
-      )
+     (unfurl
+      (resize
+       (at
+	(widthwise
+	 (centred
+	  (backdrop
+	   (msdf
+	    (string->picture "This is a very long long long text for testing, you simply don't know" xiaolai)
+	    msdf-meta)
+	   darkgray)))
+	(lambda (x) 960.0)
+	(lambda (y) 540.0))
+       #f (lambda (h) (/ h 10)))
+      3 linear)
      )))
+
+
 
 (yuan main-stage)

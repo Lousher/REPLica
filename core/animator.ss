@@ -1,6 +1,7 @@
 (library (core animator)
   (export *PASSED*
-	  static spin shake crossfade overlay)
+	  static spin shake crossfade overlay
+	  appear disappear unfurl)
   (import
    (ffi raylib binding)
    (core frame)
@@ -8,6 +9,7 @@
    (only (core picture) *TINT*)
    (chezscheme)
    (design color)
+   (core picture)
    )
 
   (define *FPS* 60)
@@ -62,6 +64,26 @@
   
   (define crossfade
     (lambda (ani1 ani2 duration easing)
+      (overlay
+       (disappear ani1 duration easing)
+       (appear ani2 duration easing))))
+
+  (define appear
+    (lambda (ani duration easing)
+      (let ([start #f]
+	    )
+	(lambda (fr)
+	  (unless start
+	    (set! start (*PASSED*)))
+	  (let* ([elapsed (- (*PASSED*) start)]
+		 [t (min 1.0 (/ elapsed duration))]
+		 [progress (easing t)]
+		 [a (floor (* progress 255))])
+	    ((fade ani a) fr))))
+      ))
+
+  (define disappear
+    (lambda (ani duration easing)
       (let ([start #f])
 	(lambda (fr)
 	  (unless start
@@ -69,12 +91,9 @@
 	  (let* ([elapsed (- (*PASSED*) start)]
 		 [t (min 1.0 (/ elapsed duration))]
 		 [progress (easing t)]
-		 [alpha1 (floor (* (- 1 progress) 255))]
-		 [alpha2 (floor (* progress 255))])
-	    (parameterize ([*TINT* (color-alpha white alpha1)])
-	      (ani1 fr))
-	    (parameterize ([*TINT* (color-alpha white alpha2)])
-	      (ani2 fr)))))))
+		 [a (floor (* (- 1 progress) 255))])
+	    ((fade ani a) fr))))
+      ))
 
   (define overlay
     (lambda anis
@@ -83,4 +102,29 @@
 	 (lambda (ani) (ani fr))
 	 anis))
       ))
+
+  (define unfurl
+    (lambda (ani duration easing)
+      (let ([start #f])
+	(lambda (f)
+	  (unless start
+	    (set! start (*PASSED*)))
+	  (let* ([elapsed (- (*PASSED*) start)]
+		 [t (min 1.0 (/ elapsed duration))]
+		 [p (easing t)])
+	    (let ([w (frame-width f)]
+		  [h (frame-height f)]
+		  [acr (frame-anchor f)]
+		  [ori (frame-origin f)]
+		  [rot (frame-rotation f)])
+	      (let-values ([(rw rh) (ani (make-frame 0.0 0.0 acr ori rot))])
+		(BeginScissorMode
+		 (exact (round (- (vector2-x ori) (vector2-x acr))))
+		 (exact (round (- (vector2-y ori) (vector2-y acr))))
+		 (exact (round (* w p))) (exact (round h)))
+		(ani f)
+		(EndScissorMode)
+		(values (* w p) h)))
+	    )
+	  ))))
   )
