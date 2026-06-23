@@ -4,12 +4,14 @@
 (import (core frame))
 (import (core picture))
 (import (core animator))
+(import (core ticker))
 (import (prefix (core rate) rate:))
 (import (design color))
 (import (core easing))
 (import (engine game))
 (import (engine stage))
 (import (engine loader))
+
 
 (import (ffi raylib binding))
 
@@ -54,24 +56,21 @@
 	 [xiaolai (make-font msdf-meta msdf-tex msdf-charpmap)]
 	 )
     (animator->stage
-     (overlay
-
-      (static aft-pic)
-      (dissolve (static mor-pic) mask-pic 2.0 ease-in-out-quad)
-      )
+     (loop 3 ease-in-out-quad
+	   (dissolve mor-pic mask-pic))
      #|(unfurl
-     (resize				; ;
-     (at				; ;
-     (widthwise				; ;
-     (centred				; ;
-     (backdrop				; ;
-     (msdf				; ;
-     (string->picture "This is a very long long long text for testing, you simply don't know" xiaolai) ; ;
-     msdf-meta)				; ;
-     darkgray)))			; ;
-     (lambda (x) 960.0)			; ;
-     (lambda (y) 540.0))		; ;
-     #f (lambda (h) (/ h 10)))		; ;
+     (resize				; ; ; ;
+     (at				; ; ; ;
+     (widthwise				; ; ; ;
+     (centred				; ; ; ;
+     (backdrop				; ; ; ;
+     (msdf				; ; ; ;
+     (string->picture "This is a very long long long text for testing, you simply don't know" xiaolai) ; ; ; ;
+     msdf-meta)				; ; ; ;
+     darkgray)))			; ; ; ;
+     (lambda (x) 960.0)			; ; ; ;
+     (lambda (y) 540.0))		; ; ; ;
+     #f (lambda (h) (/ h 10)))		; ; ; ;
      3 linear)|#)))
 
 (yuan main-stage)

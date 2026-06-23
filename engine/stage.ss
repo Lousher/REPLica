@@ -2,11 +2,11 @@
   (export animator->stage)
   (import
    (chezscheme)
-   (core animator)
    (ffi raylib binding)
    (design color)
    (core type)
-   (engine loader))
+   (engine loader)
+   (core ticker))
 
   (define animator->stage
     (let ([BLANK (color->Color blank)])

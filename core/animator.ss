@@ -1,7 +1,9 @@
 (library (core animator)
-  (export *PASSED*
-	  static spin shake crossfade overlay
-	  appear disappear unfurl dissolve)
+  (export 
+   static spin shake
+   crossfade overlay
+   appear disappear  dissolve
+   )
   (import
    (ffi raylib binding)
    (core frame)
@@ -11,132 +13,61 @@
    (design color)
    (core picture)
    )
-
-  (define *FPS* 60)
-  (define *PASSED* (make-parameter 0.0))
   
   (define static
     (lambda (pic)
-      pic))
+      (lambda (progress)
+	pic)))
 
   (define spin
-    (lambda (pic rate)
-      (let ([start #f])
-	(lambda (f)
-	  (unless start
-	    (set! start (*PASSED*)))
-	  (let ([passed (*PASSED*)]
-		[w (frame-width f)]
-		[h (frame-height f)]
-		[acr (frame-anchor f)]
-		[ori (frame-origin f)]
-		[rot (frame-rotation f)])
-	    (pic
-	     (make-frame
-	      w h acr ori (+ rot (rate (- passed start)))))
-	    ))))
-    )
+    (lambda (pic angle)
+      (lambda (progress)
+	(rotate pic
+		(lambda (r) (+ r (* progress angle)))))))
 
   (define shake
-    (lambda (ani intensity duration)
-      (let ([start #f])
-	(lambda (f)
-	  (unless start
-	    (set! start (*PASSED*)))
-	  (let ([elapsed (- (*PASSED*) start)])
-	    (if (>= elapsed duration)
-		(ani f)
-		(let* ([decay (- 1 (/ elapsed duration))]
-		       [angle (* elapsed 70.0)]
-		       [dx (* intensity (sin angle) decay)]
-		       [dy (* intensity (cos (* angle 1.3)) decay)])
-		  (let ([w (frame-width f)]
-			[h (frame-height f)]
-			[acr (frame-anchor f)]
-			[ori (frame-origin f)]
-			[rot (frame-rotation f)])
-		    (ani
-		     (make-frame
-		      w h acr
-		      (make-vector2 (+ dx (vector2-x ori))
-				    (+ dy (vector2-y ori))) rot))
-		    ))))))))
-  
-  (define crossfade
-    (lambda (ani1 ani2 duration easing)
-      (overlay
-       (disappear ani1 duration easing)
-       (appear ani2 duration easing))))
+    (lambda (pic intensity)
+      (lambda (progress)
+	(let* ([decay (- 1 progress)]
+	       [angle (* progress 70.0)]
+	       [dx (* intensity (sin angle) decay)]
+	       [dy (* intensity (cos (* angle 1.3)) decay)])
+	  (origin pic
+		  (lambda (ox) (+ ox dx))
+		  (lambda (oy) (+ oy dy)))
+	  ))))
 
   (define appear
-    (lambda (ani duration easing)
-      (let ([start #f]
-	    )
-	(lambda (fr)
-	  (unless start
-	    (set! start (*PASSED*)))
-	  (let* ([elapsed (- (*PASSED*) start)]
-		 [t (min 1.0 (/ elapsed duration))]
-		 [progress (easing t)]
-		 [a (floor (* progress 255))])
-	    ((fade ani a) fr))))
+    (lambda (ani)
+      (lambda (progress)
+	(let* ([a (floor (* progress 255))])
+	  (fade ani a)))
       ))
 
   (define disappear
-    (lambda (ani duration easing)
-      (let ([start #f])
-	(lambda (fr)
-	  (unless start
-	    (set! start (*PASSED*)))
-	  (let* ([elapsed (- (*PASSED*) start)]
-		 [t (min 1.0 (/ elapsed duration))]
-		 [progress (easing t)]
-		 [a (floor (* (- 1 progress) 255))])
-	    ((fade ani a) fr))))
+    (lambda (ani)
+      (lambda (progress)
+	(let* ([a (floor (* (- 1 progress) 255))])
+	  (fade ani a)))
       ))
+
+  (define crossfade
+    (lambda (ani1 ani2)
+      (overlay
+       (disappear ani1)
+       (appear ani2))))
 
   (define overlay
     (lambda anis
-      (lambda (fr)
-	(for-each
-	 (lambda (ani) (ani fr))
-	 anis))
+      (lambda (progress)
+	(apply
+	 layer
+	 (map (lambda (ani) (ani progress)) anis)))
       ))
 
-  (define unfurl
-    (lambda (ani duration easing)
-      (let ([start #f])
-	(lambda (f)
-	  (unless start
-	    (set! start (*PASSED*)))
-	  (let* ([elapsed (- (*PASSED*) start)]
-		 [t (min 1.0 (/ elapsed duration))]
-		 [p (easing t)])
-	    (let ([w (frame-width f)]
-		  [h (frame-height f)]
-		  [acr (frame-anchor f)]
-		  [ori (frame-origin f)]
-		  [rot (frame-rotation f)])
-	      (let-values ([(rw rh) (ani (make-frame 0.0 0.0 acr ori rot))])
-		(BeginScissorMode
-		 (exact (round (- (vector2-x ori) (vector2-x acr))))
-		 (exact (round (- (vector2-y ori) (vector2-y acr))))
-		 (exact (round (* w p))) (exact (round h)))
-		(ani f)
-		(EndScissorMode)
-		(values (* w p) h)))
-	    )
-	  ))))
-
   (define dissolve
-    (lambda (ani masked duration easing)
-      (let ([start #f])
-	(lambda (fr)
-	  (unless start (set! start (*PASSED*)))
-	  (let* ([elapsed (- (*PASSED*) start)]
-		 [t (min 1.0 (- elapsed duration))]
-		 [p (easing t)])
-	    ((mask ani masked p) fr))
-	  ))))
-
+    (lambda (ani masked)
+      (lambda (progress)
+	(mask ani masked progress)
+	)))
   )
