@@ -1,7 +1,7 @@
 (library (core animator)
   (export *PASSED*
 	  static spin shake crossfade overlay
-	  appear disappear unfurl)
+	  appear disappear unfurl dissolve)
   (import
    (ffi raylib binding)
    (core frame)
@@ -127,4 +127,16 @@
 		(values (* w p) h)))
 	    )
 	  ))))
+
+  (define dissolve
+    (lambda (ani masked duration easing)
+      (let ([start #f])
+	(lambda (fr)
+	  (unless start (set! start (*PASSED*)))
+	  (let* ([elapsed (- (*PASSED*) start)]
+		 [t (min 1.0 (- elapsed duration))]
+		 [p (easing t)])
+	    ((mask ani masked p) fr))
+	  ))))
+
   )

@@ -212,18 +212,52 @@
 		    [h (bytevector-u32-ref chunk-head 12 (endianness big))])
 		(values w h))
 	      ))))))
+
+  (define jpg-size
+    (lambda (p)
+      (let ([ip (open-file-input-port p)])
+	(call-with-port ip
+          (lambda (p)
+            ;; 1. 验证 SOI 标记 (0xFF 0xD8)
+            (get-u8 p)
+	    (get-u8 p)
+            ;; 2. 循环查找帧开始标记 (SOF)
+            (let loop ()
+              ;; 跳过填充字节 0xFF
+              (let* ([marker (let skip-ff ([b (get-u8 p)])
+                               (if (= b #xFF)
+                                   (skip-ff (get-u8 p))
+                                   b))]
+                     ;; 检查是否为 SOF 标记 (0xC0~0xC3, 0xC5~0xC7, 0xC9~0xCB, 0xCD~0xCF)
+                     [sof? (or (<= #xC0 marker #xC3)
+                               (<= #xC5 marker #xC7)
+                               (<= #xC9 marker #xCB)
+                               (<= #xCD marker #xCF))])
+		(if sof?
+                    ;; 找到 SOF：读取段长度、精度、高度、宽度
+                    (let* ([len (bytevector-u16-ref (get-bytevector-n p 2) 0 (endianness big))]
+                           [_    (get-u8 p)]                              ; 精度（跳过）
+                           [h    (bytevector-u16-ref (get-bytevector-n p 2) 0 (endianness big))]
+                           [w    (bytevector-u16-ref (get-bytevector-n p 2) 0 (endianness big))])
+                      (values w h))
+                    ;; 非 SOF 标记：读取段长度并跳过该段
+                    (let ([seg-len (bytevector-u16-ref (get-bytevector-n p 2) 0 (endianness big))])
+                      (get-bytevector-n p (- seg-len 2))
+                      (loop))))))))))
   
   (define texture-width
     (lambda (tex)
       (let ([p (texture-path tex)]
 	    [fptr (texture-pointer tex)])
 	(if fptr (inexact (ftype-ref Texture2D (width) fptr))
-	    (case (path-extension p)
-	      [("png")
-	       (call-with-values
-		   (lambda () (png-size p))
-		 (lambda (w h)
-		   (inexact w)))])))
+	    (let ([cal-method (case (path-extension p)
+				[("png") png-size]
+				[("jpg" "jpeg") jpg-size])])
+	      (call-with-values
+		  (lambda () (cal-method p))
+		(lambda (w h)
+		  (inexact w))))
+	    ))
       ))
 
   (define texture-height
@@ -231,12 +265,14 @@
       (let ([p (texture-path tex)]
 	    [fptr (texture-pointer tex)])
 	(if fptr (inexact (ftype-ref Texture2D (height) fptr))
-	    (case (path-extension p)
-	      [("png")
-	       (call-with-values
-		   (lambda () (png-size p))
-		 (lambda (w h)
-		   (inexact h)))])))
+	    (let ([cal-method (case (path-extension p)
+				[("png") png-size]
+				[("jpg" "jpeg") jpg-size])])
+	      (call-with-values
+		  (lambda () (cal-method p))
+		(lambda (w h)
+		  (inexact h))))
+	    ))
       ))
 
   (define-record-type plane

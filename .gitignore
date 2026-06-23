@@ -6,3 +6,4 @@
 *.so*
 *.tar*
 raylib-6.0*/
+assets/*

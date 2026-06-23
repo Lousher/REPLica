@@ -38,8 +38,12 @@
     ))
 
 (define main-stage
-  (let* ([aft-tex (load-texture "test/store/apartment.afternoon.png")]
+  (let* ([mor-tex (load-texture "test/store/apartment.morning.png")]
+	 [mor-pic (texture->picture mor-tex)]
+	 [aft-tex (load-texture "test/store/apartment.afternoon.png")]
 	 [aft-pic (texture->picture aft-tex)]
+	 [mask-tex (load-texture "assets/wipes/11.png")]
+	 [mask-pic (texture->picture mask-tex)]
 	 [white-tex (color->texture white 1 1)]
 	 [black-tex (color->texture black 1 1)]
 	 [white-pic (texture->picture white-tex)]
@@ -50,22 +54,25 @@
 	 [xiaolai (make-font msdf-meta msdf-tex msdf-charpmap)]
 	 )
     (animator->stage
-     (unfurl
-      (resize
-       (at
-	(widthwise
-	 (centred
-	  (backdrop
-	   (msdf
-	    (string->picture "This is a very long long long text for testing, you simply don't know" xiaolai)
-	    msdf-meta)
-	   darkgray)))
-	(lambda (x) 960.0)
-	(lambda (y) 540.0))
-       #f (lambda (h) (/ h 10)))
-      3 linear)
-     )))
+     (overlay
 
-
+      (static aft-pic)
+      (dissolve (static mor-pic) mask-pic 2.0 ease-in-out-quad)
+      )
+     #|(unfurl
+     (resize				; ;
+     (at				; ;
+     (widthwise				; ;
+     (centred				; ;
+     (backdrop				; ;
+     (msdf				; ;
+     (string->picture "This is a very long long long text for testing, you simply don't know" xiaolai) ; ;
+     msdf-meta)				; ;
+     darkgray)))			; ;
+     (lambda (x) 960.0)			; ;
+     (lambda (y) 540.0))		; ;
+     #f (lambda (h) (/ h 10)))		; ;
+     3 linear)|#)))
 
 (yuan main-stage)
+
