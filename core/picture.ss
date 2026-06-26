@@ -4,7 +4,7 @@
 	  resize at origin msdf tint
 	  char->picture string->picture
 	  backdrop widthwise heightwise
-	  centred mask
+	  centred mask-alpha
 	  *TINT*)
   (import
    (chezscheme)
@@ -12,8 +12,10 @@
    (core type)
    (core frame)
    (design color)
+   (engine loader)
    (ffi raylib binding))
 
+					; picture is a procedure that inputs given frame, output picture's read width & height, with suitable drawing sideeffects on given frame.
   (define *TINT* (make-parameter white))
   (define SDF_SHADER #f)
 
@@ -449,54 +451,27 @@
 	      (values w target-h)))
 	  ))))
 
-  (define mask
-    (let ([dissolve-sh #f]
-          [progress-loc #f]
-          [texture1-loc #f]
-          ;; 1. 将 C 指针提升到外层闭包，彻底避免内存泄漏
-          [progress-ptr (foreign-alloc (ftype-sizeof float))]) 
-      (case-lambda
-	[(pic masked pr)
-	 ;; 2. 初始化 Shader 以及一次性提取 Location
-	 (unless dissolve-sh
-           (set! dissolve-sh (LoadShader #f "assets/mask/dissolve.fs"))
-           (set! progress-loc (GetShaderLocation dissolve-sh "progress"))
-           (set! texture1-loc (GetShaderLocation dissolve-sh "texture1")))
-	 (let ([rt #f])
-	   ;; 3. 注意：这里不再在内部持久化单个 rt 
-	   ;; 建议从你的全局 RenderTexture 资源池中动态租借/归还
-	   (lambda (fr)
-             (let* ([fw (frame-width fr)]
-		    [fh (frame-height fr)]
-		    [w (exact (round fw))]
-                    [h (exact (round fh))]
-                    ;; 假设你有一个全局租借函数，没有的话就每帧 Create/Unload（但性能差点）
-		    )
-               (unless rt (set! rt (LoadRenderTexture w h))
-		       (BeginTextureMode rt)
-		       (masked (make-frame fw fh (make-vector2 0.0 0.0)
-					   (make-vector2 0.0 0.0) 0.0)) 
-		       (EndTextureMode)
-
-
-		       )
-               ;; 4. 离屏绘制 Mask（注意：masked 应该吃画布局部的满铺 frame，而不是外层世界坐标 fr！）
-               
-               ;; 5. 激活着色器并塞入参数
-               (BeginShaderMode dissolve-sh)
-               (foreign-set! 'float progress-ptr 0 pr)
-               (SetShaderValue dissolve-sh progress-loc progress-ptr SHADER_UNIFORM_FLOAT)
-	       (let ([masked-tex (ftype-&ref RenderTexture2D (texture) rt)])
-		 (SetTextureFilter masked-tex TEXTURE_FILTER_POINT)
-		 (SetShaderValueTexture dissolve-sh texture1-loc masked-tex))
-               
-               ;; 这里的 ftype-&ref 提取没有问题
-
-               (pic fr)
-               (EndShaderMode)
-               ;; 7. 渲染完立刻归还临时画布，避免显存爆炸
-	       )))]
-	[(pic masked)
-	 (mask pic masked 0.0)])))
-
+					; May need refactor
+  (define mask-alpha
+    (let ([sh #f]
+	  [tex1-loc #f]
+	  [threshold-loc #f]
+	  [threshold-ptr (foreign-alloc (ftype-sizeof float))]
+	  )
+      (lambda (pic path threshold)
+	(let ([mask-tex (load-texture path)])
+	  (foreign-set! 'float threshold-ptr 0 threshold)
+	  (lambda (fr)
+	    (unless sh
+	      (set! sh (LoadShader #f "assets/shaders/mask.alpha.fs"))
+	      (set! tex1-loc (GetShaderLocation sh "texture1"))
+	      (set! threshold-loc (GetShaderLocation sh "threshold")))
+	    (when (texture-pointer mask-tex)
+	      (BeginShaderMode sh)
+	      (SetShaderValue sh threshold-loc threshold-ptr SHADER_UNIFORM_FLOAT)
+	      (SetShaderValueTexture sh tex1-loc (texture-pointer mask-tex)))
+	    (let-values ([(w h) (pic fr)])
+	      (EndShaderMode)
+	      (values w h))
+	    )))))
   )

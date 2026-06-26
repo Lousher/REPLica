@@ -54,10 +54,21 @@
 	 [msdf-meta (call-with-input-file "assets/xiaolai.meta.ss" read)]
 	 [msdf-charpmap (apply glyphs->charmap (file->glyphs "assets/xiaolai.msdf.ss"))]
 	 [xiaolai (make-font msdf-meta msdf-tex msdf-charpmap)]
+	 [aft-ani (picture->animator aft-pic)]
+	 [mor-ani (picture->animator mor-pic)]
+	 [str-ani (picture->animator (resize
+				      (widthwise
+				       (msdf (string->picture "This is hello world" xiaolai)
+					     msdf-meta))
+				      #f
+				      (lambda (h) (/ h 10))))]
 	 )
     (animator->stage
-     (loop 3 ease-in-out-quad
-	   (dissolve mor-pic mask-pic))
+     (yoyo 3 linear
+	   (dissolve (spin (shake (overlay
+				   aft-ani
+				   str-ani) 15) 45)
+		     "assets/wipes/11.png"))
      #|(unfurl
      (resize				; ; ; ;
      (at				; ; ; ;

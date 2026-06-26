@@ -1,5 +1,6 @@
 (library (core animator)
-  (export 
+  (export
+   picture->animator
    static spin shake
    crossfade overlay
    appear disappear  dissolve
@@ -13,26 +14,32 @@
    (design color)
    (core picture)
    )
+
+					; animator is a procedure, inputs process(normally [0-1]), output a picture,
+  (define picture->animator
+    (lambda (pic)
+      (lambda (progress) pic)))
   
   (define static
-    (lambda (pic)
-      (lambda (progress)
-	pic)))
+    (lambda (ani p)
+      (let ([pic (ani p)])
+	(lambda (progress)
+	  pic))))
 
   (define spin
-    (lambda (pic angle)
+    (lambda (ani angle)
       (lambda (progress)
-	(rotate pic
+	(rotate (ani progress)
 		(lambda (r) (+ r (* progress angle)))))))
 
   (define shake
-    (lambda (pic intensity)
+    (lambda (ani intensity)
       (lambda (progress)
 	(let* ([decay (- 1 progress)]
 	       [angle (* progress 70.0)]
 	       [dx (* intensity (sin angle) decay)]
 	       [dy (* intensity (cos (* angle 1.3)) decay)])
-	  (origin pic
+	  (origin (ani progress)
 		  (lambda (ox) (+ ox dx))
 		  (lambda (oy) (+ oy dy)))
 	  ))))
@@ -41,14 +48,14 @@
     (lambda (ani)
       (lambda (progress)
 	(let* ([a (floor (* progress 255))])
-	  (fade ani a)))
+	  (fade (ani progress) a)))
       ))
 
   (define disappear
     (lambda (ani)
       (lambda (progress)
 	(let* ([a (floor (* (- 1 progress) 255))])
-	  (fade ani a)))
+	  (fade (ani progress) a)))
       ))
 
   (define crossfade
@@ -66,8 +73,8 @@
       ))
 
   (define dissolve
-    (lambda (ani masked)
+    (lambda (ani mask)
       (lambda (progress)
-	(mask ani masked progress)
+	(mask-alpha (ani progress) mask progress)
 	)))
   )
