@@ -62,27 +62,28 @@
 					     msdf-meta))
 				      #f
 				      (lambda (h) (/ h 10))))]
-	 )
-    (animator->stage
-     (yoyo 3 linear
-	   (dissolve (spin (shake (overlay
-				   aft-ani
-				   str-ani) 15) 45)
-		     "assets/wipes/11.png"))
-     #|(unfurl
-     (resize				; ; ; ;
-     (at				; ; ; ;
-     (widthwise				; ; ; ;
-     (centred				; ; ; ;
-     (backdrop				; ; ; ;
-     (msdf				; ; ; ;
-     (string->picture "This is a very long long long text for testing, you simply don't know" xiaolai) ; ; ; ;
-     msdf-meta)				; ; ; ;
-     darkgray)))			; ; ; ;
-     (lambda (x) 960.0)			; ; ; ;
-     (lambda (y) 540.0))		; ; ; ;
-     #f (lambda (h) (/ h 10)))		; ; ; ;
-     3 linear)|#)))
+	 [st-a
+	  (ticker->stage
+	   (yoyo 3 linear
+		 (dissolve (spin (shake (overlay
+					 aft-ani
+					 str-ani) 15) 45)
+			   "assets/wipes/11.png"))
+	   )])
+    (eternal
+     (substage
+      (sequential
+       (lambda (fr) (IsMouseButtonPressed MOUSE_BUTTON_LEFT))
+       st-a
+       (ticker->stage (loop 3 linear (picture->animator mor-pic)))
+       (ticker->stage (loop 3 linear (picture->animator white-pic)))
+       )
+      (ticker->stage (loop 1 linear (picture->animator black-pic)))
+      (lambda (fr) (IsMouseButtonPressed MOUSE_BUTTON_RIGHT))
+      (lambda (fr) (IsKeyPressed KEY_BACKSPACE))
+      )
+     (lambda (fr) (WindowShouldClose)))
+    ))
 
 (yuan main-stage)
 
