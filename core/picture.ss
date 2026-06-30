@@ -1,7 +1,7 @@
 (library (core picture)
-  (export texture->picture beside above
-	  rotate layer stroke fade cache
-	  resize at origin msdf tint
+  (export texture->picture 
+	  stroke fade cache
+	  msdf tint
 	  char->picture string->picture
 	  backdrop widthwise heightwise
 	  centred mask-alpha
@@ -11,6 +11,7 @@
    (render drawing)
    (core type)
    (core frame)
+   (core layout)
    (design color)
    (engine loader)
    (ffi raylib binding))
@@ -174,119 +175,6 @@
 		   fr)
 		  (values (* size adv) (* size line-h)))))))
 	)))
-  
-  (define beside
-    (lambda (pic-a pic-b ratio)
-      (lambda (fr)
-	(let ([w (frame-width fr)]
-	      [h (frame-height fr)]
-	      [ori (frame-origin fr)]
-	      [acr (frame-anchor fr)]
-	      [rot (frame-rotation fr)])
-	  (let ([acr-x (vector2-x acr)]
-		[acr-y (vector2-y acr)]
-		[ori-x (vector2-x ori)]
-		[ori-y (vector2-y ori)])
-	    (let ([fr-a (make-frame (* w ratio) h acr ori rot)]
-		  [fr-b (make-frame (* w (- 1 ratio)) h acr
-				    (make-vector2
-				     (- ori-x (* w ratio))
-				     ori-y)
-				    rot)])
-	      (let-values ([(aw ah) (pic-a fr-a)]
-			   [(bw bh) (pic-b fr-b)])
-		(values (+ aw bw) (max ah bh)))))))))
-
-  (define above
-    (lambda (pic-a pic-b ratio)
-      (lambda (fr)
-	(let ([w (frame-width fr)]
-	      [h (frame-height fr)]
-	      [ori (frame-origin fr)]
-	      [acr (frame-anchor fr)]
-	      [rot (frame-rotation fr)])
-	  (let ([acr-x (vector2-x acr)]
-		[acr-y (vector2-y acr)]
-		[ori-x (vector2-x ori)]
-		[ori-y (vector2-y ori)])
-	    (let ([fr-a (make-frame w (* h ratio) acr ori rot)]
-		  [fr-b (make-frame w (* h (- 1 ratio)) acr
-				    (make-vector2
-				     ori-x
-				     (- ori-y (* h ratio))
-				     )
-				    rot)])
-	      (let-values ([(aw ah) (pic-a fr-a)]
-			   [(bw bh) (pic-b fr-b)])
-		(values (max aw bw)
-			(+ ah bh)))))))))
-
-  (define layer
-    (lambda pics
-      (lambda (fr)
-	(let ([vals (map (lambda (pic)
-			   (call-with-values
-			       (lambda () (pic fr))
-			     list))
-			 pics)])
-	  (let ([res (apply map list vals)])
-	    (values (apply max (car res))
-		    (apply max (cadr res)))))
-	)
-      ))
-
-  (define rotate
-    (lambda (pic angle-f)
-      (lambda (fr)
-	(let ([w (frame-width fr)]
-	      [h (frame-height fr)]
-	      [ori (frame-origin fr)]
-	      [acr (frame-anchor fr)]
-	      [rot (frame-rotation fr)])
-	  (pic (make-frame w h acr ori (angle-f rot)))
-	  ))))
-
-  (define at
-    (lambda (pic x-f y-f)
-      (lambda (fr)
-	(let ([w (frame-width fr)]
-	      [h (frame-height fr)]
-	      [acr (frame-anchor fr)]
-	      [ori (frame-origin fr)]
-	      [rot (frame-rotation fr)])
-	  (pic (make-frame w h (make-vector2
-				(x-f (vector2-x acr))
-				(y-f (vector2-y acr))) ori rot))
-	  ))))
-  
-  (define origin
-    (lambda (pic ox-f oy-f)
-      (lambda (fr)
-	(let ([w (frame-width fr)]
-	      [h (frame-height fr)]
-	      [acr (frame-anchor fr)]
-	      [ori (frame-origin fr)]
-	      [rot (frame-rotation fr)])
-	  (pic (make-frame w h acr
-			   (make-vector2
-			    (ox-f (vector2-x ori))
-			    (oy-f (vector2-y ori))) rot))
-	  ))))
-  
-  (define resize
-    (lambda (pic w-f h-f)
-      (let ([w-fn (if w-f w-f (lambda (w) w))]
-	    [h-fn (if h-f h-f (lambda (h) h))])
-	(lambda (fr)
-	  (let ([w (frame-width fr)]
-		[h (frame-height fr)]
-		[ori (frame-origin fr)]
-		[acr (frame-anchor fr)]
-		[rot (frame-rotation fr)])
-	    (pic (make-frame
-		  (inexact (w-fn w))
-		  (inexact (h-fn h)) acr ori rot))
-	    )))))
 
   (define stroke
     (lambda (pic thickness color)

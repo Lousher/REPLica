@@ -13,6 +13,7 @@
    (chezscheme)
    (design color)
    (core picture)
+   (core layout)
    )
 
 					; animator is a procedure, inputs process(normally [0-1]), output a picture,

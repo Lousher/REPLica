@@ -11,7 +11,7 @@
 (import (engine game))
 (import (engine stage))
 (import (engine loader))
-
+(import (core layout))
 
 (import (ffi raylib binding))
 
@@ -56,27 +56,25 @@
 	 [xiaolai (make-font msdf-meta msdf-tex msdf-charpmap)]
 	 [aft-ani (picture->animator aft-pic)]
 	 [mor-ani (picture->animator mor-pic)]
-	 [str-ani (picture->animator (resize
-				      (widthwise
-				       (msdf (string->picture "This is hello world" xiaolai)
-					     msdf-meta))
-				      #f
-				      (lambda (h) (/ h 10))))]
+	 [str-pic (resize
+		   (widthwise
+		    (msdf (string->picture "这可真是够了" xiaolai)
+			  msdf-meta))
+		   #f
+		   (lambda (h) (/ h 10)))]
 	 [st-a
 	  (ticker->stage
 	   (yoyo 3 linear
-		 (dissolve (spin (shake (overlay
-					 aft-ani
-					 str-ani) 15) 45)
-			   "assets/wipes/11.png"))
+		 (dissolve (spin (picture->animator aft-pic) 45)
+			   "assets/wipes/2.png"))
 	   )])
     (eternal
      (substage
       (sequential
        (lambda (fr) (IsMouseButtonPressed MOUSE_BUTTON_LEFT))
        st-a
-       (ticker->stage (loop 3 linear (picture->animator mor-pic)))
-       (ticker->stage (loop 3 linear (picture->animator white-pic)))
+       (ticker->stage (loop 3 linear (shake (picture->animator mor-pic) 15)))
+       (ticker->stage (picture->animator white-pic))
        )
       (ticker->stage (loop 1 linear (picture->animator black-pic)))
       (lambda (fr) (IsMouseButtonPressed MOUSE_BUTTON_RIGHT))
