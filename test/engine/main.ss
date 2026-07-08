@@ -62,20 +62,33 @@
 		    (msdf (string->picture "这可真是够了" xiaolai)
 			  msdf-meta))
 		   #f
-		   (lambda (h) (/ h 10)))]
-	 
+		   (lambda (h) (/ h 10)))]	 
 	 )
     (eternal
-     (sequential
-      (list
+     (ready
+      (substage
+       (sequential
+	(list
+	 (make-stage
+	  (yoyo 3)
+	  (ease
+	   (crossfade
+	    (spin (picture->animator mor-pic) 45)
+	    (spin (picture->animator aft-pic) -45))
+	   ease-in-cubic)
+	  )
+	 (make-stage
+	  (loop 3)
+	  (shake (picture->animator aft-pic) 15)))
+	(lambda (fr) (IsMouseButtonPressed MOUSE_BUTTON_LEFT)))
        (make-stage
-	(yoyo 1)
-	(ease
-	 (spin (picture->animator mor-pic)
-	       45)
-	 ease-in-cubic))
-       )
-      (lambda (fr) (IsMouseButtonPressed MOUSE_BUTTON_LEFT)))
+	(loop 3)
+	(spin
+	 (picture->animator white-pic)
+	 45))
+       (lambda (fr) (IsMouseButtonPressed MOUSE_BUTTON_RIGHT))
+       (lambda (fr) (IsKeyPressed KEY_BACKSPACE))
+       ))
      (lambda (fr)
        (WindowShouldClose)))
     ))
