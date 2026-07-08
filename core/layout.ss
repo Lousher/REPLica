@@ -1,5 +1,6 @@
 (library (core layout)
-  (export at beside above layer rotate origin resize)
+  (export at beside above rotate origin resize
+	  anchor-right anchor-bottom origin-right)
   (import
    (chezscheme)
    (core frame)
@@ -7,17 +8,61 @@
 
   (define at
     (lambda (fn x-f y-f)
+      (let ([x-fn (if x-f x-f (lambda (x) x))]
+	    [y-fn (if y-f y-f (lambda (y) y))])
+	(lambda (fr)
+	  (let ([w (frame-width fr)]
+		[h (frame-height fr)]
+		[acr (frame-anchor fr)]
+		[ori (frame-origin fr)]
+		[rot (frame-rotation fr)])
+	    (fn (make-frame w h (make-vector2
+				 (x-fn (vector2-x acr))
+				 (y-fn (vector2-y acr))) ori rot))
+	    )))
+      ))
+
+  (define origin-right
+    (lambda (fn)
       (lambda (fr)
 	(let ([w (frame-width fr)]
 	      [h (frame-height fr)]
 	      [acr (frame-anchor fr)]
 	      [ori (frame-origin fr)]
 	      [rot (frame-rotation fr)])
-	  (fn (make-frame w h (make-vector2
-			       (x-f (vector2-x acr))
-			       (y-f (vector2-y acr))) ori rot))
-	  ))
-      ))
+	  (fn (make-frame w h acr
+			  (make-vector2
+			   w
+			   (vector2-y ori)) rot))
+	  ))))
+  
+  (define anchor-right
+    (lambda (fn)
+      (lambda (fr)
+	(let ([w (frame-width fr)]
+	      [h (frame-height fr)]
+	      [acr (frame-anchor fr)]
+	      [ori (frame-origin fr)]
+	      [rot (frame-rotation fr)])
+	  (fn (make-frame w h
+			  (make-vector2
+			   w
+			   (vector2-y acr)) ori rot))
+	  ))))
+
+  (define anchor-bottom
+    (lambda (fn)
+      (lambda (fr)
+	(let ([w (frame-width fr)]
+	      [h (frame-height fr)]
+	      [acr (frame-anchor fr)]
+	      [ori (frame-origin fr)]
+	      [rot (frame-rotation fr)])
+	  (fn (make-frame w h
+			  (make-vector2
+			   (vector2-x acr)
+			   h) ori rot))
+	  ))))
 
   (define beside
     (lambda (fn-a fn-b ratio)
@@ -65,19 +110,7 @@
 		(values (max aw bw)
 			(+ ah bh)))))))))
 
-  (define layer
-    (lambda fns
-      (lambda (fr)
-	(let ([vals (map (lambda (pic)
-			   (call-with-values
-			       (lambda () (pic fr))
-			     list))
-			 fns)])
-	  (let ([res (apply map list vals)])
-	    (values (apply max (car res))
-		    (apply max (cadr res)))))
-	)
-      ))
+
 
   (define rotate
     (lambda (fn angle-f)

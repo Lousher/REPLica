@@ -1,7 +1,7 @@
 (library (core type)
   (export
    make-color color->Color Color->color color?
-   color->texture
+   color->texture linear-color->texture
    color-r color-g color-b color-a
    make-vector2 vector2->Vector2 Vector2->vector2 vector2?
    vector2-x vector2-y
@@ -187,6 +187,17 @@
 	     [c-tex (LoadTextureFromImage c-img)])
 	(UnloadImage c-img)
 	(make-texture (color->hex-string c) c-tex))))
+
+  (define linear-color->texture
+    (case-lambda
+      [(c-start c-end w h rot)
+       (let* ([c-img (GenImageGradientLinear w h rot (color->Color c-start)
+					     (color->Color c-end))]
+	      [c-tex (LoadTextureFromImage c-img)])
+	 (UnloadImage c-img)
+	 (make-texture (color->hex-string c-start) c-tex))]
+      [(c-s c-e w h)
+       (linear-color->texture c-s c-e w h 0)]))
 
   (define make-perlin-noise-texture
     (lambda (w h ox oy s)

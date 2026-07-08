@@ -1,5 +1,5 @@
 (library (engine event)
-  (export hover?)
+  (export hover? frame->vector2s both key-down? mouse-down?)
   (import
    (chezscheme)
    (core frame)
@@ -33,8 +33,8 @@
 	  (list
 	   (make-vector2 left-up-x left-up-y)
 	   (make-vector2 right-up-x right-up-y)
-	   (make-vector2 right-bottom-y right-bottom-y)
-	   (make-vector2 left-bottom-y left-bottom-y)
+	   (make-vector2 right-bottom-x right-bottom-y)
+	   (make-vector2 left-bottom-x left-bottom-y)
 	   ))
 	))
     )
@@ -54,12 +54,23 @@
 	     )
 	   vec2s (iota len)
 	   )
-	  (TraceLog LOG_ERROR (format "[Check Collision] pos is ~a, ~a"
-				      (ftype-ref Vector2 (x) pos)
-				      (ftype-ref Vector2 (y) pos)))
 	  (let ([res (CheckCollisionPointPoly pos poly-fptr len)])
-	    (TraceLog LOG_ERROR (format "[Check Result is ~a" res))
 	    res
 	    )
 	  ))))
+
+  (define key-down?
+    (lambda (key)
+      (lambda (fr)
+	(IsKeyDown key))))
+
+  (define mouse-down?
+    (lambda (mouse)
+      (lambda (fr)
+	(IsMouseButtonDown mouse))))
+
+  (define both
+    (lambda (ev-a ev-b)
+      (lambda (fr)
+	(and (ev-a fr) (ev-b fr)))))
   )

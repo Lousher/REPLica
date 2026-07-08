@@ -1,7 +1,7 @@
 (library (engine stage)
   (export make-stage ready
 	  eternal sequential
-	  substage)
+	  substage ensemble)
   (import
    (chezscheme)
    (ffi raylib binding)
@@ -29,7 +29,9 @@
   (define make-stage
     (lambda (ticker ani)
       (lambda (fr)
-	((ani (ticker)) fr))))
+	(let-values ([(w h) ((ani (ticker)) fr)])
+	  #t
+	  ))))
 					; 一个transition是一个接受两个stage,返回一整个stage的函数，其内部会用动画衔接两个stage的切换
   
   (define eternal
@@ -66,5 +68,11 @@
 	      (set! sub-shown? #f))
 	    res)
 	  ))))
+
+  (define ensemble
+    (lambda stages
+      (lambda (fr)
+	(let ([ress (map (lambda (s) (s fr)) stages)])
+	  (for-all (lambda (res) (eqv? res #t)) ress)))))
 
   )

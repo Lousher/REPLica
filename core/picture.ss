@@ -5,6 +5,7 @@
 	  char->picture string->picture
 	  backdrop widthwise heightwise
 	  centred mask-alpha
+	  layer toggle
 	  *TINT*)
   (import
    (chezscheme)
@@ -362,4 +363,25 @@
 	      (EndShaderMode)
 	      (values w h))
 	    )))))
+
+  (define layer
+    (lambda pics
+      (lambda (fr)
+	(let ([vals (map (lambda (pic)
+			   (call-with-values
+			       (lambda () (pic fr))
+			     list))
+			 pics)])
+	  (let ([res (apply map list vals)])
+	    (values (apply max (car res))
+		    (apply max (cadr res)))))
+	)
+      ))
+  
+  (define toggle
+    (lambda (pred pic-a pic-b)
+      (lambda (fr)
+	(if (pred fr)
+	    (pic-b fr)
+	    (pic-a fr)))))
   )

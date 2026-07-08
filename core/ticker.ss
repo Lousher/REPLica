@@ -11,7 +11,7 @@
 	(lambda ()
 	  (unless started (set! started (*PASSED*)))
 	  (let ([p (/ (- (*PASSED*) started) t)])
-	    (if (>= p 1.0) 1.0 p))))
+	    (if (>= p 1.0) #f p))))
       ))
 
   (define loop
