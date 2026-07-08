@@ -12,6 +12,7 @@
 (import (engine stage))
 (import (engine loader))
 (import (core layout))
+(import (engine event))
 
 (import (ffi raylib binding))
 
@@ -62,25 +63,21 @@
 			  msdf-meta))
 		   #f
 		   (lambda (h) (/ h 10)))]
-	 [st-a
-	  (ticker->stage
-	   (yoyo 3 linear
-		 (dissolve (spin (picture->animator aft-pic) 45)
-			   "assets/wipes/2.png"))
-	   )])
+	 
+	 )
     (eternal
-     (substage
-      (sequential
-       (lambda (fr) (IsMouseButtonPressed MOUSE_BUTTON_LEFT))
-       st-a
-       (ticker->stage (loop 3 linear (shake (picture->animator mor-pic) 15)))
-       (ticker->stage (picture->animator white-pic))
+     (sequential
+      (list
+       (make-stage
+	(yoyo 1)
+	(ease
+	 (spin (picture->animator mor-pic)
+	       45)
+	 ease-in-cubic))
        )
-      (ticker->stage (loop 1 linear (picture->animator black-pic)))
-      (lambda (fr) (IsMouseButtonPressed MOUSE_BUTTON_RIGHT))
-      (lambda (fr) (IsKeyPressed KEY_BACKSPACE))
-      )
-     (lambda (fr) (WindowShouldClose)))
+      (lambda (fr) (IsMouseButtonPressed MOUSE_BUTTON_LEFT)))
+     (lambda (fr)
+       (WindowShouldClose)))
     ))
 
 (yuan main-stage)

@@ -4,6 +4,7 @@
    static spin shake
    crossfade overlay
    appear disappear  dissolve
+   ease
    )
   (import
    (ffi raylib binding)
@@ -78,4 +79,10 @@
       (lambda (progress)
 	(mask-alpha (ani progress) mask progress)
 	)))
+
+  (define ease
+    (lambda (ani fn)
+      (lambda (progress)
+	(lambda (f)
+	  ((ani (fn progress)) f)))))
   )

@@ -1,5 +1,5 @@
 (library (engine stage)
-  (export ticker->stage
+  (export make-stage
 	  eternal sequential
 	  substage)
   (import
@@ -8,39 +8,49 @@
    (design color)
    (core type)
    (engine loader)
-   (core ticker))
+   (core ticker)
+   )
 
 					;stage是一个input fr的函数！
-  (define ticker->stage
+  (define make-stage
     (let ([BLANK (color->Color blank)])
-      (lambda (ticker)
+      (lambda (ticker ani)
 	(lambda (fr)
 	  (parameterize ([*PASSED* (GetTime)])
 	    (load!)
 	    (BeginDrawing)
 	    (ClearBackground BLANK)
-	    (ticker fr)
+	    ((ani (ticker)) fr)
 	    (EndDrawing)
 	    )
 	  ))))
+					; 一个transition是一个接受两个stage,返回一整个stage的函数，其内部会用动画衔接两个stage的切换
+  
 
   (define eternal
     (lambda (stage end?)
       (lambda (fr)
 	(let loop ()
 	  (unless (end? fr)
-	    (stage fr)
-	    (loop)
+	    (let ([res (stage fr)])
+	      (when res (loop)))
 	    )))))
 
   (define sequential
-    (lambda (pred . stages)
+    (lambda (stages pred)
       (let ([remaining stages])
 	(lambda (fr)
 	  (unless (null? remaining)
-	    ((car remaining) fr)
-	    (when (pred fr)
-	      (set! remaining (cdr remaining))))
+	    ((car remaining) fr))
+	  (cond
+	   [(null? remaining) #f]
+	   [(and (pred fr) (not (null? remaining)))
+	    (set! remaining (cdr remaining))
+	    #t]
+	   [(and (pred fr) (null? (cdr remaining)))
+	    (set! remaining '())
+	    #f]
+	   )
 	  ))))
   
   (define substage
@@ -50,8 +60,12 @@
 	  (current fr)
 	  (cond
 	   [(and (equal? current main) (enter fr))
-	    (set! current sub)]
+	    (set! current sub)
+	    ]
 	   [(and (equal? current sub) (back fr))
-	    (set! current main)])
+	    (set! current main)
+	    ])
+	  #t
 	  ))))
+
   )

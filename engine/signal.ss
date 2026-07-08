@@ -4,6 +4,7 @@
 	  signal-set!
 	  signal-next!
 	  signal-computed
+	  signal-effect
 	  )
   (import
    (chezscheme))

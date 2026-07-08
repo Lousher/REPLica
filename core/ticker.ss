@@ -4,36 +4,35 @@
 
   (define *PASSED* (make-parameter 0.0))
 
-  ;ticker is the driver that motivate the animator in real time!
+					;ticker is the driver that motivate the animator in real time!
   (define once
-    (lambda (t easing ani)
+    (lambda (t)
       (let ([started #f])
-	(lambda (f)
+	(lambda ()
 	  (unless started (set! started (*PASSED*)))
-	  (let* ([elpased (- (*PASSED*) started)]
-		 [p (min 1.0 (/ elpased t))])
-	    ((ani (easing p)) f)))
-	)))
+	  (let ([p (/ (- (*PASSED*) started) t)])
+	    (if (>= p 1.0) 1.0 p))))
+      ))
 
   (define loop
-    (lambda (t easing ani)
+    (lambda (t)
       (let ([started #f])
-	(lambda (f)
+	(lambda ()
 	  (unless started (set! started (*PASSED*)))
 	  (let* ([elpased (- (*PASSED*) started)]
 		 [p (mod (/ elpased t) 1)])
-	    ((ani (easing p)) f))
+	    p)
 	  ))
       ))
 
   (define yoyo
-    (lambda (t easing ani)
+    (lambda (t)
       (let ([started #f])
-	(lambda (f)
+	(lambda ()
 	  (unless started (set! started (*PASSED*)))
 	  (let* ([elapsed (- (*PASSED*) started)]
-		 [cycle (- elapsed t)]
-		 [p (- 1 (abs (- (mod cycle 2) 1)))])
-	    ((ani (easing p)) f))))))
+		 [cycle (/ elapsed t)]
+		 [p (- 1.0 (abs (- (mod cycle 2.0) 1.0)))])
+	    p)))))
   
   )
