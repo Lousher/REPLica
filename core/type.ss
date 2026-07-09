@@ -8,6 +8,8 @@
    make-rectangle rectangle->Rectangle Rectangle->rectangle rectangle?
    rectangle-x rectangle-y rectangle-width rectangle-height
    make-texture texture? make-perlin-noise-texture
+   make-sound sound?
+   sound-path sound-pointer sound-pointer-set!
    texture-path texture-pointer texture-source texture-source-set!
    texture-origin texture-origin-set!
    texture-width texture-height
@@ -172,6 +174,21 @@
 	      (exact->inexact width)
 	      (exact->inexact height))
 	     origin))]))))
+
+  (define-record-type sound
+    (fields
+     (immutable path)
+     (mutable pointer)
+     )
+    (protocol
+     (lambda (new)
+       (case-lambda
+	 [(path)
+	  (assert (file-exists? path))
+	  (new path #f)]
+	 [(name fptr)
+	  (assert (ftype-pointer? fptr))
+	  (new name fptr)]))))
 
   (define color->hex-string
     (lambda (c)

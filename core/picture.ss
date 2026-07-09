@@ -5,7 +5,7 @@
 	  char->picture string->picture
 	  backdrop widthwise heightwise
 	  centred mask-alpha
-	  layer toggle
+	  layer
 	  *TINT*)
   (import
    (chezscheme)
@@ -364,6 +364,7 @@
 	      (values w h))
 	    )))))
 
+					; using reverse just for temp!
   (define layer
     (lambda pics
       (lambda (fr)
@@ -377,11 +378,5 @@
 		    (apply max (cadr res)))))
 	)
       ))
-  
-  (define toggle
-    (lambda (pred pic-a pic-b)
-      (lambda (fr)
-	(if (pred fr)
-	    (pic-b fr)
-	    (pic-a fr)))))
+
   )

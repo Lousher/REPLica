@@ -1,5 +1,7 @@
 (library (engine loader)
-  (export load! load-texture CACHE)
+  (export load! load-texture
+	  load-sound
+	  CACHE)
   (import
    (chezscheme)
    (core type)
@@ -28,6 +30,12 @@
 	       (asset-data-set! a tex)
 	       (asset-status-set! a 'loaded)
 	       ((asset-on-load a) a)
+	       )]
+	    [(sound)
+	     (let ([snd (LoadSound (asset-path a))])
+	       (asset-data-set! a snd)
+	       (asset-status-set! a 'loaded)
+	       ((asset-on-load a) a)
 	       )])
 	  (set! QUEUE (cdr QUEUE)))
 	)
@@ -49,4 +57,16 @@
 	    (hashtable-set! CACHE path tex)
 	    (set! QUEUE (append QUEUE (list a)))
 	    tex))))
+
+  (define load-sound
+    (lambda (path)
+      (if (hashtable-contains? CACHE path)
+	  (hashtable-ref CACHE path #f)
+	  (let* ([snd (make-sound path)]
+		 [on-load (lambda (a)
+			    (sound-pointer-set! snd (asset-data a)))]
+		 [a (make-asset path 'sound 'pending #f on-load)])
+	    (hashtable-set! CACHE path snd)
+	    (set! QUEUE (append QUEUE (list a)))
+	    snd))))
   )

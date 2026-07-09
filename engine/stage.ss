@@ -9,6 +9,7 @@
    (core type)
    (engine loader)
    (core ticker)
+   (core channel) 
    )
 
 					;组合好的舞台必须要上演
@@ -27,12 +28,16 @@
 	  ))))
   
   (define make-stage
-    (lambda (ticker ani)
-      (lambda (fr)
-	(let-values ([(w h) ((ani (ticker)) fr)])
-	  #t
-	  ))))
-					; 一个transition是一个接受两个stage,返回一整个stage的函数，其内部会用动画衔接两个stage的切换
+    (case-lambda
+      [(ticker ani env)
+       (lambda (fr)
+	 (let-values ([(w h) ((ani (ticker)) fr)])
+	   (when env
+	     ((env (ticker)) (*CHANNEL*)))
+	   #t
+	   ))]
+      [(ticker ani)
+       (make-stage ticker ani #f)]))
   
   (define eternal
     (lambda (stage end?)

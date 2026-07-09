@@ -3,6 +3,7 @@
   (import
    (chezscheme)
    (core frame)
+   (core channel)
    (core type)
    (ffi raylib binding))
 
@@ -19,7 +20,8 @@
 			     (make-vector2 0.0 0.0)
 			     (make-vector2 0.0 0.0)
 			     0.0)])
-	  (stage window-frame))
+	  (parameterize ([*CHANNEL* (make-channel)])
+	    (stage window-frame)))
 	(CloseAudioDevice)
 	(CloseWindow))
       )))
