@@ -98,9 +98,9 @@
 				     (- ori-x (* w ratio))
 				     ori-y)
 				    rot)])
-	      (let-values ([(aw ah) (fn-a fr-a)]
-			   [(bw bh) (fn-b fr-b)])
-		(values (+ aw bw) (max ah bh)))))))))
+	      (fn-a fr-a)
+	      (fn-b fr-b)
+	      ))))))
 
   (define above
     (lambda (fn-a fn-b ratio)
@@ -121,12 +121,9 @@
 				     (- ori-y (* h ratio))
 				     )
 				    rot)])
-	      (let-values ([(aw ah) (fn-a fr-a)]
-			   [(bw bh) (fn-b fr-b)])
-		(values (max aw bw)
-			(+ ah bh)))))))))
-
-
+	      (fn-a fr-a)
+	      (fn-b fr-b)
+	      ))))))
 
   (define rotate
     (lambda (fn angle-f)

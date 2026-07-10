@@ -4,7 +4,7 @@
    static spin shake
    crossfade overlay
    appear disappear  dissolve
-   ease
+   ease letterboxing
    )
   (import
    (ffi raylib binding)
@@ -41,9 +41,9 @@
 	       [angle (* progress 70.0)]
 	       [dx (* intensity (sin angle) decay)]
 	       [dy (* intensity (cos (* angle 1.3)) decay)])
-	  (origin (ani progress)
-		  (lambda (ox) (+ ox dx))
-		  (lambda (oy) (+ oy dy)))
+	  (at (ani progress)
+	      (lambda (ox) (+ ox dx))
+	      (lambda (oy) (+ oy dy)))
 	  ))))
 
   (define appear
@@ -85,4 +85,17 @@
       (lambda (progress)
 	(lambda (f)
 	  ((ani (fn progress)) f)))))
+
+  (define letterboxing
+    (case-lambda
+      [(ani ratio c)
+       (lambda (progress)
+	 (letterbox (ani progress)
+		    (- 1 (* progress ratio))
+		    c))]
+      [(ani ratio)
+       (lambda (progress)
+	 (letterbox (ani progress)
+		    (- 1 (* progress ratio))
+		    ))]))
   )

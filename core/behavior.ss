@@ -6,20 +6,26 @@
 
   (define toggle
     (lambda (ev on off) ;
-      (lambda (fr)
-	(if (ev fr)
-	    (on fr)
-	    (off fr))
-	)))
+      (case-lambda
+	[(fr)
+	 (if (ev fr)
+	     (on fr)
+	     (off fr))]
+	[()
+	 (off)
+	 ])))
 
   (define attach
     (lambda (ev default add-on)
-      (lambda (fr)
-	(if (ev fr)
-	    (begin
-	      (add-on fr)
-	      (default fr)
-	      )
-	    (default fr)))))
+      (case-lambda
+	[(fr)
+	 (if (ev fr)
+	     (begin
+	       (add-on fr)
+	       (default fr)
+	       )
+	     (default fr))]
+	[()
+	 (default)])))
 
   )

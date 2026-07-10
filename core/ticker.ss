@@ -1,10 +1,18 @@
 (library (core ticker)
-  (export *PASSED* once loop yoyo )
+  (export *PASSED* once loop yoyo hold)
   (import
    (chezscheme)
    )
 
   (define *PASSED* (make-parameter 0.0))
+
+  (define hold
+    (lambda (t)
+      (let ([started #f])
+	(lambda (time)
+	  (unless started (set! started time))
+	  (let ([p (/ (- time started) t)])
+	    (min 1.0 p))))))
 
   (define once
     (lambda (t)

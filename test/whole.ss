@@ -91,7 +91,6 @@
 
 (define main-menu
   (layer
-   morning-pic
    menu-pic
    (resize
     (layer
@@ -114,36 +113,29 @@
    ))
 
 (define first-sentence
-  (layer
-   morning-pic
-   (anchor-percent
-    (resize
-     (widthwise
-      (centred
-       (backdrop
-	(attach hover?
-		(msdf xiaolai-str-pic font-meta)
-		snd-stage)
-	skyblue)))
-     #f (lambda (h) (/ h 10)))
-    0.5 0.9)
-   ))
+  (anchor-percent
+   (resize
+    (widthwise
+     (centred
+      (attach hover?
+	      (backdrop
+	       (msdf xiaolai-str-pic font-meta)
+	       skyblue)
+	      snd-stage
+	      )))
+    #f (lambda (h) (/ h 10)))
+   0.5 0.9))
 
 (define second-sentence
-  (layer
-   afternoon-pic
-   (anchor-percent
-    (resize
-     (widthwise
-      (centred
-       (backdrop
-	(attach hover?
-		(msdf (string->picture "这是第二个句子啦" font-xiaolai) font-meta)
-		snd-stage)
-	skyblue)))
-     #f (lambda (h) (/ h 10)))
-    0.5 0.9)
-   ))
+  (anchor-percent
+   (resize
+    (widthwise
+     (centred
+      (backdrop
+       (msdf (string->picture "这是第二个句子啦" font-xiaolai) font-meta)
+       skyblue)))
+    #f (lambda (h) (/ h 10)))
+   0.5 0.9))
 
 (define main-stage
   (lambda (fr)
@@ -151,8 +143,18 @@
       (case pc
 	[0
 	 ((make-stage-n
-	   (loop 3)
-	   (shake (picture->animator first-sentence) 20)
+	   (hold 5)
+	   (shake
+	    (overlay
+	     (letterboxing
+	      (picture->animator
+	       (layer
+		morning-pic
+		main-menu))
+	      0.5)
+	     (picture->animator
+	      first-sentence))
+	    20)
 	   (lambda (fr) (IsMouseButtonPressed MOUSE_BUTTON_LEFT))
 	   ) fr)
 	 (dispatch (+ pc 1))
@@ -161,7 +163,7 @@
 	 ((make-stage-n
 	   (once 2)
 	   (crossfade
-	    (picture->animator morning-pic)
+	    (picture->animator (letterbox morning-pic 0.5))
 	    (picture->animator afternoon-pic))
 	   never
 	   ) fr)
@@ -169,7 +171,9 @@
 	[2
 	 ((make-stage-n
 	   (loop (sound-duration snd))
-	   (picture->animator second-sentence)
+	   (overlay
+	    (picture->animator afternoon-pic)
+	    (picture->animator second-sentence))
 	   (lambda (fr) (WindowShouldClose))
 	   ) fr)
 	 ]
