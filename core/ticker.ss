@@ -1,6 +1,8 @@
 (library (core ticker)
   (export *PASSED* once loop yoyo )
-  (import (chezscheme))
+  (import
+   (chezscheme)
+   )
 
   (define *PASSED* (make-parameter 0.0))
 

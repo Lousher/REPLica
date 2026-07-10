@@ -31,11 +31,12 @@
     (case-lambda
       [(ticker ani env)
        (lambda (fr)
-	 (let-values ([(w h) ((ani (ticker)) fr)])
-	   (when env
-	     ((env (ticker)) (*CHANNEL*)))
-	   #t
-	   ))]
+	 (let ([t (ticker (GetTime))])
+	   (let-values ([(w h) ((ani t) fr)])
+	     (when env
+	       ((env t) (*CHANNEL*)))
+	     #t
+	     )))]
       [(ticker ani)
        (make-stage ticker ani #f)]))
   

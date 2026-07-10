@@ -10,6 +10,7 @@
    make-texture texture? make-perlin-noise-texture
    make-sound sound?
    sound-path sound-pointer sound-pointer-set!
+   sound-length sound-length-set!
    texture-path texture-pointer texture-source texture-source-set!
    texture-origin texture-origin-set!
    texture-width texture-height
@@ -179,16 +180,20 @@
     (fields
      (immutable path)
      (mutable pointer)
+     (mutable length)
      )
     (protocol
      (lambda (new)
        (case-lambda
 	 [(path)
 	  (assert (file-exists? path))
-	  (new path #f)]
+	  (new path #f 0.0)]
 	 [(name fptr)
 	  (assert (ftype-pointer? fptr))
-	  (new name fptr)]))))
+	  (let ([fc (ftype-ref Sound (frameCount) fptr)]
+		[sr (ftype-ref AudioStream (sampleRate) (ftype-&ref Sound (stream) fptr))])
+	    (new name fptr (/ fc sr)
+		 ))]))))
 
   (define color->hex-string
     (lambda (c)
