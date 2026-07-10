@@ -17,8 +17,9 @@
       (lambda (fr)
 	(if (ev fr)
 	    (begin
+	      (add-on fr)
 	      (default fr)
-	      (add-on fr))
+	      )
 	    (default fr)))))
 
   )

@@ -43,23 +43,56 @@
 (define snd-gain (sound->gain snd))
 (define snd-env (crossing (gain->envelope snd-gain)))
 
+(define file->glyphs
+  (lambda (f)
+    (call-with-input-file f
+      (lambda (p)
+	(let loop ([acc '()])
+	  (let ([g (read p)])
+	    (if (eof-object? g)
+		(reverse acc)
+		(loop (cons g acc)))))))))
+(define glyphs->charmap
+  (lambda glys
+    (let ([ht (make-hashtable (lambda (x) x) =)])
+      (for-each
+       (lambda (gly)
+	 (hashtable-set! ht (glyph-codepoint gly) gly))
+       glys)
+      (lambda (key)
+	(hashtable-ref ht key #f))
+      )
+    ))
+(define font-tex (load-texture "assets/xiaolai.msdf.png"))
+(define font-meta (call-with-input-file "assets/xiaolai.meta.ss" read))
+(define font-charmap (apply glyphs->charmap (file->glyphs "assets/xiaolai.msdf.ss")))
+(define font-xiaolai (make-font font-meta font-tex font-charmap))
+(define xiaolai-str-pic (string->picture "这是一个测试" font-xiaolai))
 
 (define make-stage-n
   (lambda (tick ani exit?)
+    (let ([BLANK (color->Color blank)])
+      (lambda (fr)
+	(let loop ()
+	  (let ([t (tick (GetTime))])
+	    (unless (or (not t) (exit? fr))
+	      (load!)
+	      (BeginDrawing)
+	      (ClearBackground BLANK)
+	      ((ani (tick (GetTime))) fr)
+	      (EndDrawing)
+	      (loop))))
+	))))
+
+(define snd-stage
+  (let ([tick (loop 5)])
     (lambda (fr)
-      (let loop ()
-	(unless (exit? fr)
-	  (load!)
-	  (BeginDrawing)
-	  ((ani (tick (GetTime))) fr)
-	  (EndDrawing)
-	  (loop)))
-      )))
+      ((snd-env (tick (GetTime))) (*CHANNEL*)))))
 
 (define main-menu
   (layer
    morning-pic
-   ;   menu-pic
+   menu-pic
    (resize
     (layer
      (toggle hover? start-chosen-pic start-pic)
@@ -77,19 +110,66 @@
       #f (lambda (y) (+ y 400))))
     (lambda (w) (/ w 12))
     (lambda (h) (/ h 15)))
+   
+   ))
+
+(define first-sentence
+  (layer
+   morning-pic
+   (anchor-percent
+    (resize
+     (widthwise
+      (centred
+       (backdrop
+	(attach hover?
+		(msdf xiaolai-str-pic font-meta)
+		snd-stage)
+	skyblue)))
+     #f (lambda (h) (/ h 10)))
+    0.5 0.9)
+   ))
+
+(define second-sentence
+  (layer
+   afternoon-pic
+   (anchor-percent
+    (resize
+     (widthwise
+      (centred
+       (backdrop
+	(attach hover?
+		(msdf (string->picture "这是第二个句子啦" font-xiaolai) font-meta)
+		snd-stage)
+	skyblue)))
+     #f (lambda (h) (/ h 10)))
+    0.5 0.9)
    ))
 
 (define main-stage
   (lambda (fr)
-    (let dispatch ([pc 'main])
+    (let dispatch ([pc 0])
       (case pc
-	[(main)
+	[0
 	 ((make-stage-n
-	   (once (* 2.5 (sound-duration snd)))
-	   (lambda (progress)
-	     ((snd-env progress) (*CHANNEL*))
-	     main-menu
-	     )
+	   (loop 3)
+	   (shake (picture->animator first-sentence) 20)
+	   (lambda (fr) (IsMouseButtonPressed MOUSE_BUTTON_LEFT))
+	   ) fr)
+	 (dispatch (+ pc 1))
+	 ]
+	[1
+	 ((make-stage-n
+	   (once 2)
+	   (crossfade
+	    (picture->animator morning-pic)
+	    (picture->animator afternoon-pic))
+	   never
+	   ) fr)
+	 (dispatch (+ pc 1))]
+	[2
+	 ((make-stage-n
+	   (loop (sound-duration snd))
+	   (picture->animator second-sentence)
 	   (lambda (fr) (WindowShouldClose))
 	   ) fr)
 	 ]

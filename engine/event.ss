@@ -1,5 +1,5 @@
 (library (engine event)
-  (export hover? frame->vector2s both key-down? mouse-down?)
+  (export hover? frame->vector2s both key-down? mouse-down? never)
   (import
    (chezscheme)
    (core frame)
@@ -73,4 +73,7 @@
     (lambda (ev-a ev-b)
       (lambda (fr)
 	(and (ev-a fr) (ev-b fr)))))
+
+  (define never
+    (lambda (fr) #f))
   )

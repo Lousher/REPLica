@@ -1,6 +1,7 @@
 (library (core layout)
   (export at beside above rotate origin resize
-	  anchor-right anchor-bottom origin-right)
+	  anchor-right anchor-bottom origin-right
+	  anchor-percent)
   (import
    (chezscheme)
    (core frame)
@@ -48,6 +49,21 @@
 			  (make-vector2
 			   w
 			   (vector2-y acr)) ori rot))
+	  ))))
+
+  (define anchor-percent
+    (lambda (fn wp hp)
+      (lambda (fr)
+	(let ([w (frame-width fr)]
+	      [h (frame-height fr)]
+	      [acr (frame-anchor fr)]
+	      [ori (frame-origin fr)]
+	      [rot (frame-rotation fr)])
+	  (fn (make-frame w h
+			  (make-vector2
+			   (* wp w)
+			   (* hp h)
+			   ) ori rot))
 	  ))))
 
   (define anchor-bottom

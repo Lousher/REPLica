@@ -6,7 +6,6 @@
 
   (define *PASSED* (make-parameter 0.0))
 
-					;ticker is the driver that motivate the animator in real time!
   (define once
     (lambda (t)
       (let ([started #f])
