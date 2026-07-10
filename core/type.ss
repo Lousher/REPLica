@@ -32,6 +32,7 @@
   (import
    (chezscheme)
    (ffi raylib binding)
+   (core meta)
    )
 
   (define-syntax ftype-alloc
@@ -233,50 +234,6 @@
 	  (make-texture "perlin" n-tex))
 	)))
 
-  (define png-size
-    (lambda (p)
-      (let ([ip (open-file-input-port p)])
-	(call-with-port ip
-	  (lambda (p)
-	    (let ([sig (get-bytevector-n p 8)]
-		  [chunk-head (get-bytevector-n p 16)]
-		  )
-	      (let ([w (bytevector-u32-ref chunk-head 8 (endianness big))]
-		    [h (bytevector-u32-ref chunk-head 12 (endianness big))])
-		(values w h))
-	      ))))))
-
-  (define jpg-size
-    (lambda (p)
-      (let ([ip (open-file-input-port p)])
-	(call-with-port ip
-          (lambda (p)
-            ;; 1. 验证 SOI 标记 (0xFF 0xD8)
-            (get-u8 p)
-	    (get-u8 p)
-            ;; 2. 循环查找帧开始标记 (SOF)
-            (let loop ()
-              ;; 跳过填充字节 0xFF
-              (let* ([marker (let skip-ff ([b (get-u8 p)])
-                               (if (= b #xFF)
-                                   (skip-ff (get-u8 p))
-                                   b))]
-                     ;; 检查是否为 SOF 标记 (0xC0~0xC3, 0xC5~0xC7, 0xC9~0xCB, 0xCD~0xCF)
-                     [sof? (or (<= #xC0 marker #xC3)
-                               (<= #xC5 marker #xC7)
-                               (<= #xC9 marker #xCB)
-                               (<= #xCD marker #xCF))])
-		(if sof?
-                    ;; 找到 SOF：读取段长度、精度、高度、宽度
-                    (let* ([len (bytevector-u16-ref (get-bytevector-n p 2) 0 (endianness big))]
-                           [_    (get-u8 p)]                              ; 精度（跳过）
-                           [h    (bytevector-u16-ref (get-bytevector-n p 2) 0 (endianness big))]
-                           [w    (bytevector-u16-ref (get-bytevector-n p 2) 0 (endianness big))])
-                      (values w h))
-                    ;; 非 SOF 标记：读取段长度并跳过该段
-                    (let ([seg-len (bytevector-u16-ref (get-bytevector-n p 2) 0 (endianness big))])
-                      (get-bytevector-n p (- seg-len 2))
-                      (loop))))))))))
   
   (define texture-width
     (lambda (tex)
