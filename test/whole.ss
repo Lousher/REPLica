@@ -39,7 +39,7 @@
 (define black-pic (texture->picture (color->texture black 1 1)))
 
 (define afternoon-ani (spin (picture->animator afternoon-pic) 45))
-(define snd (load-sound "../../Store/assets/va/1.new.ogg"))
+(define snd (load-sound "../../Store/assets/va/2.new.ogg"))
 (define snd-gain (sound->gain snd))
 (define snd-env (crossing (gain->envelope snd-gain)))
 
@@ -85,15 +85,8 @@
       (case pc
 	[(main)
 	 ((make-stage-n
-	   (yoyo 1)
+	   (once (* 2.5 (sound-duration snd)))
 	   (lambda (progress)
-	     (when (sound-pointer snd)
-	       (TraceLog
-		LOG_INFO
-		(format "Sound Progress is ~a, length is ~a"
-			progress
-			(sound-length snd)
-			)))
 	     ((snd-env progress) (*CHANNEL*))
 	     main-menu
 	     )

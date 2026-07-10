@@ -64,11 +64,8 @@
 	  (hashtable-ref CACHE path #f)
 	  (let* ([snd (make-sound path)]
 		 [on-load (lambda (a)
-			    (let* ([fptr (asset-data a)]
-				   [fc (ftype-ref Sound (frameCount) fptr)]
-				   [sr (ftype-ref AudioStream (sampleRate) (ftype-&ref Sound (stream) fptr))])
+			    (let* ([fptr (asset-data a)])
 			      (sound-pointer-set! snd fptr)
-			      (sound-length-set! snd (/ fc sr))
 			      ))]
 		 [a (make-asset path 'sound 'pending #f on-load)])
 	    (hashtable-set! CACHE path snd)
