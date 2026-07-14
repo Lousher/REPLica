@@ -6,10 +6,15 @@
 
   (define gain->envelope
     (lambda (gain)
-      (lambda (progress)
-	(if progress gain
-	    (pause gain))
-	)))
+      (let ([last #f])
+	(lambda (progress)
+	  (if (and progress
+		   (not (equal? last progress)))
+	      (begin
+		(set! last progress)
+		gain)
+	      (pause gain))
+	  ))))
 
   (define crossing
     (lambda (env)

@@ -41,7 +41,7 @@
 (define afternoon-ani (spin (picture->animator afternoon-pic) 45))
 (define snd (load-sound "../../Store/assets/va/2.new.ogg"))
 (define snd-gain (sound->gain snd))
-(define snd-env (crossing (gain->envelope snd-gain)))
+(define snd-env (gain->envelope snd-gain))
 
 (define file->glyphs
   (lambda (f)
@@ -52,6 +52,7 @@
 	    (if (eof-object? g)
 		(reverse acc)
 		(loop (cons g acc)))))))))
+
 (define glyphs->charmap
   (lambda glys
     (let ([ht (make-hashtable (lambda (x) x) =)])
@@ -63,121 +64,91 @@
 	(hashtable-ref ht key #f))
       )
     ))
+
 (define font-tex (load-texture "assets/xiaolai.msdf.png"))
 (define font-meta (call-with-input-file "assets/xiaolai.meta.ss" read))
 (define font-charmap (apply glyphs->charmap (file->glyphs "assets/xiaolai.msdf.ss")))
 (define font-xiaolai (make-font font-meta font-tex font-charmap))
 (define xiaolai-str-pic (string->picture "这是一个测试" font-xiaolai))
 
-(define make-stage-n
-  (lambda (tick ani exit?)
-    (let ([BLANK (color->Color blank)])
-      (lambda (fr)
-	(let loop ()
-	  (let ([t (tick (GetTime))])
-	    (unless (or (not t) (exit? fr))
-	      (load!)
-	      (BeginDrawing)
-	      (ClearBackground BLANK)
-	      ((ani (tick (GetTime))) fr)
-	      (EndDrawing)
-	      (loop))))
-	))))
+(define logo-pic (texture->picture (load-texture "assets/logo.png")))
+(define white-pic (texture->picture (color->texture white 1 1)))
+(define black-pic (texture->picture (color->texture black 1 1)))
 
-(define snd-stage
-  (let ([tick (loop 5)])
-    (lambda (fr)
-      ((snd-env (tick (GetTime))) (*CHANNEL*)))))
+(define black-to-white
+  (make-stage
+   (once 2)
+   (overlay
+    (picture->animator black-pic)
+    (appear (picture->animator white-pic)))))
 
-(define main-menu
-  (layer
-   menu-pic
-   (resize
-    (layer
-     (toggle hover? start-chosen-pic start-pic)
-     (at
-      (toggle hover? load-chosen-pic load-pic)
-      #f (lambda (y) (+ y 100)))
-     (at
-      (toggle hover? config-chosen-pic config-pic)
-      #f (lambda (y) (+ y 200)))
-     (at
-      (toggle hover? gallery-chosen-pic	gallery-pic)
-      #f (lambda (y) (+ y 300)))
-     (at
-      (toggle hover? exit-chosen-pic exit-pic)
-      #f (lambda (y) (+ y 400))))
-    (lambda (w) (/ w 12))
-    (lambda (h) (/ h 15)))
-   
+(define logo
+  (make-stage
+   (once 3)
+   (overlay
+    (picture->animator white-pic)
+    (appear (picture->animator logo-pic)))
    ))
 
-(define first-sentence
-  (anchor-percent
-   (resize
-    (widthwise
-     (centred
-      (attach hover?
-	      (backdrop
-	       (msdf xiaolai-str-pic font-meta)
-	       skyblue)
-	      snd-stage
-	      )))
-    #f (lambda (h) (/ h 10)))
-   0.5 0.9))
+(define to-main
+  (make-stage
+   (once 2)
+   (concat
+    (list
+     (crossfade
+      (picture->animator black-pic)
+      (picture->animator morning-pic))
+     (overlay
+      (picture->animator morning-pic)
+      (appear (picture->animator menu-pic))))
+    '(0.5 0.5))))
 
-(define second-sentence
-  (anchor-percent
-   (resize
-    (widthwise
-     (centred
-      (backdrop
-       (msdf (string->picture "这是第二个句子啦" font-xiaolai) font-meta)
-       skyblue)))
-    #f (lambda (h) (/ h 10)))
-   0.5 0.9))
+(define main
+  (make-stage
+   (hold (sound-duration snd))
+   (picture->animator
+    (layer
+     morning-pic
+     menu-pic))
+   snd-env
+   ))
 
-(define main-stage
+(define logo-showing
+  (make-stage
+   (once 4)
+   (concat
+    (list
+     (crossfade
+      (picture->animator black-pic)
+      (picture->animator white-pic))
+     (overlay
+      (picture->animator white-pic)
+      (appear (picture->animator logo-pic)))
+     (crossfade
+      (picture->animator logo-pic)
+      (picture->animator black-pic)))
+    '(0.25 0.5 0.25)
+    )))
+
+(define full
   (lambda (fr)
     (let dispatch ([pc 0])
-      (case pc
-	[0
-	 ((make-stage-n
-	   (hold 5)
-	   (shake
-	    (overlay
-	     (letterboxing
-	      (picture->animator
-	       (layer
-		morning-pic
-		main-menu))
-	      0.5)
-	     (picture->animator
-	      first-sentence))
-	    20)
-	   (lambda (fr) (IsMouseButtonPressed MOUSE_BUTTON_LEFT))
-	   ) fr)
-	 (dispatch (+ pc 1))
-	 ]
-	[1
-	 ((make-stage-n
-	   (once 2)
-	   (crossfade
-	    (picture->animator (letterbox morning-pic 0.5))
-	    (picture->animator afternoon-pic))
-	   never
-	   ) fr)
-	 (dispatch (+ pc 1))]
-	[2
-	 ((make-stage-n
-	   (loop (sound-duration snd))
-	   (overlay
-	    (picture->animator afternoon-pic)
-	    (picture->animator second-sentence))
-	   (lambda (fr) (WindowShouldClose))
-	   ) fr)
-	 ]
+      (let ([s (case pc
+		 [0
+		  (eternal (ready (lambda (fr) (void)))
+			   (lambda (fr) (IsMouseButtonPressed MOUSE_BUTTON_LEFT)))]
+		 [1
+		  (eternal (ready logo-showing) never)
+		  ]
+		 [2
+		  (eternal (ready to-main) never)
+		  ]
+		 [3
+		  (eternal (ready main)
+			   (lambda (fr) (WindowShouldClose)))])])
+	(s fr)
+	(dispatch (+ pc 1))
 	))
     ))
 
-(start main-stage)
+(start full)

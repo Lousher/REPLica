@@ -1,6 +1,6 @@
 (library (engine stage)
   (export make-stage ready
-	  eternal sequential
+	  eternal
 	  substage ensemble)
   (import
    (chezscheme)
@@ -32,11 +32,10 @@
       [(ticker ani env)
        (lambda (fr)
 	 (let ([t (ticker (GetTime))])
-	   (let-values ([(w h) ((ani t) fr)])
-	     (when env
-	       ((env t) (*CHANNEL*)))
-	     #t
-	     )))]
+	   (when env ((env t) (*CHANNEL*)))
+	   ((ani t) fr)
+	   t
+	   ))]
       [(ticker ani)
        (make-stage ticker ani #f)]))
   
@@ -49,17 +48,6 @@
 	      (when res
 		(loop)))
 	    )))))
-
-  (define sequential
-    (lambda (stages pred)
-      (let ([remaining stages])
-	(lambda (fr)
-	  (if (null? remaining) #f
-	      (begin
-		((car remaining) fr)
-		(if (pred fr)
-		    (set! remaining (cdr remaining)))))
-	  ))))
   
   (define substage
     (lambda (main sub enter back)

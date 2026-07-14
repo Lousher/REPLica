@@ -4,7 +4,7 @@
    static spin shake
    crossfade overlay
    appear disappear  dissolve
-   ease letterboxing
+   ease letterboxing concat
    )
   (import
    (ffi raylib binding)
@@ -49,14 +49,16 @@
   (define appear
     (lambda (ani)
       (lambda (progress)
-	(let* ([a (floor (* progress 255))])
+	(let* ([p (if progress progress 1.0)]
+	       [a (floor (* p 255))])
 	  (fade (ani progress) a)))
       ))
 
   (define disappear
     (lambda (ani)
       (lambda (progress)
-	(let* ([a (floor (* (- 1 progress) 255))])
+	(let* ([p (if progress progress 1.0)]
+	       [a (floor (* (- 1 p) 255))])
 	  (fade (ani progress) a)))
       ))
 
@@ -98,4 +100,31 @@
 	 (letterbox (ani progress)
 		    (- 1 (* progress ratio))
 		    ))]))
+
+  (define (scan proc init lst)
+    (let loop ([rest lst] [current init] [acc '()])
+      (if (null? rest)
+          (reverse acc)
+          (let ([next-val (proc current (car rest))])
+            (loop (cdr rest) next-val (cons next-val acc))))))
+  
+  (define concat
+    (lambda (anis durs)
+      (assert (= (length anis) (length durs)))
+      (assert (= 1 (apply + durs)))
+      (let* ([len (length durs)]
+	     [end-ticks (scan + 0.0 durs)]
+	     [start-ticks (cons 0.0 (list-head end-ticks (- len 1)))]
+	     [segs (map list start-ticks end-ticks anis durs)])
+	(lambda (p)
+	  (let ([progress (if p p 1.0)])
+	    (let ([seg (find (lambda (s) (<= (car s) progress (cadr s)))
+			     segs)])
+	      (let ([start (car seg)]
+		    [end (cadr seg)]
+		    [ani (list-ref seg 2)]
+		    [dur (list-ref seg 3)])
+		(let ([ani-p (min 1.0 (/ (- progress start) dur))])
+		  (ani ani-p))))
+	    )))))
   )
