@@ -39,6 +39,7 @@
 (define black-pic (texture->picture (color->texture black 1 1)))
 
 (define afternoon-ani (spin (picture->animator afternoon-pic) 45))
+(define sign-env (gain->envelope (sound->gain (load-sound "../../Store/assets/sound/sign.mp3"))))
 (define snd (load-sound "../../Store/assets/va/2.new.ogg"))
 (define snd-gain (sound->gain snd))
 (define snd-env (gain->envelope snd-gain))
@@ -75,44 +76,6 @@
 (define white-pic (texture->picture (color->texture white 1 1)))
 (define black-pic (texture->picture (color->texture black 1 1)))
 
-(define black-to-white
-  (make-stage
-   (once 2)
-   (overlay
-    (picture->animator black-pic)
-    (appear (picture->animator white-pic)))))
-
-(define logo
-  (make-stage
-   (once 3)
-   (overlay
-    (picture->animator white-pic)
-    (appear (picture->animator logo-pic)))
-   ))
-
-(define to-main
-  (make-stage
-   (once 2)
-   (concat
-    (list
-     (crossfade
-      (picture->animator black-pic)
-      (picture->animator morning-pic))
-     (overlay
-      (picture->animator morning-pic)
-      (appear (picture->animator menu-pic))))
-    '(0.5 0.5))))
-
-(define main
-  (make-stage
-   (hold (sound-duration snd))
-   (picture->animator
-    (layer
-     morning-pic
-     menu-pic))
-   snd-env
-   ))
-
 (define logo-showing
   (make-stage
    (once 4)
@@ -130,25 +93,101 @@
     '(0.25 0.5 0.25)
     )))
 
-(define full
-  (lambda (fr)
-    (let dispatch ([pc 0])
-      (let ([s (case pc
-		 [0
-		  (eternal (ready (lambda (fr) (void)))
-			   (lambda (fr) (IsMouseButtonPressed MOUSE_BUTTON_LEFT)))]
-		 [1
-		  (eternal (ready logo-showing) never)
-		  ]
-		 [2
-		  (eternal (ready to-main) never)
-		  ]
-		 [3
-		  (eternal (ready main)
-			   (lambda (fr) (WindowShouldClose)))])])
-	(s fr)
-	(dispatch (+ pc 1))
-	))
+(define to-main
+  (make-stage
+   (once 2)
+   (concat
+    (list
+     (crossfade
+      (picture->animator black-pic)
+      (picture->animator morning-pic))
+     (overlay
+      (picture->animator morning-pic)
+      (appear (picture->animator menu-pic))))
+    '(0.5 0.5))))
+
+(define menu-button
+  (lambda (normal chosen target)
+    (resize
+     (widthwise
+      (attach
+       (both hover? (mouse-pressed? MOUSE_BUTTON_LEFT))
+       (toggle hover? chosen normal)
+       (capture target)))
+     #f (lambda (h) (/ h 12)))
     ))
 
-(start full)
+(define menu-pic
+  (layer
+   morning-pic
+   menu-pic
+   (anchor-percent
+    (menu-button
+     start-pic
+     start-chosen-pic
+     'start)
+    0.369 0.25)
+   (anchor-percent
+    (menu-button
+     load-pic
+     load-chosen-pic
+     'load)
+    0.369 0.35)
+   (anchor-percent
+    (menu-button
+     config-pic
+     config-chosen-pic
+     'config)
+    0.369 0.45)
+   (anchor-percent
+    (menu-button
+     gallery-pic
+     gallery-chosen-pic
+     'gallery)
+    0.369 0.55)
+   (anchor-percent
+    (menu-button
+     exit-pic
+     exit-chosen-pic
+     'exit)
+    0.369 0.65)))
+
+(define menu-stage
+  (captured
+   (make-stage
+    (loop 10)
+    (picture->animator menu-pic))))
+
+(define menu-to-story
+  (make-stage
+   (once (sound-duration snd))
+   (crossfade
+    (picture->animator menu-pic)
+    (picture->animator black-pic))
+   snd-env))
+
+(define main
+  (case-lambda
+    [(fr)
+     (let dispatch ([pc 'logo])
+       (case pc
+	 [(logo)
+	  ((eternal (ready logo-showing) never) fr)
+	  (dispatch 'trans)]
+	 [(trans)
+	  ((eternal (ready to-main) never) fr)
+	  (dispatch 'menu)]
+	 [(menu)
+	  ((eternal (ready menu-stage)
+		    (lambda (fr)
+		      (let-values ([(p s) (menu-stage)])
+			(eqv? s 'start)))) fr)
+	  (dispatch 'start)]
+	 [(start)
+	  ((eternal (ready menu-to-story)
+		    (lambda (fr) (WindowShouldClose)))
+	   fr)]))
+     ]
+    [() (values 1.0 #t)]))
+
+(start main)

@@ -1,7 +1,7 @@
 (library (core layout)
   (export at beside above rotate origin resize
 	  anchor-right anchor-bottom origin-right
-	  anchor-percent)
+	  anchor-percent capture captured)
   (import
    (chezscheme)
    (core frame)
@@ -135,7 +135,6 @@
 	      [rot (frame-rotation fr)])
 	  (fn (make-frame w h acr ori (angle-f rot)))
 	  ))))
-
   
   (define origin
     (lambda (fn ox-f oy-f)
@@ -165,4 +164,22 @@
 		 (inexact (w-fn w))
 		 (inexact (h-fn h)) acr ori rot))
 	    )))))
+
+  (define *return* (make-parameter (lambda (x) #f)))
+  (define capture
+    (lambda (sig)
+      (lambda (fr)
+	((*return*) sig)
+	)))
+					; for stage only!
+  (define captured
+    (lambda (fn)
+      (let ([status 'default])
+	(case-lambda
+	  [(fr)
+	   (parameterize ([*return* (lambda (x) (set! status x))])
+	     (fn fr))]
+	  [() (let-values ([(p s) (fn)])
+		(values p status))])))
+    )
   )

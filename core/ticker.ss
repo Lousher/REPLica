@@ -1,10 +1,8 @@
 (library (core ticker)
-  (export *PASSED* once loop yoyo hold)
-  (import
+  (export once loop yoyo hold)
+  (import 
    (chezscheme)
    )
-
-  (define *PASSED* (make-parameter 0.0))
 
   (define hold
     (lambda (t)
