@@ -1,13 +1,14 @@
 (library (engine loader)
   (export load! load-texture
-	  load-sound
-	  CACHE)
+	  load-sound)
   (import
    (chezscheme)
    (core type)
    (ffi raylib binding))
 
+					; guardian? weak cons? 
   (define-record-type asset
+    (sealed #t)
     (fields
      (immutable path)
      (immutable type)
@@ -17,7 +18,6 @@
      ))
 
   (define QUEUE '())
-  (define CACHE (make-hashtable string-hash string=?))
   
   (define load!
     (lambda ()
@@ -37,9 +37,7 @@
 	       (asset-status-set! a 'loaded)
 	       ((asset-on-load a) a)
 	       )])
-	  (set! QUEUE (cdr QUEUE)))
-	)
-      ))
+	  (set! QUEUE (cdr QUEUE))))))
 
   (define load-texture
     (lambda (path)

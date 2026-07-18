@@ -1,5 +1,6 @@
 (library (core type)
   (export
+   CACHE file->glyphs glyphs->charmap
    make-color color->Color Color->color color?
    color->texture linear-color->texture
    color-r color-g color-b color-a
@@ -26,13 +27,11 @@
    metrics-em-size metrics-line-height metrics-ascender metrics-descender metrics-underline-y metrics-underline-thickness
    make-font font?
    font-metadata font-sprite font-charmap
-   
    )
   (import
    (chezscheme)
    (ffi raylib binding)
-   (core meta)
-   )
+   (core meta))
 
   (define-syntax ftype-alloc
     (syntax-rules ()
@@ -40,6 +39,7 @@
        (make-ftype-pointer ftype (foreign-alloc (ftype-sizeof ftype)))]))  
   
   (define-record-type rectangle
+    (sealed #t)
     (nongenerative rectangle)
     (fields
      (immutable x)
@@ -77,6 +77,7 @@
     )
 
   (define-record-type vector2
+    (sealed #t)
     (fields
      (immutable x)
      (immutable y)
@@ -111,6 +112,7 @@
 	   (<= 0 x 255))))
 
   (define-record-type color
+    (sealed #t)
     (fields
      (immutable r)
      (immutable g)
@@ -146,6 +148,7 @@
     )
 
   (define-record-type texture
+    (sealed #t)
     (fields
      (immutable path)
      (mutable pointer)
@@ -177,6 +180,7 @@
 	     origin))]))))
 
   (define-record-type sound
+    (sealed #t)
     (fields
      (immutable path)
      (mutable pointer)
@@ -203,18 +207,18 @@
 	      (color-b c)
 	      (color-a c))))
 
-  (define *color-textures* (make-hashtable string-hash string=?))
+  (define CACHE (make-hashtable string-hash string=?))
   (define color->texture
     (lambda (c w h)
       (let* ([hex-str (color->hex-string c)]
 	     [id-str (format "~a ~a*~a" hex-str w h)])
-	(if (hashtable-contains? *color-textures* id-str)
-	    (hashtable-ref *color-textures* id-str #f)
+	(if (hashtable-contains? CACHE id-str)
+	    (hashtable-ref CACHE id-str #f)
 	    (let* ([c-img (GenImageColor w h (color->Color c))]
 		   [c-tex (LoadTextureFromImage c-img)])
 	      (UnloadImage c-img)
 	      (let ([tex (make-texture id-str c-tex)])
-		(hashtable-set! *color-textures* id-str tex)
+		(hashtable-set! CACHE id-str tex)
 		tex))))))
 
   (define linear-color->texture
@@ -272,10 +276,12 @@
       ))
 
   (define-record-type plane
+    (sealed #t)
     (nongenerative plane)
     (fields left bottom right top))
 
   (define-record-type glyph
+    (sealed #t)
     (nongenerative glyph)
     (fields
      (immutable codepoint)
@@ -286,17 +292,43 @@
     )
 
   (define-record-type font
+    (sealed #t)
     (fields metadata sprite charmap))
+
+  (define file->glyphs
+    (lambda (f)
+      (call-with-input-file f
+	(lambda (p)
+	  (let loop ([acc '()])
+	    (let ([g (read p)])
+	      (if (eof-object? g)
+		  (reverse acc)
+		  (loop (cons g acc)))))))))
+  
+  (define glyphs->charmap
+    (lambda glys
+      (let ([ht (make-hashtable (lambda (x) x) =)])
+	(for-each
+	 (lambda (gly)
+	   (hashtable-set! ht (glyph-codepoint gly) gly))
+	 glys)
+	(lambda (key)
+	  (hashtable-ref ht key #f))
+	)
+      ))
   
   (define-record-type font-meta
+    (sealed #t)
     (nongenerative font-meta)
     (fields atlas metrics))
 
   (define-record-type atlas
+    (sealed #t)
     (nongenerative atlas)
     (fields type distance-range distance-range-middle size width height y-origin))
 
   (define-record-type metrics
+    (sealed #t)
     (nongenerative metrics)
     (fields em-size line-height ascender descender underline-y underline-thickness))
   )

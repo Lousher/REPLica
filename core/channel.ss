@@ -14,6 +14,7 @@
   (define *CHANNEL* (make-parameter #f))
   
   (define-record-type channel
+    (sealed #t)
     (fields
      (mutable volume)
      (mutable pitch)

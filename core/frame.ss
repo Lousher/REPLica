@@ -12,6 +12,7 @@
    (core type))
 
   (define-record-type frame
+    (sealed #t)
     (fields
      (mutable width)
      (mutable height)

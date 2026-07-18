@@ -19,10 +19,10 @@
 
 (define start (make-game "Test" 1920 1080))
 
-(define morning-pic (texture->picture (load-texture "test/store/apartment.morning.png")))
+(define morning-pic (texture->picture (load-texture "assets/store/apartment.morning.png")))
 (define morning-ani (shake (picture->animator morning-pic) 15))
 
-(define afternoon-pic (texture->picture (load-texture "test/store/apartment.afternoon.png")))
+(define afternoon-pic (texture->picture (load-texture "assets/store/apartment.afternoon.png")))
 
 (define menu-pic (texture->picture (load-texture "../../Store/assets/menu/main2x.png")))
 (define start-pic (texture->picture (load-texture "../../Store/assets/menu/button/start.png")))
@@ -44,28 +44,6 @@
 (define snd (load-sound "../../Store/assets/va/1.new.ogg"))
 (define snd-gain (sound->gain snd))
 (define snd-env (gain->envelope snd-gain))
-
-(define file->glyphs
-  (lambda (f)
-    (call-with-input-file f
-      (lambda (p)
-	(let loop ([acc '()])
-	  (let ([g (read p)])
-	    (if (eof-object? g)
-		(reverse acc)
-		(loop (cons g acc)))))))))
-
-(define glyphs->charmap
-  (lambda glys
-    (let ([ht (make-hashtable (lambda (x) x) =)])
-      (for-each
-       (lambda (gly)
-	 (hashtable-set! ht (glyph-codepoint gly) gly))
-       glys)
-      (lambda (key)
-	(hashtable-ref ht key #f))
-      )
-    ))
 
 (define font-tex (load-texture "assets/xiaolai.msdf.png"))
 (define font-meta (call-with-input-file "assets/xiaolai.meta.ss" read))
@@ -256,5 +234,6 @@
 	 ))
      ]
     [() (values 1.0 #t)]))
+
 
 (start main)
