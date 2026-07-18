@@ -15,6 +15,7 @@
 (import (core channel))
 (import (core gain))
 (import (core envelope))
+(import (core easing))
 
 (define start (make-game "Test" 1920 1080))
 
@@ -40,7 +41,7 @@
 
 (define afternoon-ani (spin (picture->animator afternoon-pic) 45))
 (define sign-env (gain->envelope (sound->gain (load-sound "../../Store/assets/sound/sign.mp3"))))
-(define snd (load-sound "../../Store/assets/va/2.new.ogg"))
+(define snd (load-sound "../../Store/assets/va/1.new.ogg"))
 (define snd-gain (sound->gain snd))
 (define snd-env (gain->envelope snd-gain))
 
@@ -70,8 +71,6 @@
 (define font-meta (call-with-input-file "assets/xiaolai.meta.ss" read))
 (define font-charmap (apply glyphs->charmap (file->glyphs "assets/xiaolai.msdf.ss")))
 (define font-xiaolai (make-font font-meta font-tex font-charmap))
-(define xiaolai-str-pic (string->picture "这是一个测试" font-xiaolai))
-
 (define logo-pic (texture->picture (load-texture "assets/logo.png")))
 (define white-pic (texture->picture (color->texture white 1 1)))
 (define black-pic (texture->picture (color->texture black 1 1)))
@@ -166,10 +165,63 @@
     (picture->animator black-pic))
    snd-env))
 
+(define yuwen-bedroom-mor-pic (texture->picture (load-texture "../../Store/assets/bg/yuwen.bedroom.morning.png")))
+(define rightone-snd (load-sound "../../Store/assets/sound/rightone.mp3"))
+(define rightone-env (gain->envelope (sound->gain rightone-snd)))
+(define rightone-ring
+  (make-stage
+   (once (sound-duration rightone-snd))
+   #f
+   rightone-env))
+
+(define wakeup-stage
+  (make-stage
+   (hold 1)
+   (ease
+    (backward
+     (dissolve
+      (picture->animator yuwen-bedroom-mor-pic)
+      "../../Downloads/pack/033.png"))
+    ease-out-cubic)))
+
+(define t1 (string->picture "这到底该怎么办呢" font-xiaolai))
+(define color-yuwen (make-color 195 146 135 235))
+(define text1
+  (make-stage
+   (once 3)
+   (overlay
+    (picture->animator yuwen-bedroom-mor-pic)
+    (appear
+     (picture->animator
+      (anchor-percent
+       (resize
+	(widthwise
+	 (centred
+	  (backdrop
+	   (msdf t1 font-meta)
+	   color-yuwen)))
+	#f (lambda (h) (/ h 12)))
+       0.5 0.9))))))
+(define trans-pic (texture->picture (color->texture blank 1 1)))
+(define mask-bed-moving
+  (make-stage
+   (hold 10)
+   (stagger
+    (list
+     (x-move
+      (picture->animator yuwen-bedroom-mor-pic)
+      -1000)
+     (letterboxing
+      (picture->animator trans-pic)
+      0.7))
+    '((0.0 . 1.0)
+      (0.0 . 0.3))
+    )))
+
 (define main
   (case-lambda
     [(fr)
-     (let dispatch ([pc 'logo])
+     (let dispatch ([pc 'ring])
        (case pc
 	 [(logo)
 	  ((eternal (ready logo-showing) never) fr)
@@ -185,8 +237,23 @@
 	  (dispatch 'start)]
 	 [(start)
 	  ((eternal (ready menu-to-story)
-		    (lambda (fr) (WindowShouldClose)))
-	   fr)]))
+		    never) fr)
+	  (dispatch 'ring)]
+	 [(ring)
+	  ((eternal (ready rightone-ring)
+		    never) fr)
+	  (dispatch 'wakeup)]
+	 [(wakeup)
+	  ((eternal (ready wakeup-stage)
+		    (mouse-pressed? MOUSE_BUTTON_LEFT)) fr)
+	  (dispatch 'look-at-phone)]
+	 [(look-at-phone)
+	  ((eternal (ready text1)
+		    never) fr)
+	  (dispatch 'bed)]
+	 [(bed)
+	  ((eternal (ready mask-bed-moving) never) fr)]
+	 ))
      ]
     [() (values 1.0 #t)]))
 

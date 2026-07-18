@@ -92,18 +92,33 @@
 (define (cjk-punctuation-codepoints)
   (iota* 20092 #x4E00))
 
+(define (general-punctuation-codepoints)
+  (iota* 112 #x2000))
+
+(define (latin-supplement-codepoints)
+  (iota* 128 #x0080))
 
 ;; 生成全角标点码点列表 (U+FF00 ~ U+FFEF)
 (define (fullwidth-punctuation-codepoints)
   (iota* 240 #xFF00))
+
 
 ;; 生成完整中文支持的码点列表
 (define (chinese-full-codepoints)
   (append (ascii-codepoints)
           (cjk-punctuation-codepoints)
           (fullwidth-punctuation-codepoints)
-          (cjk-basic-codepoints)))
+          (cjk-basic-codepoints)
+	  (general-punctuation-codepoints)
+	  (latin-supplement-codepoints)))
+
+|(call-with-output-file "assets/allchars.txt"
+  (lambda (p)
+    (write 
+     (list->string (map integer->char (chinese-full-codepoints)))
+     p
+     )))|
 
 
-					;(bake-sdf "assets/xiaolai.ttf" "assets/xiaolai.atlas.png" "assets/xiaolai.bin" (ascii-codepoints) 96 12)
+(bake-sdf "assets/xiaolai.ttf" "assets/xiaolai.atlas.png" "assets/xiaolai.bin" (ascii-codepoints) 96 12)
 

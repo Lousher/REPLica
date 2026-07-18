@@ -370,11 +370,10 @@
   (define mask-alpha
     (let ([sh #f]
 	  [tex1-loc #f]
-	  [threshold-loc #f]
-	  [threshold-ptr (foreign-alloc (ftype-sizeof float))]
-	  )
+	  [threshold-loc #f])
       (lambda (pic path threshold)
-	(let ([mask-tex (load-texture path)])
+	(let ([mask-tex (load-texture path)]
+	      [threshold-ptr (foreign-alloc (ftype-sizeof float))])
 	  (foreign-set! 'float threshold-ptr 0 threshold)
 	  (case-lambda
 	    [(fr)
@@ -385,9 +384,9 @@
 	     (when (texture-pointer mask-tex)
 	       (BeginShaderMode sh)
 	       (SetShaderValue sh threshold-loc threshold-ptr SHADER_UNIFORM_FLOAT)
-	       (SetShaderValueTexture sh tex1-loc (texture-pointer mask-tex)))
-	     (pic fr)
-	     (EndShaderMode)
+	       (SetShaderValueTexture sh tex1-loc (texture-pointer mask-tex))
+	       (pic fr)
+	       (EndShaderMode))
 	     ]
 	    [()
 	     (pic)]
@@ -414,6 +413,7 @@
 	)
       ))
 
+  ; ratio表示留给正常画面的比例
   (define letterbox
     (case-lambda
       [(pic ratio c)
@@ -427,8 +427,7 @@
 	      (above
 	       (above c-pic trans box-h-ratio)
 	       c-pic
-	       (- 1 box-h-ratio)
-	       )
+	       (- 1 box-h-ratio))
 	      ) fr)]
 	   [() (pic)]
 	   ))]

@@ -1,5 +1,6 @@
 (library (render drawing)
-  (export draw-texture-pro)
+  (export draw-texture-pro
+	  draw-rectangle-rounded)
   (import (chezscheme)
 	  (ffi raylib binding)
 	  (core type))
@@ -26,6 +27,15 @@
 	 dest-fptr
 	 origin-fptr
 	 rotation
-	 tint-fptr)))
-    )
+	 tint-fptr))))
+
+  (define draw-rectangle-rounded
+    (let ([rect-fptr (ftype-alloc Rectangle)]
+	  [tint-fptr (ftype-alloc Color)])
+      (lambda (rect roundness segments color)
+	(rectangle->Rectangle rect rect-fptr)
+	(color->Color color tint-fptr)
+
+	(DrawRectangleRounded rect-fptr roundness segments tint-fptr)
+	)))
   )

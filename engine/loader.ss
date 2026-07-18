@@ -50,7 +50,8 @@
 			    (let* ([fptr (asset-data a)]
 				   [w (ftype-ref Texture2D (width) fptr)]
 				   [h (ftype-ref Texture2D (height) fptr)])
-			      (SetTextureFilter fptr TEXTURE_FILTER_BILINEAR)
+			      (GenTextureMipmaps fptr)
+			      (SetTextureFilter fptr TEXTURE_FILTER_TRILINEAR)
 			      (texture-pointer-set! tex fptr)
 			      (texture-source-set! tex (make-rectangle 0.0 0.0 (inexact w) (inexact h)))))]
 		 [a (make-asset path 'texture 'pending #f on-load)])

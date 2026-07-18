@@ -5,6 +5,7 @@
    crossfade overlay
    appear disappear  dissolve
    ease letterboxing concat
+   x-move backward stagger
    )
   (import
    (ffi raylib binding)
@@ -45,6 +46,14 @@
 	      (lambda (ox) (+ ox dx))
 	      (lambda (oy) (+ oy dy)))
 	  ))))
+
+  (define x-move
+    (lambda (ani distance)
+      (lambda (progress)
+	(at (ani progress)
+	    (lambda (ax) (+ ax (* distance progress)))
+	    #f)
+	)))
 
   (define appear
     (lambda (ani)
@@ -88,18 +97,19 @@
 	(lambda (f)
 	  ((ani (fn progress)) f)))))
 
+  (define backward
+    (lambda (ani)
+      (lambda (progress)
+	(ani (- 1.0 progress)))))
+
   (define letterboxing
     (case-lambda
       [(ani ratio c)
        (lambda (progress)
-	 (letterbox (ani progress)
-		    (- 1 (* progress ratio))
-		    c))]
+	 (let ([current-ratio (- 1.0 (* progress (- 1.0 ratio)))])
+	   (letterbox (ani progress) current-ratio c)))]
       [(ani ratio)
-       (lambda (progress)
-	 (letterbox (ani progress)
-		    (- 1 (* progress ratio))
-		    ))]))
+       (letterboxing ani ratio black)]))
 
   (define (scan proc init lst)
     (let loop ([rest lst] [current init] [acc '()])
@@ -117,7 +127,7 @@
 	     [start-ticks (cons 0.0 (list-head end-ticks (- len 1)))]
 	     [segs (map list start-ticks end-ticks anis durs)])
 	(lambda (p)
-	  (let ([progress (if p p 1.0)])
+	  (let ([progress (or p 1.0)])
 	    (let ([seg (find (lambda (s) (<= (car s) progress (cadr s)))
 			     segs)])
 	      (let ([start (car seg)]
@@ -125,6 +135,23 @@
 		    [ani (list-ref seg 2)]
 		    [dur (list-ref seg 3)])
 		(let ([ani-p (min 1.0 (/ (- progress start) dur))])
-		  (ani ani-p))))
-	    )))))
+		  (ani ani-p)))))))))
+
+  (define stagger
+    (lambda (anis intervals)
+      (assert (= (length anis) (length intervals)))
+      (assert (for-all (lambda (i) (<= 0 (car i) (cdr i) 1)) intervals))
+      (lambda (p)
+	(let ([progress (or p 1.0)])
+	  (apply layer
+		 (map
+		  (lambda (ani i)
+		    (let* ([start (car i)]
+			   [end (cdr i)]
+			   [local-p (cond
+				     [(<= progress start) 0.0]
+				     [(>= progress end) 1.0]
+				     [else (/ (- progress start) (- end start))])])
+		      (ani local-p)))
+		  anis intervals))))))
   )

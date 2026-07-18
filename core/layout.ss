@@ -154,16 +154,19 @@
     (lambda (fn w-f h-f)
       (let ([w-fn (if w-f w-f (lambda (w) w))]
 	    [h-fn (if h-f h-f (lambda (h) h))])
-	(lambda (fr)
-	  (let ([w (frame-width fr)]
-		[h (frame-height fr)]
-		[ori (frame-origin fr)]
-		[acr (frame-anchor fr)]
-		[rot (frame-rotation fr)])
-	    (fn (make-frame
-		 (inexact (w-fn w))
-		 (inexact (h-fn h)) acr ori rot))
-	    )))))
+	(case-lambda
+	  [(fr)
+	   (let ([w (frame-width fr)]
+		 [h (frame-height fr)]
+		 [ori (frame-origin fr)]
+		 [acr (frame-anchor fr)]
+		 [rot (frame-rotation fr)])
+	     (fn (make-frame
+		  (inexact (w-fn w))
+		  (inexact (h-fn h)) acr ori rot))
+	     )]
+	  [()
+	   (fn)]))))
 
   (define *return* (make-parameter (lambda (x) #f)))
   (define capture

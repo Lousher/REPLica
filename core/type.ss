@@ -203,12 +203,19 @@
 	      (color-b c)
 	      (color-a c))))
 
+  (define *color-textures* (make-hashtable string-hash string=?))
   (define color->texture
     (lambda (c w h)
-      (let* ([c-img (GenImageColor w h (color->Color c))]
-	     [c-tex (LoadTextureFromImage c-img)])
-	(UnloadImage c-img)
-	(make-texture (color->hex-string c) c-tex))))
+      (let* ([hex-str (color->hex-string c)]
+	     [id-str (format "~a ~a*~a" hex-str w h)])
+	(if (hashtable-contains? *color-textures* id-str)
+	    (hashtable-ref *color-textures* id-str #f)
+	    (let* ([c-img (GenImageColor w h (color->Color c))]
+		   [c-tex (LoadTextureFromImage c-img)])
+	      (UnloadImage c-img)
+	      (let ([tex (make-texture id-str c-tex)])
+		(hashtable-set! *color-textures* id-str tex)
+		tex))))))
 
   (define linear-color->texture
     (case-lambda
