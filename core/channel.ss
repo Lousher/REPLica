@@ -5,8 +5,7 @@
    channel-volume channel-volume-set!
    channel-pitch channel-pitch-set!
    channel-pan channel-pan-set!
-   channel-playing? channel-playing?-set!
-   )
+   channel-playing? channel-playing?-set!)
   (import
    (chezscheme)
    )
@@ -19,8 +18,7 @@
      (mutable volume)
      (mutable pitch)
      (mutable pan)
-     (mutable playing?)
-     )
+     (mutable playing?))
     (protocol
      (lambda (new)
        (case-lambda

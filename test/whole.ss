@@ -10,7 +10,7 @@
 
 (import (core type))
 (import (core layout))
-(import (core behavior))
+(import (engine behavior))
 (import (design color))
 (import (core channel))
 (import (core gain))
@@ -237,3 +237,4 @@
 
 
 (start main)
+

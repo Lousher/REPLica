@@ -1,4 +1,4 @@
-(library (core behavior)
+(library (engine behavior)
   (export toggle attach)
   (import (chezscheme))
 

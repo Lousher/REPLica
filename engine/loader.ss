@@ -1,12 +1,16 @@
 (library (engine loader)
-  (export load! load-texture
+  (export CACHE color->texture
+	  linear-color->texture
+	  make-perlin-noise-texture
+	  file->glyphs glyphs->charmap
+	  load! load-texture
 	  load-sound)
   (import
    (chezscheme)
    (core type)
    (ffi raylib binding))
 
-					; guardian? weak cons? 
+  (define CACHE (make-hashtable string-hash string=?))
   (define-record-type asset
     (sealed #t)
     (fields
@@ -14,8 +18,75 @@
      (immutable type)
      (mutable status)
      (mutable data)
-     (mutable on-load)
-     ))
+     (mutable on-load)))
+
+  (define color->hex-string
+    (lambda (c)
+      (format "#~2,'0x~2,'0x~2,'0x~2,'0x"
+	      (color-r c)
+	      (color-g c)
+	      (color-b c)
+	      (color-a c))))
+  
+  (define color->texture
+    (lambda (c w h)
+      (let* ([hex-str (color->hex-string c)]
+	     [id-str (format "~a ~a*~a" hex-str w h)])
+	(if (hashtable-contains? CACHE id-str)
+	    (hashtable-ref CACHE id-str #f)
+	    (let* ([c-img (GenImageColor w h (color->Color c))]
+		   [c-tex (LoadTextureFromImage c-img)])
+	      (UnloadImage c-img)
+	      (let ([tex (make-texture id-str c-tex)])
+		(hashtable-set! CACHE id-str tex)
+		tex))))))
+
+  (define linear-color->texture
+    (case-lambda
+      [(c-start c-end w h rot)
+       (let* ([c-img (GenImageGradientLinear w h rot (color->Color c-start)
+					     (color->Color c-end))]
+	      [c-tex (LoadTextureFromImage c-img)])
+	 (UnloadImage c-img)
+	 (make-texture (color->hex-string c-start) c-tex))]
+      [(c-s c-e w h)
+       (linear-color->texture c-s c-e w h 0)]))
+
+  (define make-perlin-noise-texture
+    (lambda (w h ox oy s)
+      (assert (for-all integer? (list w h ox oy)))
+      (assert (flonum? s))
+      (let ([n-img (GenImagePerlinNoise w h ox oy s)])
+	(ImageFormat n-img PIXELFORMAT_UNCOMPRESSED_GRAYSCALE)
+	(let ([n-tex (LoadTextureFromImage n-img)])
+	  (UnloadImage n-img)
+	  (SetTextureWrap n-tex TEXTURE_WRAP_REPEAT)
+	  (make-texture "perlin" n-tex))
+	)))
+
+  (define file->glyphs
+    (lambda (f)
+      (call-with-input-file f
+	(lambda (p)
+	  (let loop ([acc '()])
+	    (let ([g (read p)])
+	      (if (eof-object? g)
+		  (reverse acc)
+		  (loop (cons g acc)))))))))
+  
+  (define glyphs->charmap
+    (lambda glys
+      (let ([ht (make-hashtable (lambda (x) x) =)])
+	(for-each
+	 (lambda (gly)
+	   (hashtable-set! ht (glyph-codepoint gly) gly))
+	 glys)
+	(lambda (key)
+	  (hashtable-ref ht key #f))
+	)
+      ))
+
+
 
   (define QUEUE '())
   

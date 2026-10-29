@@ -1,15 +1,12 @@
 (library (core type)
   (export
-   CACHE file->glyphs glyphs->charmap
    make-color color->Color Color->color color?
-   color->texture linear-color->texture
    color-r color-g color-b color-a
    make-vector2 vector2->Vector2 Vector2->vector2 vector2?
    vector2-x vector2-y
    make-rectangle rectangle->Rectangle Rectangle->rectangle rectangle?
    rectangle-x rectangle-y rectangle-width rectangle-height
-   make-texture texture? make-perlin-noise-texture
-   make-sound sound?
+   make-texture texture? make-sound sound?
    sound-path sound-pointer sound-pointer-set!
    texture-path texture-pointer texture-source texture-source-set!
    texture-origin texture-origin-set!
@@ -153,8 +150,7 @@
      (immutable path)
      (mutable pointer)
      (mutable source)
-     (mutable origin)
-     )
+     (mutable origin))
     (protocol
      (lambda (new)
        (case-lambda
@@ -162,15 +158,13 @@
 	  (assert (file-exists? path))
 	  (new path #f
 	       #f
-	       (make-vector2 0.0 0.0)
-	       )]
+	       (make-vector2 0.0 0.0))]
 	 [(name fptr)
 	  (assert (ftype-pointer? fptr))
 	  (SetTextureFilter fptr TEXTURE_FILTER_BILINEAR)
 	  (let ([width (ftype-ref Texture2D (width) fptr)]
 		[height (ftype-ref Texture2D (height) fptr)]
-		[origin (make-vector2 0.0 0.0)]
-		)
+		[origin (make-vector2 0.0 0.0)])
 	    (new
 	     name fptr
 	     (make-rectangle
@@ -199,50 +193,6 @@
     (lambda (so)
       (audio-duration (sound-path so))))
 
-  (define color->hex-string
-    (lambda (c)
-      (format "#~2,'0x~2,'0x~2,'0x~2,'0x"
-	      (color-r c)
-	      (color-g c)
-	      (color-b c)
-	      (color-a c))))
-
-  (define CACHE (make-hashtable string-hash string=?))
-  (define color->texture
-    (lambda (c w h)
-      (let* ([hex-str (color->hex-string c)]
-	     [id-str (format "~a ~a*~a" hex-str w h)])
-	(if (hashtable-contains? CACHE id-str)
-	    (hashtable-ref CACHE id-str #f)
-	    (let* ([c-img (GenImageColor w h (color->Color c))]
-		   [c-tex (LoadTextureFromImage c-img)])
-	      (UnloadImage c-img)
-	      (let ([tex (make-texture id-str c-tex)])
-		(hashtable-set! CACHE id-str tex)
-		tex))))))
-
-  (define linear-color->texture
-    (case-lambda
-      [(c-start c-end w h rot)
-       (let* ([c-img (GenImageGradientLinear w h rot (color->Color c-start)
-					     (color->Color c-end))]
-	      [c-tex (LoadTextureFromImage c-img)])
-	 (UnloadImage c-img)
-	 (make-texture (color->hex-string c-start) c-tex))]
-      [(c-s c-e w h)
-       (linear-color->texture c-s c-e w h 0)]))
-
-  (define make-perlin-noise-texture
-    (lambda (w h ox oy s)
-      (assert (for-all integer? (list w h ox oy)))
-      (assert (flonum? s))
-      (let ([n-img (GenImagePerlinNoise w h ox oy s)])
-	(ImageFormat n-img PIXELFORMAT_UNCOMPRESSED_GRAYSCALE)
-	(let ([n-tex (LoadTextureFromImage n-img)])
-	  (UnloadImage n-img)
-	  (SetTextureWrap n-tex TEXTURE_WRAP_REPEAT)
-	  (make-texture "perlin" n-tex))
-	)))
 
   
   (define texture-width
@@ -294,28 +244,6 @@
   (define-record-type font
     (sealed #t)
     (fields metadata sprite charmap))
-
-  (define file->glyphs
-    (lambda (f)
-      (call-with-input-file f
-	(lambda (p)
-	  (let loop ([acc '()])
-	    (let ([g (read p)])
-	      (if (eof-object? g)
-		  (reverse acc)
-		  (loop (cons g acc)))))))))
-  
-  (define glyphs->charmap
-    (lambda glys
-      (let ([ht (make-hashtable (lambda (x) x) =)])
-	(for-each
-	 (lambda (gly)
-	   (hashtable-set! ht (glyph-codepoint gly) gly))
-	 glys)
-	(lambda (key)
-	  (hashtable-ref ht key #f))
-	)
-      ))
   
   (define-record-type font-meta
     (sealed #t)

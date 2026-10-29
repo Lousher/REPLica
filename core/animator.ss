@@ -5,8 +5,7 @@
    crossfade overlay
    appear disappear  dissolve
    ease letterboxing concat
-   x-move backward stagger
-   )
+   x-move backward stagger)
   (import
    (ffi raylib binding)
    (core frame)
