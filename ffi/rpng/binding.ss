@@ -163,8 +163,8 @@
   (define rpng_chunk_read
     (let ([proc (foreign-procedure
 		 #f "rpng_chunk_read"
-		 ((& rpng_chunk) string string)
-		 void)])
+		 (string string)
+		 (& rpng_chunk))])
       (lambda xargs
 	(let ([ret-res (make-ftype-pointer
 			rpng_chunk
@@ -290,8 +290,8 @@
   (define rpng_chunk_read_from_memory
     (let ([proc (foreign-procedure
 		 #f "rpng_chunk_read_from_memory"
-		 ((& rpng_chunk) string string)
-		 void)])
+		 (string string)
+		 (& rpng_chunk))])
       (lambda xargs
 	(let ([ret-res (make-ftype-pointer
 			rpng_chunk

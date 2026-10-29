@@ -962,8 +962,8 @@
     (foreign-procedure #f "GetCurrentMonitor" () integer-32))
   (define GetMonitorPosition
     (let ([proc (foreign-procedure #f "GetMonitorPosition"
-                  ((& Vector2) integer-32)
-                  void)])
+                  (integer-32)
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -992,8 +992,8 @@
       integer-32))
   (define GetWindowPosition
     (let ([proc (foreign-procedure #f "GetWindowPosition"
-                  ((& Vector2))
-                  void)])
+                  ()
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -1002,8 +1002,8 @@
           ret-res))))
   (define GetWindowScaleDPI
     (let ([proc (foreign-procedure #f "GetWindowScaleDPI"
-                  ((& Vector2))
-                  void)])
+                  ()
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -1018,8 +1018,8 @@
     (foreign-procedure #f "GetClipboardText" () string))
   (define GetClipboardImage
     (let ([proc (foreign-procedure #f "GetClipboardImage"
-                  ((& Image))
-                  void)])
+                  ()
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -1084,8 +1084,8 @@
     (foreign-procedure #f "EndVrStereoMode" () void))
   (define LoadVrStereoConfig
     (let ([proc (foreign-procedure #f "LoadVrStereoConfig"
-                  ((& VrStereoConfig) (& VrDeviceInfo))
-                  void)])
+                  ((& VrDeviceInfo))
+                  (& VrStereoConfig))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          VrStereoConfig
@@ -1098,8 +1098,8 @@
       void))
   (define LoadShader
     (let ([proc (foreign-procedure #f "LoadShader"
-                  ((& Shader) string string)
-                  void)])
+                  (string string)
+                  (& Shader))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Shader
@@ -1108,8 +1108,8 @@
           ret-res))))
   (define LoadShaderFromMemory
     (let ([proc (foreign-procedure #f "LoadShaderFromMemory"
-                  ((& Shader) string string)
-                  void)])
+                  (string string)
+                  (& Shader))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Shader
@@ -1146,8 +1146,8 @@
     (foreign-procedure #f "UnloadShader" ((& Shader)) void))
   (define GetScreenToWorldRay
     (let ([proc (foreign-procedure #f "GetScreenToWorldRay"
-                  ((& Ray) (& Vector2) (& Camera))
-                  void)])
+                  ((& Vector2) (& Camera))
+                  (& Ray))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Ray
@@ -1156,8 +1156,8 @@
           ret-res))))
   (define GetScreenToWorldRayEx
     (let ([proc (foreign-procedure #f "GetScreenToWorldRayEx"
-                  ((& Ray) (& Vector2) (& Camera) integer-32 integer-32)
-                  void)])
+                  ((& Vector2) (& Camera) integer-32 integer-32)
+                  (& Ray))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Ray
@@ -1166,8 +1166,8 @@
           ret-res))))
   (define GetWorldToScreen
     (let ([proc (foreign-procedure #f "GetWorldToScreen"
-                  ((& Vector2) (& Vector3) (& Camera))
-                  void)])
+                  ((& Vector3) (& Camera))
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -1176,12 +1176,8 @@
           ret-res))))
   (define GetWorldToScreenEx
     (let ([proc (foreign-procedure #f "GetWorldToScreenEx"
-                  ((& Vector2)
-                   (& Vector3)
-                   (& Camera)
-                   integer-32
-                   integer-32)
-                  void)])
+                  ((& Vector3) (& Camera) integer-32 integer-32)
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -1190,8 +1186,8 @@
           ret-res))))
   (define GetWorldToScreen2D
     (let ([proc (foreign-procedure #f "GetWorldToScreen2D"
-                  ((& Vector2) (& Vector2) (& Camera2D))
-                  void)])
+                  ((& Vector2) (& Camera2D))
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -1200,8 +1196,8 @@
           ret-res))))
   (define GetScreenToWorld2D
     (let ([proc (foreign-procedure #f "GetScreenToWorld2D"
-                  ((& Vector2) (& Vector2) (& Camera2D))
-                  void)])
+                  ((& Vector2) (& Camera2D))
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -1210,8 +1206,8 @@
           ret-res))))
   (define GetCameraMatrix
     (let ([proc (foreign-procedure #f "GetCameraMatrix"
-                  ((& Matrix) (& Camera))
-                  void)])
+                  ((& Camera))
+                  (& Matrix))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Matrix
@@ -1220,8 +1216,8 @@
           ret-res))))
   (define GetCameraMatrix2D
     (let ([proc (foreign-procedure #f "GetCameraMatrix2D"
-                  ((& Matrix) (& Camera2D))
-                  void)])
+                  ((& Camera2D))
+                  (& Matrix))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Matrix
@@ -1388,8 +1384,8 @@
     (foreign-procedure #f "IsFileNameValid" (string) boolean))
   (define LoadDirectoryFiles
     (let ([proc (foreign-procedure #f "LoadDirectoryFiles"
-                  ((& FilePathList) string)
-                  void)])
+                  (string)
+                  (& FilePathList))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          FilePathList
@@ -1398,8 +1394,8 @@
           ret-res))))
   (define LoadDirectoryFilesEx
     (let ([proc (foreign-procedure #f "LoadDirectoryFilesEx"
-                  ((& FilePathList) string string boolean)
-                  void)])
+                  (string string boolean)
+                  (& FilePathList))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          FilePathList
@@ -1414,8 +1410,8 @@
     (foreign-procedure #f "IsFileDropped" () boolean))
   (define LoadDroppedFiles
     (let ([proc (foreign-procedure #f "LoadDroppedFiles"
-                  ((& FilePathList))
-                  void)])
+                  ()
+                  (& FilePathList))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          FilePathList
@@ -1468,8 +1464,8 @@
       (* unsigned-32)))
   (define LoadAutomationEventList
     (let ([proc (foreign-procedure #f "LoadAutomationEventList"
-                  ((& AutomationEventList) string)
-                  void)])
+                  (string)
+                  (& AutomationEventList))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          AutomationEventList
@@ -1589,8 +1585,8 @@
     (foreign-procedure #f "GetMouseY" () integer-32))
   (define GetMousePosition
     (let ([proc (foreign-procedure #f "GetMousePosition"
-                  ((& Vector2))
-                  void)])
+                  ()
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -1599,8 +1595,8 @@
           ret-res))))
   (define GetMouseDelta
     (let ([proc (foreign-procedure #f "GetMouseDelta"
-                  ((& Vector2))
-                  void)])
+                  ()
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -1623,8 +1619,8 @@
     (foreign-procedure #f "GetMouseWheelMove" () single-float))
   (define GetMouseWheelMoveV
     (let ([proc (foreign-procedure #f "GetMouseWheelMoveV"
-                  ((& Vector2))
-                  void)])
+                  ()
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -1639,8 +1635,8 @@
     (foreign-procedure #f "GetTouchY" () integer-32))
   (define GetTouchPosition
     (let ([proc (foreign-procedure #f "GetTouchPosition"
-                  ((& Vector2) integer-32)
-                  void)])
+                  (integer-32)
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -1669,8 +1665,8 @@
       single-float))
   (define GetGestureDragVector
     (let ([proc (foreign-procedure #f "GetGestureDragVector"
-                  ((& Vector2))
-                  void)])
+                  ()
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -1683,8 +1679,8 @@
       single-float))
   (define GetGesturePinchVector
     (let ([proc (foreign-procedure #f "GetGesturePinchVector"
-                  ((& Vector2))
-                  void)])
+                  ()
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -1709,8 +1705,8 @@
       void))
   (define GetShapesTexture
     (let ([proc (foreign-procedure #f "GetShapesTexture"
-                  ((& Texture2D))
-                  void)])
+                  ()
+                  (& Texture2D))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Texture2D
@@ -1719,8 +1715,8 @@
           ret-res))))
   (define GetShapesTextureRectangle
     (let ([proc (foreign-procedure #f "GetShapesTextureRectangle"
-                  ((& Rectangle))
-                  void)])
+                  ()
+                  (& Rectangle))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Rectangle
@@ -2031,8 +2027,8 @@
       void))
   (define GetSplinePointLinear
     (let ([proc (foreign-procedure #f "GetSplinePointLinear"
-                  ((& Vector2) (& Vector2) (& Vector2) single-float)
-                  void)])
+                  ((& Vector2) (& Vector2) single-float)
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -2045,9 +2041,8 @@
                    (& Vector2)
                    (& Vector2)
                    (& Vector2)
-                   (& Vector2)
                    single-float)
-                  void)])
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -2060,9 +2055,8 @@
                    (& Vector2)
                    (& Vector2)
                    (& Vector2)
-                   (& Vector2)
                    single-float)
-                  void)])
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -2071,12 +2065,8 @@
           ret-res))))
   (define GetSplinePointBezierQuadratic
     (let ([proc (foreign-procedure #f "GetSplinePointBezierQuadratic"
-                  ((& Vector2)
-                   (& Vector2)
-                   (& Vector2)
-                   (& Vector2)
-                   single-float)
-                  void)])
+                  ((& Vector2) (& Vector2) (& Vector2) single-float)
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -2089,9 +2079,8 @@
                    (& Vector2)
                    (& Vector2)
                    (& Vector2)
-                   (& Vector2)
                    single-float)
-                  void)])
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -2144,8 +2133,8 @@
       boolean))
   (define GetCollisionRec
     (let ([proc (foreign-procedure #f "GetCollisionRec"
-                  ((& Rectangle) (& Rectangle) (& Rectangle))
-                  void)])
+                  ((& Rectangle) (& Rectangle))
+                  (& Rectangle))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Rectangle
@@ -2154,8 +2143,8 @@
           ret-res))))
   (define LoadImage
     (let ([proc (foreign-procedure #f "LoadImage"
-                  ((& Image) string)
-                  void)])
+                  (string)
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2164,13 +2153,8 @@
           ret-res))))
   (define LoadImageRaw
     (let ([proc (foreign-procedure #f "LoadImageRaw"
-                  ((& Image)
-                   string
-                   integer-32
-                   integer-32
-                   integer-32
-                   integer-32)
-                  void)])
+                  (string integer-32 integer-32 integer-32 integer-32)
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2179,8 +2163,8 @@
           ret-res))))
   (define LoadImageAnim
     (let ([proc (foreign-procedure #f "LoadImageAnim"
-                  ((& Image) string (* integer-32))
-                  void)])
+                  (string (* integer-32))
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2189,12 +2173,8 @@
           ret-res))))
   (define LoadImageAnimFromMemory
     (let ([proc (foreign-procedure #f "LoadImageAnimFromMemory"
-                  ((& Image)
-                   string
-                   (* unsigned-8)
-                   integer-32
-                   (* integer-32))
-                  void)])
+                  (string (* unsigned-8) integer-32 (* integer-32))
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2203,8 +2183,8 @@
           ret-res))))
   (define LoadImageFromMemory
     (let ([proc (foreign-procedure #f "LoadImageFromMemory"
-                  ((& Image) string (* unsigned-8) integer-32)
-                  void)])
+                  (string (* unsigned-8) integer-32)
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2213,8 +2193,8 @@
           ret-res))))
   (define LoadImageFromTexture
     (let ([proc (foreign-procedure #f "LoadImageFromTexture"
-                  ((& Image) (& Texture2D))
-                  void)])
+                  ((& Texture2D))
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2223,8 +2203,8 @@
           ret-res))))
   (define LoadImageFromScreen
     (let ([proc (foreign-procedure #f "LoadImageFromScreen"
-                  ((& Image))
-                  void)])
+                  ()
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2249,8 +2229,8 @@
       boolean))
   (define GenImageColor
     (let ([proc (foreign-procedure #f "GenImageColor"
-                  ((& Image) integer-32 integer-32 (& Color))
-                  void)])
+                  (integer-32 integer-32 (& Color))
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2259,13 +2239,8 @@
           ret-res))))
   (define GenImageGradientLinear
     (let ([proc (foreign-procedure #f "GenImageGradientLinear"
-                  ((& Image)
-                   integer-32
-                   integer-32
-                   integer-32
-                   (& Color)
-                   (& Color))
-                  void)])
+                  (integer-32 integer-32 integer-32 (& Color) (& Color))
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2274,13 +2249,8 @@
           ret-res))))
   (define GenImageGradientRadial
     (let ([proc (foreign-procedure #f "GenImageGradientRadial"
-                  ((& Image)
-                   integer-32
-                   integer-32
-                   single-float
-                   (& Color)
-                   (& Color))
-                  void)])
+                  (integer-32 integer-32 single-float (& Color) (& Color))
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2289,13 +2259,8 @@
           ret-res))))
   (define GenImageGradientSquare
     (let ([proc (foreign-procedure #f "GenImageGradientSquare"
-                  ((& Image)
-                   integer-32
-                   integer-32
-                   single-float
-                   (& Color)
-                   (& Color))
-                  void)])
+                  (integer-32 integer-32 single-float (& Color) (& Color))
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2304,14 +2269,13 @@
           ret-res))))
   (define GenImageChecked
     (let ([proc (foreign-procedure #f "GenImageChecked"
-                  ((& Image)
-                   integer-32
+                  (integer-32
                    integer-32
                    integer-32
                    integer-32
                    (& Color)
                    (& Color))
-                  void)])
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2320,8 +2284,8 @@
           ret-res))))
   (define GenImageWhiteNoise
     (let ([proc (foreign-procedure #f "GenImageWhiteNoise"
-                  ((& Image) integer-32 integer-32 single-float)
-                  void)])
+                  (integer-32 integer-32 single-float)
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2330,13 +2294,12 @@
           ret-res))))
   (define GenImagePerlinNoise
     (let ([proc (foreign-procedure #f "GenImagePerlinNoise"
-                  ((& Image)
-                   integer-32
+                  (integer-32
                    integer-32
                    integer-32
                    integer-32
                    single-float)
-                  void)])
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2345,8 +2308,8 @@
           ret-res))))
   (define GenImageCellular
     (let ([proc (foreign-procedure #f "GenImageCellular"
-                  ((& Image) integer-32 integer-32 integer-32)
-                  void)])
+                  (integer-32 integer-32 integer-32)
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2355,8 +2318,8 @@
           ret-res))))
   (define GenImageText
     (let ([proc (foreign-procedure #f "GenImageText"
-                  ((& Image) integer-32 integer-32 string)
-                  void)])
+                  (integer-32 integer-32 string)
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2365,8 +2328,8 @@
           ret-res))))
   (define ImageCopy
     (let ([proc (foreign-procedure #f "ImageCopy"
-                  ((& Image) (& Image))
-                  void)])
+                  ((& Image))
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2375,8 +2338,8 @@
           ret-res))))
   (define ImageFromImage
     (let ([proc (foreign-procedure #f "ImageFromImage"
-                  ((& Image) (& Image) (& Rectangle))
-                  void)])
+                  ((& Image) (& Rectangle))
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2385,8 +2348,8 @@
           ret-res))))
   (define ImageFromChannel
     (let ([proc (foreign-procedure #f "ImageFromChannel"
-                  ((& Image) (& Image) integer-32)
-                  void)])
+                  ((& Image) integer-32)
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2395,8 +2358,8 @@
           ret-res))))
   (define ImageText
     (let ([proc (foreign-procedure #f "ImageText"
-                  ((& Image) string integer-32 (& Color))
-                  void)])
+                  (string integer-32 (& Color))
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2405,13 +2368,8 @@
           ret-res))))
   (define ImageTextEx
     (let ([proc (foreign-procedure #f "ImageTextEx"
-                  ((& Image)
-                   (& Font)
-                   string
-                   single-float
-                   single-float
-                   (& Color))
-                  void)])
+                  ((& Font) string single-float single-float (& Color))
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -2529,8 +2487,8 @@
       void))
   (define GetImageAlphaBorder
     (let ([proc (foreign-procedure #f "GetImageAlphaBorder"
-                  ((& Rectangle) (& Image) single-float)
-                  void)])
+                  ((& Image) single-float)
+                  (& Rectangle))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Rectangle
@@ -2539,8 +2497,8 @@
           ret-res))))
   (define GetImageColor
     (let ([proc (foreign-procedure #f "GetImageColor"
-                  ((& Color) (& Image) integer-32 integer-32)
-                  void)])
+                  ((& Image) integer-32 integer-32)
+                  (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Color
@@ -2729,8 +2687,8 @@
       void))
   (define LoadTexture
     (let ([proc (foreign-procedure #f "LoadTexture"
-                  ((& Texture2D) string)
-                  void)])
+                  (string)
+                  (& Texture2D))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Texture2D
@@ -2739,8 +2697,8 @@
           ret-res))))
   (define LoadTextureFromImage
     (let ([proc (foreign-procedure #f "LoadTextureFromImage"
-                  ((& Texture2D) (& Image))
-                  void)])
+                  ((& Image))
+                  (& Texture2D))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Texture2D
@@ -2749,8 +2707,8 @@
           ret-res))))
   (define LoadTextureCubemap
     (let ([proc (foreign-procedure #f "LoadTextureCubemap"
-                  ((& TextureCubemap) (& Image) integer-32)
-                  void)])
+                  ((& Image) integer-32)
+                  (& TextureCubemap))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          TextureCubemap
@@ -2759,8 +2717,8 @@
           ret-res))))
   (define LoadRenderTexture
     (let ([proc (foreign-procedure #f "LoadRenderTexture"
-                  ((& RenderTexture2D) integer-32 integer-32)
-                  void)])
+                  (integer-32 integer-32)
+                  (& RenderTexture2D))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          RenderTexture2D
@@ -2769,8 +2727,8 @@
           ret-res))))
   (define LoadRenderTextureEx
     (let ([proc (foreign-procedure #f "LoadRenderTextureEx"
-                  ((& RenderTexture2D) integer-32 integer-32 integer-32)
-                  void)])
+                  (integer-32 integer-32 integer-32)
+                  (& RenderTexture2D))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          RenderTexture2D
@@ -2855,8 +2813,8 @@
       boolean))
   (define Fade
     (let ([proc (foreign-procedure #f "Fade"
-                  ((& Color) (& Color) single-float)
-                  void)])
+                  ((& Color) single-float)
+                  (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Color
@@ -2867,8 +2825,8 @@
     (foreign-procedure #f "ColorToInt" ((& Color)) integer-32))
   (define ColorNormalize
     (let ([proc (foreign-procedure #f "ColorNormalize"
-                  ((& Vector4) (& Color))
-                  void)])
+                  ((& Color))
+                  (& Vector4))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector4
@@ -2877,8 +2835,8 @@
           ret-res))))
   (define ColorFromNormalized
     (let ([proc (foreign-procedure #f "ColorFromNormalized"
-                  ((& Color) (& Vector4))
-                  void)])
+                  ((& Vector4))
+                  (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Color
@@ -2887,8 +2845,8 @@
           ret-res))))
   (define ColorToHSV
     (let ([proc (foreign-procedure #f "ColorToHSV"
-                  ((& Vector3) (& Color))
-                  void)])
+                  ((& Color))
+                  (& Vector3))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector3
@@ -2897,8 +2855,8 @@
           ret-res))))
   (define ColorFromHSV
     (let ([proc (foreign-procedure #f "ColorFromHSV"
-                  ((& Color) single-float single-float single-float)
-                  void)])
+                  (single-float single-float single-float)
+                  (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Color
@@ -2907,8 +2865,8 @@
           ret-res))))
   (define ColorTint
     (let ([proc (foreign-procedure #f "ColorTint"
-                  ((& Color) (& Color) (& Color))
-                  void)])
+                  ((& Color) (& Color))
+                  (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Color
@@ -2917,8 +2875,8 @@
           ret-res))))
   (define ColorBrightness
     (let ([proc (foreign-procedure #f "ColorBrightness"
-                  ((& Color) (& Color) single-float)
-                  void)])
+                  ((& Color) single-float)
+                  (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Color
@@ -2927,8 +2885,8 @@
           ret-res))))
   (define ColorContrast
     (let ([proc (foreign-procedure #f "ColorContrast"
-                  ((& Color) (& Color) single-float)
-                  void)])
+                  ((& Color) single-float)
+                  (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Color
@@ -2937,8 +2895,8 @@
           ret-res))))
   (define ColorAlpha
     (let ([proc (foreign-procedure #f "ColorAlpha"
-                  ((& Color) (& Color) single-float)
-                  void)])
+                  ((& Color) single-float)
+                  (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Color
@@ -2947,8 +2905,8 @@
           ret-res))))
   (define ColorAlphaBlend
     (let ([proc (foreign-procedure #f "ColorAlphaBlend"
-                  ((& Color) (& Color) (& Color) (& Color))
-                  void)])
+                  ((& Color) (& Color) (& Color))
+                  (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Color
@@ -2957,8 +2915,8 @@
           ret-res))))
   (define ColorLerp
     (let ([proc (foreign-procedure #f "ColorLerp"
-                  ((& Color) (& Color) (& Color) single-float)
-                  void)])
+                  ((& Color) (& Color) single-float)
+                  (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Color
@@ -2967,8 +2925,8 @@
           ret-res))))
   (define GetColor
     (let ([proc (foreign-procedure #f "GetColor"
-                  ((& Color) unsigned-32)
-                  void)])
+                  (unsigned-32)
+                  (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Color
@@ -2977,8 +2935,8 @@
           ret-res))))
   (define GetPixelColor
     (let ([proc (foreign-procedure #f "GetPixelColor"
-                  ((& Color) void* integer-32)
-                  void)])
+                  (void* integer-32)
+                  (& Color))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Color
@@ -2995,8 +2953,8 @@
       integer-32))
   (define GetFontDefault
     (let ([proc (foreign-procedure #f "GetFontDefault"
-                  ((& Font))
-                  void)])
+                  ()
+                  (& Font))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Font
@@ -3005,8 +2963,8 @@
           ret-res))))
   (define LoadFont
     (let ([proc (foreign-procedure #f "LoadFont"
-                  ((& Font) string)
-                  void)])
+                  (string)
+                  (& Font))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Font
@@ -3015,8 +2973,8 @@
           ret-res))))
   (define LoadFontEx
     (let ([proc (foreign-procedure #f "LoadFontEx"
-                  ((& Font) string integer-32 (* integer-32) integer-32)
-                  void)])
+                  (string integer-32 (* integer-32) integer-32)
+                  (& Font))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Font
@@ -3025,8 +2983,8 @@
           ret-res))))
   (define LoadFontFromImage
     (let ([proc (foreign-procedure #f "LoadFontFromImage"
-                  ((& Font) (& Image) (& Color) integer-32)
-                  void)])
+                  ((& Image) (& Color) integer-32)
+                  (& Font))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Font
@@ -3035,14 +2993,13 @@
           ret-res))))
   (define LoadFontFromMemory
     (let ([proc (foreign-procedure #f "LoadFontFromMemory"
-                  ((& Font)
-                   string
+                  (string
                    (* unsigned-8)
                    integer-32
                    integer-32
                    (* integer-32)
                    integer-32)
-                  void)])
+                  (& Font))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Font
@@ -3063,14 +3020,13 @@
       (* GlyphInfo)))
   (define GenImageFontAtlas
     (let ([proc (foreign-procedure #f "GenImageFontAtlas"
-                  ((& Image)
-                   (* GlyphInfo)
+                  ((* GlyphInfo)
                    (* *Rectangle)
                    integer-32
                    integer-32
                    integer-32
                    integer-32)
-                  void)])
+                  (& Image))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Image
@@ -3139,8 +3095,8 @@
       integer-32))
   (define MeasureTextEx
     (let ([proc (foreign-procedure #f "MeasureTextEx"
-                  ((& Vector2) (& Font) string single-float single-float)
-                  void)])
+                  ((& Font) string single-float single-float)
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -3149,13 +3105,12 @@
           ret-res))))
   (define MeasureTextCodepoints
     (let ([proc (foreign-procedure #f "MeasureTextCodepoints"
-                  ((& Vector2)
-                   (& Font)
+                  ((& Font)
                    (* integer-32)
                    integer-32
                    single-float
                    single-float)
-                  void)])
+                  (& Vector2))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Vector2
@@ -3168,8 +3123,8 @@
       integer-32))
   (define GetGlyphInfo
     (let ([proc (foreign-procedure #f "GetGlyphInfo"
-                  ((& GlyphInfo) (& Font) integer-32)
-                  void)])
+                  ((& Font) integer-32)
+                  (& GlyphInfo))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          GlyphInfo
@@ -3178,8 +3133,8 @@
           ret-res))))
   (define GetGlyphAtlasRec
     (let ([proc (foreign-procedure #f "GetGlyphAtlasRec"
-                  ((& Rectangle) (& Font) integer-32)
-                  void)])
+                  ((& Font) integer-32)
+                  (& Rectangle))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Rectangle
@@ -3430,8 +3385,8 @@
       void))
   (define LoadModel
     (let ([proc (foreign-procedure #f "LoadModel"
-                  ((& Model) string)
-                  void)])
+                  (string)
+                  (& Model))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Model
@@ -3440,8 +3395,8 @@
           ret-res))))
   (define LoadModelFromMesh
     (let ([proc (foreign-procedure #f "LoadModelFromMesh"
-                  ((& Model) (& Mesh))
-                  void)])
+                  ((& Mesh))
+                  (& Model))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Model
@@ -3454,8 +3409,8 @@
     (foreign-procedure #f "UnloadModel" ((& Model)) void))
   (define GetModelBoundingBox
     (let ([proc (foreign-procedure #f "GetModelBoundingBox"
-                  ((& BoundingBox) (& Model))
-                  void)])
+                  ((& Model))
+                  (& BoundingBox))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          BoundingBox
@@ -3539,8 +3494,8 @@
       void))
   (define GetMeshBoundingBox
     (let ([proc (foreign-procedure #f "GetMeshBoundingBox"
-                  ((& BoundingBox) (& Mesh))
-                  void)])
+                  ((& Mesh))
+                  (& BoundingBox))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          BoundingBox
@@ -3559,8 +3514,8 @@
       boolean))
   (define GenMeshPoly
     (let ([proc (foreign-procedure #f "GenMeshPoly"
-                  ((& Mesh) integer-32 single-float)
-                  void)])
+                  (integer-32 single-float)
+                  (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Mesh
@@ -3569,12 +3524,8 @@
           ret-res))))
   (define GenMeshPlane
     (let ([proc (foreign-procedure #f "GenMeshPlane"
-                  ((& Mesh)
-                   single-float
-                   single-float
-                   integer-32
-                   integer-32)
-                  void)])
+                  (single-float single-float integer-32 integer-32)
+                  (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Mesh
@@ -3583,8 +3534,8 @@
           ret-res))))
   (define GenMeshCube
     (let ([proc (foreign-procedure #f "GenMeshCube"
-                  ((& Mesh) single-float single-float single-float)
-                  void)])
+                  (single-float single-float single-float)
+                  (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Mesh
@@ -3593,8 +3544,8 @@
           ret-res))))
   (define GenMeshSphere
     (let ([proc (foreign-procedure #f "GenMeshSphere"
-                  ((& Mesh) single-float integer-32 integer-32)
-                  void)])
+                  (single-float integer-32 integer-32)
+                  (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Mesh
@@ -3603,8 +3554,8 @@
           ret-res))))
   (define GenMeshHemiSphere
     (let ([proc (foreign-procedure #f "GenMeshHemiSphere"
-                  ((& Mesh) single-float integer-32 integer-32)
-                  void)])
+                  (single-float integer-32 integer-32)
+                  (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Mesh
@@ -3613,8 +3564,8 @@
           ret-res))))
   (define GenMeshCylinder
     (let ([proc (foreign-procedure #f "GenMeshCylinder"
-                  ((& Mesh) single-float single-float integer-32)
-                  void)])
+                  (single-float single-float integer-32)
+                  (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Mesh
@@ -3623,8 +3574,8 @@
           ret-res))))
   (define GenMeshCone
     (let ([proc (foreign-procedure #f "GenMeshCone"
-                  ((& Mesh) single-float single-float integer-32)
-                  void)])
+                  (single-float single-float integer-32)
+                  (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Mesh
@@ -3633,12 +3584,8 @@
           ret-res))))
   (define GenMeshTorus
     (let ([proc (foreign-procedure #f "GenMeshTorus"
-                  ((& Mesh)
-                   single-float
-                   single-float
-                   integer-32
-                   integer-32)
-                  void)])
+                  (single-float single-float integer-32 integer-32)
+                  (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Mesh
@@ -3647,12 +3594,8 @@
           ret-res))))
   (define GenMeshKnot
     (let ([proc (foreign-procedure #f "GenMeshKnot"
-                  ((& Mesh)
-                   single-float
-                   single-float
-                   integer-32
-                   integer-32)
-                  void)])
+                  (single-float single-float integer-32 integer-32)
+                  (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Mesh
@@ -3661,8 +3604,8 @@
           ret-res))))
   (define GenMeshHeightmap
     (let ([proc (foreign-procedure #f "GenMeshHeightmap"
-                  ((& Mesh) (& Image) (& Vector3))
-                  void)])
+                  ((& Image) (& Vector3))
+                  (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Mesh
@@ -3671,8 +3614,8 @@
           ret-res))))
   (define GenMeshCubicmap
     (let ([proc (foreign-procedure #f "GenMeshCubicmap"
-                  ((& Mesh) (& Image) (& Vector3))
-                  void)])
+                  ((& Image) (& Vector3))
+                  (& Mesh))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Mesh
@@ -3685,8 +3628,8 @@
       (* Material)))
   (define LoadMaterialDefault
     (let ([proc (foreign-procedure #f "LoadMaterialDefault"
-                  ((& Material))
-                  void)])
+                  ()
+                  (& Material))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Material
@@ -3746,8 +3689,8 @@
       boolean))
   (define GetRayCollisionSphere
     (let ([proc (foreign-procedure #f "GetRayCollisionSphere"
-                  ((& RayCollision) (& Ray) (& Vector3) single-float)
-                  void)])
+                  ((& Ray) (& Vector3) single-float)
+                  (& RayCollision))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          RayCollision
@@ -3756,8 +3699,8 @@
           ret-res))))
   (define GetRayCollisionBox
     (let ([proc (foreign-procedure #f "GetRayCollisionBox"
-                  ((& RayCollision) (& Ray) (& BoundingBox))
-                  void)])
+                  ((& Ray) (& BoundingBox))
+                  (& RayCollision))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          RayCollision
@@ -3766,8 +3709,8 @@
           ret-res))))
   (define GetRayCollisionMesh
     (let ([proc (foreign-procedure #f "GetRayCollisionMesh"
-                  ((& RayCollision) (& Ray) (& Mesh) (& Matrix))
-                  void)])
+                  ((& Ray) (& Mesh) (& Matrix))
+                  (& RayCollision))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          RayCollision
@@ -3776,12 +3719,8 @@
           ret-res))))
   (define GetRayCollisionTriangle
     (let ([proc (foreign-procedure #f "GetRayCollisionTriangle"
-                  ((& RayCollision)
-                   (& Ray)
-                   (& Vector3)
-                   (& Vector3)
-                   (& Vector3))
-                  void)])
+                  ((& Ray) (& Vector3) (& Vector3) (& Vector3))
+                  (& RayCollision))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          RayCollision
@@ -3790,13 +3729,8 @@
           ret-res))))
   (define GetRayCollisionQuad
     (let ([proc (foreign-procedure #f "GetRayCollisionQuad"
-                  ((& RayCollision)
-                   (& Ray)
-                   (& Vector3)
-                   (& Vector3)
-                   (& Vector3)
-                   (& Vector3))
-                  void)])
+                  ((& Ray) (& Vector3) (& Vector3) (& Vector3) (& Vector3))
+                  (& RayCollision))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          RayCollision
@@ -3817,8 +3751,8 @@
     (foreign-procedure #f "GetMasterVolume" () single-float))
   (define LoadWave
     (let ([proc (foreign-procedure #f "LoadWave"
-                  ((& Wave) string)
-                  void)])
+                  (string)
+                  (& Wave))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Wave
@@ -3827,8 +3761,8 @@
           ret-res))))
   (define LoadWaveFromMemory
     (let ([proc (foreign-procedure #f "LoadWaveFromMemory"
-                  ((& Wave) string (* unsigned-8) integer-32)
-                  void)])
+                  (string (* unsigned-8) integer-32)
+                  (& Wave))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Wave
@@ -3839,8 +3773,8 @@
     (foreign-procedure #f "IsWaveValid" ((& Wave)) boolean))
   (define LoadSound
     (let ([proc (foreign-procedure #f "LoadSound"
-                  ((& Sound) string)
-                  void)])
+                  (string)
+                  (& Sound))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Sound
@@ -3849,8 +3783,8 @@
           ret-res))))
   (define LoadSoundFromWave
     (let ([proc (foreign-procedure #f "LoadSoundFromWave"
-                  ((& Sound) (& Wave))
-                  void)])
+                  ((& Wave))
+                  (& Sound))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Sound
@@ -3859,8 +3793,8 @@
           ret-res))))
   (define LoadSoundAlias
     (let ([proc (foreign-procedure #f "LoadSoundAlias"
-                  ((& Sound) (& Sound))
-                  void)])
+                  ((& Sound))
+                  (& Sound))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Sound
@@ -3911,8 +3845,8 @@
       void))
   (define WaveCopy
     (let ([proc (foreign-procedure #f "WaveCopy"
-                  ((& Wave) (& Wave))
-                  void)])
+                  ((& Wave))
+                  (& Wave))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Wave
@@ -3937,8 +3871,8 @@
       void))
   (define LoadMusicStream
     (let ([proc (foreign-procedure #f "LoadMusicStream"
-                  ((& Music) string)
-                  void)])
+                  (string)
+                  (& Music))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Music
@@ -3947,8 +3881,8 @@
           ret-res))))
   (define LoadMusicStreamFromMemory
     (let ([proc (foreign-procedure #f "LoadMusicStreamFromMemory"
-                  ((& Music) string (* unsigned-8) integer-32)
-                  void)])
+                  (string (* unsigned-8) integer-32)
+                  (& Music))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          Music
@@ -3999,8 +3933,8 @@
       single-float))
   (define LoadAudioStream
     (let ([proc (foreign-procedure #f "LoadAudioStream"
-                  ((& AudioStream) unsigned-32 unsigned-32 unsigned-32)
-                  void)])
+                  (unsigned-32 unsigned-32 unsigned-32)
+                  (& AudioStream))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
                          AudioStream

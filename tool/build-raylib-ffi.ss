@@ -271,8 +271,8 @@
                `(define ,name
                   (let ([proc (foreign-procedure
                                #f ,name-str
-                               ((& ,raw-ret) ,@arg-ftypes)
-                               void)])
+                               (,@arg-ftypes)
+                               (& ,raw-ret))])
                     (lambda xargs
                       (let ([ret-res (make-ftype-pointer
                                       ,raw-ret
@@ -371,6 +371,6 @@
         (display "Done! Build Successfully\n")))))
 
 (build-raylib-library
- "../ffi/raylib/libraylib.so.6.2.0"
- "./raylib_api.sexpr"
- "../ffi/raylib/binding.ss")
+ "ffi/raylib/libraylib.so.6.2.0"
+ "tool/raylib_api.sexpr"
+ "ffi/raylib/binding.ss")
