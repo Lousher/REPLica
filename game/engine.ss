@@ -12,6 +12,7 @@
 	     [h (rini_get_value ini-cfg "height")])
 	(lambda (s) ; given stage
 	  (InitWindow w h title)
+	  (InitAudioDevice)
 	  (SetTargetFPS 60)
 	  (let loop ()
 	    (unless (WindowShouldClose)
@@ -19,5 +20,6 @@
 	      (s)
 	      (EndDrawing)
 	      (loop)))
+	  (CloseAudioDevice)
 	  (CloseWindow)))))
   )

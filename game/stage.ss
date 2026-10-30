@@ -1,5 +1,6 @@
 (library (game stage)
-  (export static loader sequential)
+  (export static loader play
+	  sequential latch)
   (import
    (ffi raylib binding)
    (game resource)
@@ -25,18 +26,42 @@
 	     (DrawTexture (texture-data tex) 0 0 c))
 	   texs)))))
   
+  #| play 播放所有 music|#
+  (define play
+    (lambda (bun)
+      (let* ([ress (bundle-resources bun)]
+	     [mucs (filter music? ress)])
+	(lambda ()
+	  (for-each
+	   (lambda (muc)
+	     (let ([m (music-data muc)])
+	       (if (IsMusicStreamPlaying m)
+		   (UpdateMusicStream m)
+		   (PlayMusicStream m))))
+	   mucs)))))
+  
   #| loader 是特殊的stage，加载资源 |#
   (define loader
     (lambda (bun)
-      (let* ([texs (filter texture? (bundle-resources bun))]
-	     [unloaded (filter (lambda (t) (not (texture-data t))) texs)])
+      (let* ([ress (bundle-resources bun)]
+	     [texs (filter texture? ress)]
+	     [mucs (filter music? ress)]
+	     [texs-unload (filter (lambda (t) (not (texture-data t))) texs)]
+	     [mucs-unload (filter (lambda (t) (not (music-data t))) mucs)])
 	(lambda ()
 	  (for-each
 	   (lambda (tex)
 	     (let* ([name (texture-name tex)]
 		    [t (LoadTexture name)])
 	       (texture-data-set! tex t)))
-	   unloaded)))))
+	   texs-unload)
+	  (for-each
+	   (lambda (muc)
+	     (let* ([name (music-name muc)]
+		    [m (LoadMusicStream name)])
+	       (music-data-set! muc m)))
+	   mucs-unload)
+	  ))))
 
   (define sequential
     (lambda sgs
@@ -46,4 +71,13 @@
 	   (lambda (sg)
 	     ((sg bun)))
 	   sgs)))))
+
+  (define latch
+    (lambda (ev sg)
+      (let ([hanged #f])
+	(lambda (bun)
+	  (lambda ()
+	    (when hanged ((hanged bun)))
+	    (when (ev) (set! hanged sg)))
+	  ))))
   )
