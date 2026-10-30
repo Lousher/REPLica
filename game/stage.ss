@@ -2,12 +2,12 @@
   (export static loader play
 	  sequential latch)
   (import
-   (ffi raylib binding)
-   (game resource)
+   (ffi raylib binding) ;basic
+   (game resource) ; bundle
+   (game render) ; draw-texture
+   (game color)
    (chezscheme))
 
-  (define c (make-ftype-pointer Color (foreign-alloc (ftype-sizeof Color))))
-  
   #| stage 是 接收 bundle 并进行实际演出的函数 |#
 
   #| static 是最简单的stage,将bundle内所有texture资源静态绘制|#
@@ -15,15 +15,10 @@
     (lambda (bun)
       (let* ([ress (bundle-resources bun)]
 	     [texs (filter texture? ress)])
-	(ftype-set! Color (r) c 255)
-	(ftype-set! Color (g) c 255)
-	(ftype-set! Color (b) c 255)
-	(ftype-set! Color (a) c 255)
 	(lambda ()
 	  (for-each
 	   (lambda (tex)
-	     (ClearBackground c)
-	     (DrawTexture (texture-data tex) 0 0 c))
+	     (draw-texture (texture-data tex) 0 0 white))
 	   texs)))))
   
   #| play 播放所有 music|#
