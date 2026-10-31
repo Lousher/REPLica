@@ -1,25 +1,20 @@
 (library (game stage)
   (export static loader play
-	  sequential latch)
+	  sequential latch change)
   (import
    (ffi raylib binding) ;basic
    (game resource) ; bundle
-   (game render) ; draw-texture
-   (game color)
+   (game picture)
    (chezscheme))
 
   #| stage 是 接收 bundle 并进行实际演出的函数 |#
 
   #| static 是最简单的stage,将bundle内所有texture资源静态绘制|#
   (define static
-    (lambda (bun)
-      (let* ([ress (bundle-resources bun)]
-	     [texs (filter texture? ress)])
+    (lambda (pic)
+      (lambda (bun)
 	(lambda ()
-	  (for-each
-	   (lambda (tex)
-	     (draw-texture (texture-data tex) 0 0 white))
-	   texs)))))
+	  (pic 'mock-win)))))
   
   #| play 播放所有 music|#
   (define play
@@ -74,5 +69,14 @@
 	  (lambda ()
 	    (when hanged ((hanged bun)))
 	    (when (ev) (set! hanged sg)))
+	  ))))
+
+  (define change
+    (lambda (ev sg1 sg2)
+      (let ([hanged sg1])
+	(lambda (bun)
+	  (lambda ()
+	    (when (ev) (set! hanged sg2))
+	    ((hanged bun)))
 	  ))))
   )
