@@ -1,5 +1,5 @@
 (library (game raylib render)
-  (export draw-texture)
+  (export draw-texture draw-text)
   (import (chezscheme)
 	  (game type)
 	  (game resource)
@@ -15,5 +15,10 @@
     (let ([C (ftype-alloc Color)])
       (lambda (tex w h c)
 	(DrawTexture (texture-data tex) w h (Color<=color c C)))))
+
+  (define draw-text
+    (let ([C (ftype-alloc Color)])
+      (lambda (text w h size c)
+	(DrawText text w h size (Color<=color c C)))))
   
   )

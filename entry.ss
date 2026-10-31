@@ -20,12 +20,13 @@
 (define s1 (hold pic1))
 (define s2 (hold pic2))
 (define s3 (hold cp1))
+(define s4 (hold elapsed))
 
-(define s1-full (sequential loader s1))
-(define s2-full (sequential loader s2 s3))
+(define s1-full (sequential loader s1 s4))
+(define s2-full (sequential loader s2 s3 s4))
 
 (define s-full (change (clicked? MOUSE_BUTTON_LEFT) s1-full s2-full))
 
-(define g (make-window "config.ini"))
+(define g (init "config.ini"))
 
 (g (s-full bun))

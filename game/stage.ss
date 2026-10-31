@@ -9,12 +9,12 @@
 
   #| stage 是 接收 bundle 并进行实际演出的函数 |#
 
-  #| hold 是最简单的stage,持续保持资源？存在|#
+  #| hold 是最简单的stage,持续在win上保持资源存在|#
   (define hold
     (lambda (res)
       (lambda (bun)
-	(lambda ()
-	  (res 'mock-win)))))
+	(lambda (win)
+	  (res win)))))
   
   #| loader 是特殊的stage，加载资源 |#
   (define loader
@@ -24,7 +24,7 @@
 	     [mucs (filter music? ress)]
 	     [texs-unload (filter (lambda (t) (not (texture-data t))) texs)]
 	     [mucs-unload (filter (lambda (t) (not (music-data t))) mucs)])
-	(lambda ()
+	(lambda (win)
 	  (for-each
 	   (lambda (tex)
 	     (let* ([name (texture-name tex)]
@@ -42,18 +42,18 @@
   (define sequential
     (lambda sgs
       (lambda (bun)
-	(lambda ()
+	(lambda (win)
 	  (for-each
 	   (lambda (sg)
-	     ((sg bun)))
+	     ((sg bun) win))
 	   sgs)))))
 
   (define change
     (lambda (ev sg1 sg2)
       (let ([hanged sg1])
 	(lambda (bun)
-	  (lambda ()
-	    ((hanged bun))
+	  (lambda (win)
+	    ((hanged bun) win)
 	    (when (ev) (set! hanged sg2)))
 	  ))))
   )
