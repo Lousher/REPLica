@@ -1,5 +1,6 @@
 (library (game raylib render)
-  (export draw-texture draw-text)
+  (export draw-texture draw-text
+	  clear-background)
   (import (chezscheme)
 	  (game type)
 	  (game resource)
@@ -20,5 +21,10 @@
     (let ([C (ftype-alloc Color)])
       (lambda (text w h size c)
 	(DrawText text w h size (Color<=color c C)))))
+
+  (define clear-background
+    (let ([C (ftype-alloc Color)])
+      (lambda (c)
+	(ClearBackground (Color<=color c C)))))
   
   )

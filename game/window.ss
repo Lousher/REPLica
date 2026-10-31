@@ -1,7 +1,10 @@
 (library (game window)
   (export make-frame frame? frame-dest frame-origin frame-rotation frame-tint
 	  make-window window-delta window-delta-set!
+	  window-frame
 	  tick uptime
+	  frame-change-tint
+	  window-change-frame
 	  )
   (import (chezscheme)
 	  (ffi raylib binding)
@@ -28,14 +31,27 @@
 	(window-delta-set! win (+ passed (GetFrameTime)))
 	win)))
   
-
-
   (define-record-type window
     (fields frame (mutable delta) inputs)
     (protocol
      (lambda (new)
-       (lambda (fr)
-	 (new fr 0.0 '())))))
+       (case-lambda
+	 [(fr d i) (new fr d i)]
+	 [(fr)
+	  (new fr 0.0 '())]))))
 
   (define uptime window-delta)
+
+  (define frame-change-tint
+    (lambda (f t)
+      (let ([dest (frame-dest f)]
+	    [origin (frame-origin f)]
+	    [rotation (frame-rotation f)])
+	(make-frame dest origin rotation t))))
+
+  (define window-change-frame
+    (lambda (w f)
+      (let ([d (window-delta w)]
+	    [inputs (window-inputs w)])
+	(make-window f d inputs))))
   )

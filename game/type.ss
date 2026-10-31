@@ -1,5 +1,6 @@
 (library (game type)
   (export make-color color? Color<=color color<=Color
+	  color-r color-g color-b color-a
 	  make-rectangle rectangle? Rectangle<=rectangle rectangle<=Rectangle
 	  make-vector2 vector? Vector2<=vector2 vector2<=Vector2)
   (import (chezscheme)

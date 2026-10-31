@@ -19,12 +19,12 @@
   #| loader 是特殊的stage，加载资源 |#
   (define loader
     (lambda (bun)
-      (let* ([ress (bundle-resources bun)]
-	     [texs (filter texture? ress)]
-	     [mucs (filter music? ress)]
-	     [texs-unload (filter (lambda (t) (not (texture-data t))) texs)]
-	     [mucs-unload (filter (lambda (t) (not (music-data t))) mucs)])
-	(lambda (win)
+      (lambda (win)
+	(let* ([ress (bundle-resources bun)]
+	       [texs (filter texture? ress)]
+	       [mucs (filter music? ress)]
+	       [texs-unload (filter (lambda (t) (not (texture-data t))) texs)]
+	       [mucs-unload (filter (lambda (t) (not (music-data t))) mucs)])
 	  (for-each
 	   (lambda (tex)
 	     (let* ([name (texture-name tex)]
@@ -36,17 +36,14 @@
 	     (let* ([name (music-name muc)]
 		    [m (LoadMusicStream name)])
 	       (music-data-set! muc m)))
-	   mucs-unload)
-	  ))))
+	   mucs-unload)))))
 
   (define sequential
     (lambda sgs
       (lambda (bun)
-	(lambda (win)
-	  (for-each
-	   (lambda (sg)
-	     ((sg bun) win))
-	   sgs)))))
+	(let ([stages (map (lambda (sg) (sg bun)) sgs)])  ; 构造期算一次
+          (lambda (win)
+            (for-each (lambda (s) (s win)) stages))))))
 
   (define change
     (lambda (ev sg1 sg2)
