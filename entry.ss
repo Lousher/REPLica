@@ -5,6 +5,7 @@
 (import (game stage))
 (import (game resource))
 (import (game picture))
+(import (game clip))
 (import (game event))
 
 (define tex (make-texture "store/asset/store/apartment.morning.png"))
@@ -14,14 +15,14 @@
 
 (define pic1 (default tex))
 (define pic2 (default tex2))
+(define cp1 (fade-in mus 3.0))
 
-(define s1 (static pic1))
-(define s2 (static pic2))
-
-					;(define s-final (change (clicked? MOUSE_BUTTON_LEFT) s1 s2))
+(define s1 (hold pic1))
+(define s2 (hold pic2))
+(define s3 (hold cp1))
 
 (define s1-full (sequential loader s1))
-(define s2-full (sequential loader s2))
+(define s2-full (sequential loader s2 s3))
 
 (define s-full (change (clicked? MOUSE_BUTTON_LEFT) s1-full s2-full))
 

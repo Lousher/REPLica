@@ -1,7 +1,8 @@
-(library (game render)
+(library (game raylib render)
   (export draw-texture)
   (import (chezscheme)
 	  (game type)
+	  (game resource)
 	  (ffi raylib binding))
 
   (define-syntax ftype-alloc
@@ -13,7 +14,6 @@
   (define draw-texture
     (let ([C (ftype-alloc Color)])
       (lambda (tex w h c)
-	(DrawTexture tex w h (Color<=color c C))
-	)))
+	(DrawTexture (texture-data tex) w h (Color<=color c C)))))
   
   )

@@ -1,6 +1,6 @@
 (library (game stage)
-  (export static loader play
-	  sequential latch change)
+  (export hold loader
+	  sequential change)
   (import
    (ffi raylib binding) ;basic
    (game resource) ; bundle
@@ -9,26 +9,12 @@
 
   #| stage 是 接收 bundle 并进行实际演出的函数 |#
 
-  #| static 是最简单的stage,将bundle内所有texture资源静态绘制|#
-  (define static
-    (lambda (pic)
+  #| hold 是最简单的stage,持续保持资源？存在|#
+  (define hold
+    (lambda (res)
       (lambda (bun)
 	(lambda ()
-	  (pic 'mock-win)))))
-  
-  #| play 播放所有 music|#
-  (define play
-    (lambda (bun)
-      (let* ([ress (bundle-resources bun)]
-	     [mucs (filter music? ress)])
-	(lambda ()
-	  (for-each
-	   (lambda (muc)
-	     (let ([m (music-data muc)])
-	       (if (IsMusicStreamPlaying m)
-		   (UpdateMusicStream m)
-		   (PlayMusicStream m))))
-	   mucs)))))
+	  (res 'mock-win)))))
   
   #| loader 是特殊的stage，加载资源 |#
   (define loader
@@ -62,21 +48,12 @@
 	     ((sg bun)))
 	   sgs)))))
 
-  (define latch
-    (lambda (ev sg)
-      (let ([hanged #f])
-	(lambda (bun)
-	  (lambda ()
-	    (when hanged ((hanged bun)))
-	    (when (ev) (set! hanged sg)))
-	  ))))
-
   (define change
     (lambda (ev sg1 sg2)
       (let ([hanged sg1])
 	(lambda (bun)
 	  (lambda ()
-	    (when (ev) (set! hanged sg2))
-	    ((hanged bun)))
+	    ((hanged bun))
+	    (when (ev) (set! hanged sg2)))
 	  ))))
   )

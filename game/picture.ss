@@ -2,11 +2,11 @@
   (export default)
   (import (chezscheme)
 	  (game resource) ;texture
-	  (game render)
+	  (game raylib render)
 	  (game color))
 
   (define default
     (lambda (tex)
-      (lambda (win) 
-	(draw-texture (texture-data tex) 0 0 white))))
+      (lambda (win) ; 这个win是抽象意义上的win,贴近窗口状态
+	(draw-texture tex 0 0 white))))
   )
