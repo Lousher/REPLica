@@ -15,8 +15,10 @@
 	    (mutable source))
     (protocol
      (lambda (new)
-       (lambda (n)
-	 (new n #f #f)))))
+       (case-lambda
+	 [(n)
+	  (new n #f #f)]
+	 [(n d s) (new n d s)]))))
 
   (define-record-type music
     (fields name

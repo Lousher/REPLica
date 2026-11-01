@@ -23,18 +23,23 @@
 (define pic2 (default tex2))
 (define cp1 (plain mus))
 
-(define reveal-test
+(define pic3 (shaded sh1 `(("texture2" . ,pic2) ("texture1" . ,pic1)
+			   ("rule" . ,rule1) ("progress" . 0.5) ("feather" . 0.0))))
+
+(define shaded-ani
   (lambda (ani1 ani2)
     (lambda (p)
-      ((shaded sh1 `(("texture1" . ,(ani2 p)) ("rule" . ,rule1) ("progress" . ,p) ("feather" . 0.0))) (ani1 p)))))
+      (scale
+       (shaded sh1 `(("texture2" . ,(ani2 p)) ("texture1" . ,(ani1 p))
+		     ("rule" . ,rule1) ("progress" . ,p) ("feather" . 0.0)))
+       0.5))))
 
 (define s-bgm (hold
 	       (loop
 		(full cp1))))
 
 (define s1 (hold
-	    (linear 1 (reveal-test (still pic1)
-				   (still pic2)))))
+	    (linear 2 (shaded-ani (still pic1) (still pic2)))))
 (define s1-ani (hold
 		(linear 1
 			(crossfade (still pic2)

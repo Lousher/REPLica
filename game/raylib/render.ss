@@ -20,15 +20,16 @@
 	      [tint (frame-tint fr)])
 	  (when T
 	    (DrawTexturePro T
-			    (Rectangle<=rectangle src)
-			    (Rectangle<=rectangle dest)
-			    (Vector2<=vector2 origin)
+			    (Rectangle<=rectangle src SRC)
+			    (Rectangle<=rectangle dest DEST)
+			    (Vector2<=vector2 origin ORIGIN)
 			    0.0
-			    (Color<=color tint)))))))
-
+			    (Color<=color tint COLOR)))))))
+  
   (define clear-background
     (let ([C (ftype-alloc Color)])
       (lambda (c)
 	(ClearBackground (Color<=color c C)))))
+
 
   )
