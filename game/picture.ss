@@ -43,16 +43,16 @@
 
   (define to-int (lambda (x) (inexact->exact (round x))))
   (define shaded
-    (lambda (sh kv-list)
-      (let-values ([(pic-kv-list other-kv-list) (partition (lambda (kv) (procedure? (cdr kv))) kv-list)])
-	(let ([rt-pool (make-hashtable equal-hash equal?)]
-	      [float-address (let ([addrs (make-hashtable string-hash string=?)])
-			       (lambda (key)
-				 (if (hashtable-contains? addrs key)
-				     (hashtable-ref addrs key #f)
-				     (let ([addr (foreign-alloc (ftype-sizeof float))])
-				       (hashtable-set! addrs key addr)
-				       addr))))])
+    (let ([rt-pool (make-hashtable equal-hash equal?)]
+	  [float-address (let ([addrs (make-hashtable string-hash string=?)])
+			   (lambda (key)
+			     (if (hashtable-contains? addrs key)
+				 (hashtable-ref addrs key #f)
+				 (let ([addr (foreign-alloc (ftype-sizeof float))])
+				   (hashtable-set! addrs key addr)
+				   addr))))])
+      (lambda (sh kv-list)
+	(let-values ([(pic-kv-list other-kv-list) (partition (lambda (kv) (procedure? (cdr kv))) kv-list)])
 	  (lambda (pic)
 	    (lambda (f)
 	      (let ([s (shader-data sh)]
@@ -63,11 +63,10 @@
 			      (let ([name (car kv)])
 				(unless (hashtable-contains? locs name)
 				  (hashtable-set! locs name (GetShaderLocation s name))))) kv-list)
-		  (BeginShaderMode s)
 		  (for-each (lambda (pic-kv)
 			      (let* ([name (car pic-kv)]
 				     [pic-for-val (cdr pic-kv)]
-				     [rt-key (list name w h)]
+				     [rt-key (list name (to-int w) (to-int h))]
 				     [loc (hashtable-ref locs name #f)])
 				(let ([rt (if (hashtable-contains? rt-pool rt-key)
 					      (hashtable-ref rt-pool rt-key #f)
@@ -75,10 +74,19 @@
 						(hashtable-set! rt-pool rt-key rt-new)
 						rt-new))])
 				  (BeginTextureMode rt)
+				  (clear-background black)
 				  (pic-for-val f)
-				  (EndTextureMode)
-				  (SetShaderValueTexture s loc (ftype-&ref RenderTexture (texture) rt)))))
+				  (EndTextureMode))))
 			    pic-kv-list)
+		  (BeginShaderMode s)
+		  (for-each
+                   (lambda (pic-kv)
+                     (let* ([name (car pic-kv)]
+                            [rt-key (list name (to-int w) (to-int h))]
+                            [loc (hashtable-ref locs name #f)]
+                            [rt (hashtable-ref rt-pool rt-key #f)])
+                       (SetShaderValueTexture s loc (ftype-&ref RenderTexture (texture) rt))))
+                   pic-kv-list)
 		  (for-each
 		   (lambda (other-kv)
 		     (let* ([name (car other-kv)]

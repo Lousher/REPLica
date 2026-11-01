@@ -16,17 +16,12 @@ out vec4 finalColor;
 
 void main()
 {
-    // raylib 的 RenderTexture 在采样时是上下翻转的。
-    // 如果 texture0 / texture1 来自 RenderTexture，而 rule 来自普通 LoadTexture，
-    // 三者的 y 方向会不一致，转场形状会和画面对不上。
-    // 下面的 uv 统一翻转，保证三张纹理用同一套坐标。
-    // 如果你的三张纹理方向本来就一致，把这一行改成：
-    //     vec2 uv = fragTexCoord;
-    vec2 uv = vec2(fragTexCoord.x, 1.0 - fragTexCoord.y);
+    vec2 uv1 = vec2(fragTexCoord.x, fragTexCoord.y);
+    vec2 uv0 = vec2(fragTexCoord.x, 1.0 - fragTexCoord.y);
 
-    vec4  oldColor = texture(texture0, uv);
-    vec4  newColor = texture(texture1, uv);
-    float r        = texture(rule,     uv).r;
+    vec4  oldColor = texture(texture0, uv1);
+    vec4  newColor = texture(texture1, uv0);
+    float r        = texture(rule,     uv1).r;
 
     // progress 推进时，r 小于当前阈值的像素先切换成新画面。
     // smoothstep 在 [progress-feather, progress+feather] 之间做平滑过渡，

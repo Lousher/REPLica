@@ -15,31 +15,34 @@
 (define tex (make-texture "store/asset/store/apartment.morning.png"))
 (define mus (make-music "store/asset/store/trip.mp3"))
 (define tex2 (make-texture "store/asset/store/apartment.afternoon.png"))
-(define rule1 (make-texture "store/asset/wipes/1.png"))
+(define rule1 (make-texture "store/asset/wipes/2.png"))
 (define sh1 (make-shader #f "store/shaders/dissolve.fs"))
 (define bun (make-bundle 1 (list tex tex2 mus sh1 rule1)))
 
-(define pic1 (at
-	      (scale (default tex) 2)
-	      (lambda (x y) (values (+ x 20) (+ y 100)))))
-(define pic2 (scale (default tex2) 0.5))
+(define pic1 (default tex))
+(define pic2 (default tex2))
 (define cp1 (plain mus))
 
-(define wipe-fn (shaded sh1 `(("texture1" . ,pic2) ("rule" . ,rule1) ("progress" . 0.0) ("feather" . 0.01))))
+(define reveal-test
+  (lambda (ani1 ani2)
+    (lambda (p)
+      ((shaded sh1 `(("texture1" . ,(ani2 p)) ("rule" . ,rule1) ("progress" . ,p) ("feather" . 0.0))) (ani1 p)))))
 
 (define s-bgm (hold
 	       (loop
 		(full cp1))))
 
-(define s1 (hold (freeze 0 (still (wipe-fn pic1)))))
+(define s1 (hold
+	    (linear 1 (reveal-test (still pic1)
+				   (still pic2)))))
 (define s1-ani (hold
 		(linear 1
-			(crossfade (still pic1)
-				   (still pic2)))))
+			(crossfade (still pic2)
+				   (still pic1)))))
 
-(define s1-f (sequential loader s1))
+(define s1-f (sequential loader s1-ani))
 
-(define s-full (change (clicked? MOUSE_BUTTON_LEFT) s1-f (sequential s-bgm s1-ani)))
+(define s-full (change (clicked? MOUSE_BUTTON_LEFT) s1-f (sequential s-bgm s1)))
 
 (define g (init "config.ini"))
 
