@@ -3,7 +3,7 @@
 	  make-window window-delta window-delta-set!
 	  window-frame window-channel
 	  tick uptime
-	  frame-change-tint
+	  frame-change-tint frame-change-dest
 	  window-change-frame
 	  make-channel channel? channel-volume channel-pan channel-pitch
 	  )
@@ -57,6 +57,13 @@
 	    [origin (frame-origin f)]
 	    [rotation (frame-rotation f)])
 	(make-frame dest origin rotation t))))
+
+  (define frame-change-dest
+    (lambda (f dest)
+      (let ([origin (frame-origin f)]
+	    [rotation (frame-rotation f)]
+	    [tint (frame-tint f)])
+	(make-frame dest origin rotation tint))))
 
   (define window-change-frame
     (lambda (w f)

@@ -17,8 +17,10 @@
 (define tex2 (make-texture "store/asset/store/apartment.afternoon.png"))
 (define bun (make-bundle 1 (list tex tex2 mus)))
 
-(define pic1 (default tex))
-(define pic2 (default tex2))
+(define pic1 (at
+	      (scale (default tex) 2)
+	      (lambda (x y) (values (+ x 20) (+ y 100)))))
+(define pic2 (scale (default tex2) 0.5))
 (define cp1 (plain mus))
 
 (define s-bgm (hold
@@ -27,7 +29,7 @@
 
 (define s1 (hold (freeze 0 (still pic1))))
 (define s1-ani (hold
-		(linear 2
+		(linear 1
 			(crossfade (still pic1)
 				   (still pic2)))))
 

@@ -1,5 +1,5 @@
 (library (game color)
-  (export white
+  (export white black
 	  color-alpha)
   (import (chezscheme)
 	  (game type))
@@ -15,6 +15,6 @@
       ))
 
   (define white (make-color 255 255 255 255))
-
+  (define black (make-color 0 0 0 255))
   
   )

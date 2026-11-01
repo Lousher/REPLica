@@ -2,7 +2,10 @@
   (export make-color color? Color<=color color<=Color
 	  color-r color-g color-b color-a
 	  make-rectangle rectangle? Rectangle<=rectangle rectangle<=Rectangle
-	  make-vector2 vector? Vector2<=vector2 vector2<=Vector2)
+	  rectangle-x rectangle-y rectangle-width rectangle-height
+	  make-vector2 vector? Vector2<=vector2 vector2<=Vector2
+	  color-values rectangle-values vector2-values
+	  )
   (import (chezscheme)
 	  (ffi raylib binding))
 
@@ -30,8 +33,9 @@
       (syntax-case x ()
 	[(key type name (field ...) type->rcd rcd->type)
 	 (let ([rcd (syntax->datum #'name)])
-	   (with-syntax ([ctor (format-id #'key "make-~a" (syntax->datum #'name))]
-			 [(acc ...) (map (lambda (f) (format-id #'key "~a-~a" (syntax->datum #'name) f)) (syntax->datum #'(field ...)))])
+	   (with-syntax ([ctor (format-id #'key "make-~a" rcd)]
+			 [(acc ...) (map (lambda (f) (format-id #'key "~a-~a" (syntax->datum #'name) f)) (syntax->datum #'(field ...)))]
+			 [vals (format-id #'key "~a-values" rcd)])
 	     #'(begin
 		 (define-record-type name (fields field ...))
 		 (define rcd->type
@@ -44,10 +48,13 @@
 		 (define type->rcd
 		   (lambda (T)
 		     (let ([field (ftype-ref type (field) T)] ...)
-		       (ctor field ...)))))))])))
+		       (ctor field ...))))
+		 (define vals
+		   (lambda (t)
+		     (values (acc t) ...))))))])))
 
   (define-ftype-record Color color (r g b a) color<=Color Color<=color)
   (define-ftype-record Rectangle rectangle (x y width height) rectangle<=Rectangle Rectangle<=rectangle)
   (define-ftype-record Vector2 vector2 (x y) vector2<=Vector2 Vector2<=vector2)
   
-  )
+ )
