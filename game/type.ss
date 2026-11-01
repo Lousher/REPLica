@@ -5,6 +5,7 @@
 	  rectangle-x rectangle-y rectangle-width rectangle-height
 	  make-vector2 vector? Vector2<=vector2 vector2<=Vector2
 	  color-values rectangle-values vector2-values
+	  ftype-alloc
 	  )
   (import (chezscheme)
 	  (ffi raylib binding))

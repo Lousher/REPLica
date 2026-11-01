@@ -36,8 +36,10 @@
 	(let* ([ress (bundle-resources bun)]
 	       [texs (filter texture? ress)]
 	       [mucs (filter music? ress)]
+	       [shs (filter shader? ress)]
 	       [texs-unload (filter (lambda (t) (not (texture-data t))) texs)]
-	       [mucs-unload (filter (lambda (t) (not (music-data t))) mucs)])
+	       [mucs-unload (filter (lambda (t) (not (music-data t))) mucs)]
+	       [shs-unload (filter (lambda (t) (not (shader-data t))) shs)])
 	  (for-each
 	   (lambda (tex)
 	     (let* ([name (texture-name tex)]
@@ -56,7 +58,17 @@
 	     (let* ([name (music-name muc)]
 		    [m (LoadMusicStream name)])
 	       (music-data-set! muc m)))
-	   mucs-unload)))))
+	   mucs-unload)
+	  (for-each
+	   (lambda (sh)
+	     (let* ([fs (shader-fs sh)]
+		    [vs (shader-vs sh)]
+		    [s (LoadShader fs vs)])
+	       (unless (IsShaderValid s)
+		 (error 'load (format "[Loader] ~a and ~a cannot load shader" fs vs)))
+	       (shader-data-set! sh s)))
+	   shs-unload)
+	  ))))
 
   (define sequential
     (lambda sgs

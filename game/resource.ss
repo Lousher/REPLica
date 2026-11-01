@@ -1,8 +1,10 @@
 (library (game resource)
   (export bundle bundle? make-bundle bundle-id bundle-resources
 	  texture texture? make-texture texture-name texture-data texture-data-set! texture-source texture-source-set!
-	  music music? make-music music-name music-data music-data-set! music-playing? music-playing?-set!)
-  (import (chezscheme))
+	  music music? make-music music-name music-data music-data-set!
+	  shader shader? make-shader shader-fs shader-vs shader-data shader-data-set! shader-locations)
+  (import (chezscheme)
+	  (ffi raylib binding))
   					; 每个bundle都是stage需要的资源聚合，用DAG表示其所有资源加载操作，用唯一标识符确定
   (define-record-type bundle
     (fields id resources))
@@ -18,10 +20,17 @@
 
   (define-record-type music
     (fields name
-	    (mutable data)
-	    (mutable playing?))
+	    (mutable data))
     (protocol
      (lambda (new)
        (lambda (n)
-	 (new n #f #f)))))
+	 (new n #f)))))
+
+  (define-record-type shader
+    (fields fs vs (mutable data) locations)
+    (protocol
+     (lambda (new)
+       (lambda (fs vs)
+	 (let ([locs (make-hashtable string-hash string=?)])
+	   (new fs vs #f locs))))))
   )

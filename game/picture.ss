@@ -1,6 +1,7 @@
 (library (game picture)
-  (export default fade composite scale at)
+  (export default fade composite scale at shaded)
   (import (chezscheme)
+	  (ffi raylib binding)
 	  (game resource) ;texture
 	  (game raylib render)
 	  (game window)
@@ -9,7 +10,7 @@
 
   (define default
     (lambda (tex)
-      (lambda (f) ; picture理应只关心frame
+      (lambda (f)			; picture理应只关心frame
 	(clear-background black)
 	(draw-texture tex f))))
 
@@ -39,4 +40,57 @@
       (lambda (f)
 	(let* ([t (frame-tint f)])
 	  (pic (frame-change-tint f (color-alpha t alpha)))))))
+
+  (define to-int (lambda (x) (inexact->exact (round x))))
+  (define shaded
+    (lambda (sh kv-list)
+      (let-values ([(pic-kv-list other-kv-list) (partition (lambda (kv) (procedure? (cdr kv))) kv-list)])
+	(let ([rt-pool (make-hashtable equal-hash equal?)]
+	      [float-address (let ([addrs (make-hashtable string-hash string=?)])
+			       (lambda (key)
+				 (if (hashtable-contains? addrs key)
+				     (hashtable-ref addrs key #f)
+				     (let ([addr (foreign-alloc (ftype-sizeof float))])
+				       (hashtable-set! addrs key addr)
+				       addr))))])
+	  (lambda (pic)
+	    (lambda (f)
+	      (let ([s (shader-data sh)]
+		    [locs (shader-locations sh)]
+		    [dest (frame-dest f)])
+		(let-values ([(x y w h) (rectangle-values dest)])
+		  (for-each (lambda (kv)
+			      (let ([name (car kv)])
+				(unless (hashtable-contains? locs name)
+				  (hashtable-set! locs name (GetShaderLocation s name))))) kv-list)
+		  (BeginShaderMode s)
+		  (for-each (lambda (pic-kv)
+			      (let* ([name (car pic-kv)]
+				     [pic-for-val (cdr pic-kv)]
+				     [rt-key (list name w h)]
+				     [loc (hashtable-ref locs name #f)])
+				(let ([rt (if (hashtable-contains? rt-pool rt-key)
+					      (hashtable-ref rt-pool rt-key #f)
+					      (let ([rt-new (LoadRenderTexture (to-int w) (to-int h))])
+						(hashtable-set! rt-pool rt-key rt-new)
+						rt-new))])
+				  (BeginTextureMode rt)
+				  (pic-for-val f)
+				  (EndTextureMode)
+				  (SetShaderValueTexture s loc (ftype-&ref RenderTexture (texture) rt)))))
+			    pic-kv-list)
+		  (for-each
+		   (lambda (other-kv)
+		     (let* ([name (car other-kv)]
+			    [val (cdr other-kv)]
+			    [loc (hashtable-ref locs name #f)])
+		       (cond
+			[(texture? val) (SetShaderValueTexture s loc (texture-data val))]
+			[(inexact? val)
+			 (let ([ptr (float-address name)])
+			   (foreign-set! 'float ptr 0 val)
+			   (SetShaderValue s loc ptr SHADER_UNIFORM_FLOAT))])))
+		   other-kv-list)
+		  (pic f)
+		  (EndShaderMode)))))))))
   )

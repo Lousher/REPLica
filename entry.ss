@@ -15,7 +15,9 @@
 (define tex (make-texture "store/asset/store/apartment.morning.png"))
 (define mus (make-music "store/asset/store/trip.mp3"))
 (define tex2 (make-texture "store/asset/store/apartment.afternoon.png"))
-(define bun (make-bundle 1 (list tex tex2 mus)))
+(define rule1 (make-texture "store/asset/wipes/1.png"))
+(define sh1 (make-shader #f "store/shaders/dissolve.fs"))
+(define bun (make-bundle 1 (list tex tex2 mus sh1 rule1)))
 
 (define pic1 (at
 	      (scale (default tex) 2)
@@ -23,11 +25,13 @@
 (define pic2 (scale (default tex2) 0.5))
 (define cp1 (plain mus))
 
+(define wipe-fn (shaded sh1 `(("texture1" . ,pic2) ("rule" . ,rule1) ("progress" . 0.0) ("feather" . 0.01))))
+
 (define s-bgm (hold
 	       (loop
 		(full cp1))))
 
-(define s1 (hold (freeze 0 (still pic1))))
+(define s1 (hold (freeze 0 (still (wipe-fn pic1)))))
 (define s1-ani (hold
 		(linear 1
 			(crossfade (still pic1)
