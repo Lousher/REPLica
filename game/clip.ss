@@ -1,4 +1,4 @@
-(library (game clip)
+(library (game clip) ;和picture一样，在
   (export plain fade-in)
   (import (chezscheme)
 	  (game resource)

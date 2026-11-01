@@ -17,19 +17,18 @@
 
 (define pic1 (default tex))
 (define pic2 (default tex2))
-(define ani1 (crossfade (still pic1) (still pic2)))
-(define cp1 (fade-in mus 3.0))
 
-(define s1-ani (hold (linear ani1 5)))
-(define s1 (hold (fade pic1 0.2)))
-(define s2 (hold pic2))
-(define s3 (hold cp1))
+(define s1 (hold (freeze 0 (still pic1))))
+(define s1-ani (hold
+		(linear 2
+			(crossfade (still pic1)
+				   (still pic2)))))
 
-(define s1-full (sequential loader s1-ani))
-(define s2-full (sequential loader s2 s3))
 
-					;(define s-full (change (clicked? MOUSE_BUTTON_LEFT) s1-full s2-full))
+(define s1-f (sequential loader s1))
+
+(define s-full (change (clicked? MOUSE_BUTTON_LEFT) s1-f s1-ani))
 
 (define g (init "config.ini"))
 
-(g (s1-full bun))
+(g (s-full bun))
