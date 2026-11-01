@@ -1,5 +1,5 @@
 (library (game picture)
-  (export default fade composite scale at shaded)
+  (export default fade composite scale at shaded beside above)
   (import (chezscheme)
 	  (ffi raylib binding)
 	  (game resource) ;texture
@@ -28,6 +28,30 @@
 	  (let*-values ([(x y w h) (rectangle-values dest)]
 			[(x-new y-new) (fn-xy x y)])
 	    (pic (frame-change-dest f (make-rectangle x-new y-new w h))))))))
+
+  (define beside
+    (case-lambda
+      [(left right) (beside 0.5 left right)]
+      [(ratio left right)
+       (lambda (f)
+	 (let ([dest (frame-dest f)])
+           (let-values ([(x y w h) (rectangle-values dest)])
+             (let* ([lw (* w ratio)]
+                    [rw (- w lw)])
+               (left  (frame-change-dest f (make-rectangle x y lw h)))
+               (right (frame-change-dest f (make-rectangle (+ x lw) y rw h)))))))]))
+
+  (define above
+    (case-lambda
+      [(top bottom) (above 0.5 top bottom)]
+      [(ratio top bottom)
+       (lambda (f)
+	 (let ([dest (frame-dest f)])
+           (let-values ([(x y w h) (rectangle-values dest)])
+             (let* ([th (* h ratio)]
+                    [bh (- h th)])
+               (top    (frame-change-dest f (make-rectangle x y w th)))
+               (bottom (frame-change-dest f (make-rectangle x (+ y th) w bh)))))))]))
   
   (define composite
     (lambda pics

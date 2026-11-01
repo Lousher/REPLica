@@ -21,7 +21,7 @@ void main()
 
     vec4  oldColor = texture(texture1, uv0);
     vec4  newColor = texture(texture2, uv0);
-    float r        = texture(rule,     uv1).r;
+    float r        = texture(rule,     uv0).r;
 
     // progress 推进时，r 小于当前阈值的像素先切换成新画面。
     // smoothstep 在 [progress-feather, progress+feather] 之间做平滑过渡，
