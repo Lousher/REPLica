@@ -1,22 +1,16 @@
 (library (game clip) ;和picture一样，在
-  (export plain fade-in)
+  (export plain)
   (import (chezscheme)
 	  (game resource)
-	  (game raylib audio)
-	  (ffi raylib binding))
+	  (game window) ;广义上的window
+	  (game raylib audio))
 
   (define plain
     (lambda (mus)
-      (lambda (win);抽象意义上的”窗口“
+      (lambda (cnl)   ; ← 接收 channel
+	(set-music-volume mus (channel-volume cnl))
+	(set-music-pan    mus (channel-pan cnl))
+	(set-music-pitch  mus (channel-pitch cnl))
 	(play-music mus))))
-
-  (define fade-in
-    (lambda (mus duration)
-      (set-music-volume! mus 0.0)
-      (let ([elapsed 0.0])
-	(lambda (win)
-	  (play-music mus)
-	  (set! elapsed (+ elapsed (GetFrameTime)))
-	  (set-music-volume! mus (min 1.0 (/ elapsed duration)))))))
-
+  
   )

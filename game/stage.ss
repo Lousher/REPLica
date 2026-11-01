@@ -3,9 +3,17 @@
 	  sequential change)
   (import
    (ffi raylib binding) ;basic
-   (game resource) ; bundle
-   (game picture)
+   (game resource)
+   (game type)
    (chezscheme))
+
+  #| helper |#
+  (define Texture-width
+    (lambda (T)
+      (ftype-ref Texture (width) T)))
+  (define Texture-height
+    (lambda (T)
+      (ftype-ref Texture (height) T)))
 
   #| stage 是 接收 bundle 并进行实际演出的函数 |#
 
@@ -28,8 +36,13 @@
 	  (for-each
 	   (lambda (tex)
 	     (let* ([name (texture-name tex)]
-		    [t (LoadTexture name)])
-	       (texture-data-set! tex t)))
+		    [t (LoadTexture name)]
+		    [w (Texture-width t)]
+		    [h (Texture-height t)])
+	       (texture-data-set! tex t)
+	       (texture-source-set! tex (make-rectangle 0.0 0.0
+							(inexact w)
+							(inexact h)))))
 	   texs-unload)
 	  (for-each
 	   (lambda (muc)

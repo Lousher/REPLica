@@ -4,6 +4,7 @@
   (import (chezscheme)
 	  (game type)
 	  (game resource)
+	  (game window)
 	  (ffi raylib binding))
 
   (define-syntax ftype-alloc
@@ -11,11 +12,25 @@
       [(_ type)
        (make-ftype-pointer type (foreign-alloc (ftype-sizeof type)))
        ]))
-  
+
   (define draw-texture
-    (let ([C (ftype-alloc Color)])
-      (lambda (tex w h c)
-	(DrawTexture (texture-data tex) w h (Color<=color c C)))))
+    (let ([SRC (ftype-alloc Rectangle)]
+	  [DEST (ftype-alloc Rectangle)]
+	  [ORIGIN (ftype-alloc Vector2)]
+	  [COLOR (ftype-alloc Color)])
+      (lambda (tex fr)
+	(let ([T (texture-data tex)]
+	      [src (texture-source tex)]
+	      [dest (frame-dest fr)]
+	      [origin (frame-origin fr)]
+	      [tint (frame-tint fr)])
+	  (when T
+	    (DrawTexturePro T
+			    (Rectangle<=rectangle src)
+			    (Rectangle<=rectangle dest)
+			    (Vector2<=vector2 origin)
+			    0.0
+			    (Color<=color tint)))))))
 
   (define draw-text
     (let ([C (ftype-alloc Color)])

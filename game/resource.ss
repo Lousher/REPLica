@@ -1,6 +1,6 @@
 (library (game resource)
   (export bundle bundle? make-bundle bundle-id bundle-resources
-	  texture texture? make-texture texture-name texture-data texture-data-set!
+	  texture texture? make-texture texture-name texture-data texture-data-set! texture-source texture-source-set!
 	  music music? make-music music-name music-data music-data-set! music-playing? music-playing?-set!)
   (import (chezscheme))
   					; 每个bundle都是stage需要的资源聚合，用DAG表示其所有资源加载操作，用唯一标识符确定
@@ -9,11 +9,12 @@
 
   (define-record-type texture
     (fields name
-	    (mutable data))
+	    (mutable data)
+	    (mutable source))
     (protocol
      (lambda (new)
        (lambda (n)
-	 (new n #f)))))
+	 (new n #f #f)))))
 
   (define-record-type music
     (fields name

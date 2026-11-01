@@ -2,7 +2,7 @@
   (export linear freeze)
   (import (chezscheme)
 	  (game window))
-
+  #| 目前用于驱动animator |# 
   (define linear
     (lambda (dur ani)
       (let ([started #f])

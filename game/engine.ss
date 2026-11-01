@@ -6,7 +6,6 @@
 	  (ffi raylib binding)
 	  (ffi rini binding))
 
-
   (define init
     (lambda (config)
       (let* ([ini-cfg (rini_load config)]

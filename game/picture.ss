@@ -9,8 +9,7 @@
   (define default
     (lambda (tex)
       (lambda (f) ; picture理应只关心frame
-	(let*([tint (frame-tint f)])
-	  (draw-texture tex 0 0 tint)))))
+	(draw-texture tex f))))
 
   (define composite
     (lambda pics

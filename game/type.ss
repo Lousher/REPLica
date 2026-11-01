@@ -19,7 +19,6 @@
 	      [struct-li (ftype-pointer-ftype fptr)])
 	 (foreign-free (ftype-pointer-address fptr))
 	 (map car (cdr struct-li)))]))
-
   
   (define-syntax format-id
     (syntax-rules ()
@@ -41,7 +40,7 @@
 		      (ftype-set! type (field) fptr (acc record)) ...
 		      fptr]
 		     [(record)
-		      (rcd->type (ftype-alloc type))]))
+		      (rcd->type record (ftype-alloc type))]))
 		 (define type->rcd
 		   (lambda (T)
 		     (let ([field (ftype-ref type (field) T)] ...)
