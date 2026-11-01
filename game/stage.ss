@@ -8,6 +8,11 @@
    (chezscheme))
 
   #| helper |#
+  (define optimize-texture
+    (lambda (T)
+      (GenTextureMipmaps T)
+      (SetTextureFilter T TEXTURE_FILTER_TRILINEAR)))
+  
   (define Texture-width
     (lambda (T)
       (ftype-ref Texture (width) T)))
@@ -39,10 +44,12 @@
 		    [t (LoadTexture name)]
 		    [w (Texture-width t)]
 		    [h (Texture-height t)])
+	       (optimize-texture t)
 	       (texture-data-set! tex t)
 	       (texture-source-set! tex (make-rectangle 0.0 0.0
 							(inexact w)
-							(inexact h)))))
+							(inexact h)))
+	       ))
 	   texs-unload)
 	  (for-each
 	   (lambda (muc)

@@ -1,5 +1,6 @@
 (library (game raylib render)
-  (export draw-texture draw-text
+  (export draw-texture
+	  draw-text
 	  clear-background)
   (import (chezscheme)
 	  (game type)
