@@ -1,11 +1,13 @@
 (library (game resource)
-  (export 
+  (export loader
 	  texture texture? make-texture texture-name texture-data texture-data-set! texture-source texture-source-set!
 	  music music? make-music music-name music-data music-data-set!
 	  shader shader? make-shader shader-fs shader-vs shader-data shader-data-set! shader-locations
 	  file-image? file-music? directory-walk load-directory resource-fuzzy-query)
   (import (chezscheme)
-	  (game tool))
+	  (game tool)
+	  (game type)
+	  (ffi raylib binding))
   ; 每个bundle都是stage需要的资源聚合，用DAG表示其所有资源加载操作，用唯一标识符确定
 
   (define-record-type texture
@@ -46,11 +48,17 @@
 	(and (memq (string->symbol (path-extension f)) image-exts)
 	     (file-regular? f)))))
 
+  (define file-shader?
+    (let ([exts '(fs vs)])
+      (lambda (f)
+	(and (memq (string->symbol (path-extension f)) exts)
+             (file-regular? f)))))
+
   (define file-music?
     (let ([exts '(wav ogg mp3 flac qoa xm mod)])
       (lambda (f)
 	(and (memq (string->symbol (path-extension f)) exts)
-             (file-regular? f)))))
+	     (file-regular? f)))))
 
   (define directory-walk
     (lambda (dir)
@@ -79,15 +87,71 @@
 	    (hashtable-ref RESOURCES str #f)
 	    #f))))
   
+  (define file-name
+    (lambda (path)
+      (path-last (path-root path))))
+  
   (define load-directory
     (lambda (dir)
       (unless (file-directory? dir)
 	(error 'load-directory "[Resource] Not a directory" dir))
       (let* ([files (directory-walk dir)]
 	     [imgs (filter file-image? files)]
-	     [mucs (filter file-music? files)])
+	     [mucs (filter file-music? files)]
+	     [shs (filter file-shader? files)])	; vs and fs file
+	(set! FILES (append imgs mucs shs))
 	(for-each (lambda (img) (hashtable-set! RESOURCES img (make-texture img))) imgs)
 	(for-each (lambda (muc) (hashtable-set! RESOURCES muc (make-music muc))) mucs)
-	(set! FILES (append imgs mucs)))))
+	(for-each (lambda (sh) (hashtable-set! RESOURCES sh (make-shader (zf shs 'fs (file-name sh)) (zf shs 'vs (file-name sh))))) shs))))
+
+    #| helper |#
+  (define optimize-texture
+    (lambda (T)
+      (GenTextureMipmaps T)
+      (SetTextureFilter T TEXTURE_FILTER_TRILINEAR)))
   
+  (define Texture-width
+    (lambda (T)
+      (ftype-ref Texture (width) T)))
+  (define Texture-height
+    (lambda (T)
+      (ftype-ref Texture (height) T)))
+
+
+  (define loader
+    (lambda (bun)
+      (let* ([texs (filter texture? bun)]
+	     [mucs (filter music? bun)]
+	     [shs (filter shader? bun)]
+	     [texs-unload (filter (lambda (t) (not (texture-data t))) texs)]
+	     [mucs-unload (filter (lambda (t) (not (music-data t))) mucs)]
+	     [shs-unload (filter (lambda (t) (not (shader-data t))) shs)])
+	(for-each
+	 (lambda (tex)
+	   (let* ([name (texture-name tex)]
+		  [t (LoadTexture name)]
+		  [w (Texture-width t)]
+		  [h (Texture-height t)])
+	     (optimize-texture t)
+	     (texture-data-set! tex t)
+	     (texture-source-set! tex (make-rectangle 0.0 0.0
+						      (inexact w)
+						      (inexact h)))))
+	 texs-unload)
+	(for-each
+	 (lambda (muc)
+	   (let* ([name (music-name muc)]
+		  [m (LoadMusicStream name)])
+	     (music-data-set! muc m)))
+	 mucs-unload)
+	(for-each
+	 (lambda (sh)
+	   (let* ([fs (shader-fs sh)]
+		  [vs (shader-vs sh)]
+		  [s (LoadShader fs vs)])
+	     (unless (IsShaderValid s)
+	       (error 'load (format "[Loader] ~a and ~a cannot load shader" fs vs)))
+	     (shader-data-set! sh s)))
+	 shs-unload)
+	)))
   )
