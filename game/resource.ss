@@ -4,7 +4,7 @@
 	  music music? make-music music-name music-data music-data-set!
 	  shader shader? make-shader shader-fs shader-vs shader-data shader-data-set! shader-locations)
   (import (chezscheme)
-	  (ffi raylib binding))
+	  )
   					; 每个bundle都是stage需要的资源聚合，用DAG表示其所有资源加载操作，用唯一标识符确定
   (define-record-type bundle
     (fields id resources))
@@ -35,4 +35,5 @@
        (lambda (fs vs)
 	 (let ([locs (make-hashtable string-hash string=?)])
 	   (new fs vs #f locs))))))
+  
   )

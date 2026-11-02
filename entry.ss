@@ -41,9 +41,9 @@
 		(full cp1))))
 
 (define s1 (hold
-	    (linear 4 (shaded-ani (still pic1) (still pic2)))))
+	    (linear 4 (shaded-ani (still (scale pic1 2)) (still pic2)))))
 (define s1-ani (hold
-		(linear 1
+		(linear 4
 			(crossfade (still pic2)
 				   (still pic1)))))
 

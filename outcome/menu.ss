@@ -1,0 +1,20 @@
+(load-shared-object "ffi/raylib/libraylib.so.6.2.0")
+(load-shared-object "ffi/rini/librini.so")
+(import (ffi raylib binding))
+(import (game engine))
+(import (game stage))
+(import (game resource))
+(import (game picture))
+(import (game animator))
+(import (game clip))
+(import (game envelope))
+(import (game event))
+(import (game ticker))
+(import (game fader))
+(import (game tool))
+
+(load-texture-directory "store/asset/button/" "png")
+
+(define g (init "config.ini"))
+
+(g (s-full bun))
