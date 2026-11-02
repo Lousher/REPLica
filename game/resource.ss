@@ -30,12 +30,12 @@
 	 (new n #f)))))
 
   (define-record-type shader
-    (fields fs vs (mutable data) locations)
+    (fields vs fs (mutable data) locations)
     (protocol
      (lambda (new)
-       (lambda (fs vs)
+       (lambda (vs fs)
 	 (let ([locs (make-hashtable string-hash string=?)])
-	   (new fs vs #f locs))))))
+	   (new vs fs #f locs))))))
   
   #| helper function |#
   (define directory-list*
@@ -49,8 +49,8 @@
 	     (file-regular? f)))))
 
   (define file-shader?
-    (let ([exts '(fs vs)])
-      (lambda (f)
+    (lambda (f)
+      (let ([exts '(fs vs)])
 	(and (memq (string->symbol (path-extension f)) exts)
              (file-regular? f)))))
 
@@ -98,11 +98,13 @@
       (let* ([files (directory-walk dir)]
 	     [imgs (filter file-image? files)]
 	     [mucs (filter file-music? files)]
-	     [shs (filter file-shader? files)])	; vs and fs file
+	     [shs (filter file-shader? files)])
 	(set! FILES (append imgs mucs shs))
 	(for-each (lambda (img) (hashtable-set! RESOURCES img (make-texture img))) imgs)
 	(for-each (lambda (muc) (hashtable-set! RESOURCES muc (make-music muc))) mucs)
-	(for-each (lambda (sh) (hashtable-set! RESOURCES sh (make-shader (zf shs 'fs (file-name sh)) (zf shs 'vs (file-name sh))))) shs))))
+	(for-each (lambda (sh) (hashtable-set! RESOURCES sh (make-shader (zf shs (format "~a.~a" (file-name sh) 'vs))
+									 (zf shs (format "~a.~a" (file-name sh) 'fs))))) shs)
+	)))
 
     #| helper |#
   (define optimize-texture
@@ -116,7 +118,6 @@
   (define Texture-height
     (lambda (T)
       (ftype-ref Texture (height) T)))
-
 
   (define loader
     (lambda (bun)
@@ -148,7 +149,7 @@
 	 (lambda (sh)
 	   (let* ([fs (shader-fs sh)]
 		  [vs (shader-vs sh)]
-		  [s (LoadShader fs vs)])
+		  [s (LoadShader vs fs)])
 	     (unless (IsShaderValid s)
 	       (error 'load (format "[Loader] ~a and ~a cannot load shader" fs vs)))
 	     (shader-data-set! sh s)))

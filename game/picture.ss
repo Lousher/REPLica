@@ -117,49 +117,50 @@
 		   [locs (shader-locations sh)]
 		   [dest (frame-dest f)])
 	       (let-values ([(x y w h) (rectangle-values dest)])
-		 (for-each (lambda (kv)
-			     (let ([name (car kv)])
-			       (unless (hashtable-contains? locs name)
-				 (hashtable-set! locs name (GetShaderLocation s name))))) kv-list)
-		 (for-each (lambda (pic-kv)
-			     (let* ([name (car pic-kv)]
-				    [pic-for-val (cdr pic-kv)]
-				    [rt-key (list name (to-int w) (to-int h))]
-				    [loc (hashtable-ref locs name #f)])
-			       (let ([rt (if (hashtable-contains? rt-pool rt-key)
-					     (hashtable-ref rt-pool rt-key #f)
-					     (let ([rt-new (LoadRenderTexture (to-int w) (to-int h))])
-					       (hashtable-set! rt-pool rt-key rt-new)
-					       rt-new))])
-				 (BeginTextureMode rt)
-				 (clear-background black)
-				 ((picture-draw pic-for-val) f)
-				 (EndTextureMode))))
-			   pic-kv-list)
-		 (BeginShaderMode s)
-		 (for-each
-                  (lambda (pic-kv)
-                    (let* ([name (car pic-kv)]
-                           [rt-key (list name (to-int w) (to-int h))]
-                           [loc (hashtable-ref locs name #f)]
-                           [rt (hashtable-ref rt-pool rt-key #f)])
-                      (SetShaderValueTexture s loc (ftype-&ref RenderTexture (texture) rt))))
-                  pic-kv-list)
-		 (for-each
-		  (lambda (other-kv)
-		    (let* ([name (car other-kv)]
-			   [val (cdr other-kv)]
-			   [loc (hashtable-ref locs name #f)])
-		      (cond
-		       [(texture? val) (SetShaderValueTexture s loc (texture-data val))]
-		       [(inexact? val)
-			(let ([ptr (float-address name)])
-			  (foreign-set! 'float ptr 0 val)
-			  (SetShaderValue s loc ptr SHADER_UNIFORM_FLOAT))])))
-		  other-kv-list)
-		 (draw-texture (color->texture blank) f)
-		 (EndShaderMode))))
+		 (when s
+		   (for-each (lambda (kv)
+			       (let ([name (car kv)])
+				 (unless (hashtable-contains? locs name)
+				   (hashtable-set! locs name (GetShaderLocation s name))))) kv-list)
+		   (for-each (lambda (pic-kv)
+			       (let* ([name (car pic-kv)]
+				      [pic-for-val (cdr pic-kv)]
+				      [rt-key (list name (to-int w) (to-int h))]
+				      [loc (hashtable-ref locs name #f)])
+				 (let ([rt (if (hashtable-contains? rt-pool rt-key)
+					       (hashtable-ref rt-pool rt-key #f)
+					       (let ([rt-new (LoadRenderTexture (to-int w) (to-int h))])
+						 (hashtable-set! rt-pool rt-key rt-new)
+						 rt-new))])
+				   (BeginTextureMode rt)
+				   (clear-background black)
+				   ((picture-draw pic-for-val) f)
+				   (EndTextureMode))))
+			     pic-kv-list)
+		   (BeginShaderMode s)
+		   (for-each
+                    (lambda (pic-kv)
+                      (let* ([name (car pic-kv)]
+                             [rt-key (list name (to-int w) (to-int h))]
+                             [loc (hashtable-ref locs name #f)]
+                             [rt (hashtable-ref rt-pool rt-key #f)])
+			(SetShaderValueTexture s loc (ftype-&ref RenderTexture (texture) rt))))
+                    pic-kv-list)
+		   (for-each
+		    (lambda (other-kv)
+		      (let* ([name (car other-kv)]
+			     [val (cdr other-kv)]
+			     [loc (hashtable-ref locs name #f)])
+			(cond
+			 [(texture? val) (SetShaderValueTexture s loc (texture-data val))]
+			 [(inexact? val)
+			  (let ([ptr (float-address name)])
+			    (foreign-set! 'float ptr 0 val)
+			    (SetShaderValue s loc ptr SHADER_UNIFORM_FLOAT))])))
+		    other-kv-list)
+		   (draw-texture (color->texture blank) f)
+		   (EndShaderMode)))))
 	   (merge-deps ; picture的deps 和 texture本身的deps
-	    (map cdr (filter (lambda (kv) (texture? (cdr kv))) kv-list))
+	    (cons sh (map cdr (filter (lambda (kv) (texture? (cdr kv))) kv-list)))
 	    (apply merge-deps (map (lambda (kv) (picture-deps (cdr kv))) pic-kv-list))))))))
   )

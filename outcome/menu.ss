@@ -17,21 +17,22 @@
 
 (load-directory ".")
 
+(define rule (above (beside (default (resource 'wipes 2))
+			    (default (resource 'wipes 3)))
+		    (beside (default (resource 'wipes 4))
+			    (default (resource 'wipes 5)))))
+
 (define shaded-ani
   (lambda (ani1 ani2)
     (lambda (p)
-      (shaded (resource 'fs 'dissolve) `(("texture2" . ,(ani2 p)) ("texture1" . ,(ani1 p))
-		   ("rule" . ,(resource 'wipes 1)) ("progress" . ,p) ("feather" . 0.0))))))
+      (shaded (resource 'dissolve 'fs) `(("texture2" . ,(ani2 p)) ("texture1" . ,(ani1 p))
+					 ("rule" . ,(default (resource 'wipes 7))) ("progress" . ,p) ("feather" . 0.0))))))
 
-(define ani (crossfade (still (beside
-			       (default (resource 'morning))
-			       (default (resource 'afternoon))))
-		       (still (above
-			       (default (resource 'morning))
-			       (default (resource 'afternoon))))))
+(define ani (crossfade (still (default (resource 'morning)))
+			(still (default (resource 'afternoon)))))
 
-(define s (hold (linear 5 ani)))
-(define s2 (hold (backward 5 ani)))
+(define s (hold (linear 1 ani)))
+(define s2 (hold (backward 1 ani)))
 (define s1 (change (clicked? MOUSE_BUTTON_LEFT) s s2))
 
 (define g (init "config.ini"))
