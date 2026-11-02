@@ -1,5 +1,6 @@
 (library (game picture)
-  (export default fade composite scale at shaded beside above)
+  (export picture? picture-draw picture-deps
+   default fade composite scale at shaded beside above)
   (import (chezscheme)
 	  (ffi raylib binding)
 	  (game resource) ;texture
@@ -8,62 +9,94 @@
 	  (game type)
 	  (game color))
 
+  (define-record-type picture
+    (fields draw deps))
+
+  (define merge-deps
+    (lambda depss
+      (let ([seen (make-hashtable equal-hash equal?)]
+	    [out '()])
+	(for-each
+	 (lambda (ds)
+	   (for-each (lambda (d)
+		       (unless (hashtable-contains? seen d)
+			 (hashtable-set! seen d #t)
+			 (set! out (cons d out))))
+		     ds))
+	 depss)
+	(reverse out))))
+
   (define default
     (lambda (tex)
-      (lambda (f)			; picture理应只关心frame
-	(clear-background black)
-	(draw-texture tex f))))
+      (make-picture
+       (lambda (f)
+	 (clear-background black)
+	 (draw-texture tex f))
+       (list tex))))
+
+  (define fade
+    (lambda (pic alpha)
+      (assert (<= 0 alpha 1.0))
+      (make-picture
+       (lambda (f)
+	 ((picture-draw pic)
+	  (frame-change-tint f (color-alpha (frame-tint f) alpha))))
+       (picture-deps pic))))
 
   (define scale
     (lambda (pic times)
-      (lambda (f)
-	(let ([dest (frame-dest f)])
-	  (let-values ([(x y w h) (rectangle-values dest)])
-	    (pic (frame-change-dest f (make-rectangle x y (* w times) (* h times)))))))))
+      (make-picture
+       (lambda (f)
+	 (let ([dest (frame-dest f)])
+	   (let-values ([(x y w h) (rectangle-values dest)])
+	     ((picture-draw pic)
+	      (frame-change-dest f (make-rectangle x y (* w times) (* h times)))))))
+       (picture-deps pic))))
 
   (define at
     (lambda (pic fn-xy)  ;fn-xy 是一个输入x，y返回(values x y)的函数
-      (lambda (f)
-	(let ([dest (frame-dest f)])
-	  (let*-values ([(x y w h) (rectangle-values dest)]
-			[(x-new y-new) (fn-xy x y)])
-	    (pic (frame-change-dest f (make-rectangle x-new y-new w h))))))))
+      (make-picture
+       (lambda (f)
+	 (let ([dest (frame-dest f)])
+	   (let*-values ([(x y w h) (rectangle-values dest)]
+			 [(x-new y-new) (fn-xy x y)])
+	     ((picture-draw pic) (frame-change-dest f (make-rectangle x-new y-new w h))))))
+       (picture-deps pic))))
 
   (define beside
     (case-lambda
       [(left right) (beside 0.5 left right)]
       [(ratio left right)
-       (lambda (f)
-	 (let ([dest (frame-dest f)])
-           (let-values ([(x y w h) (rectangle-values dest)])
-             (let* ([lw (* w ratio)]
-                    [rw (- w lw)])
-               (left  (frame-change-dest f (make-rectangle x y lw h)))
-               (right (frame-change-dest f (make-rectangle (+ x lw) y rw h)))))))]))
+       (make-picture
+	(lambda (f)
+	  (let ([dest (frame-dest f)])
+            (let-values ([(x y w h) (rectangle-values dest)])
+              (let* ([lw (* w ratio)]
+                     [rw (- w lw)])
+		((picture-draw left)  (frame-change-dest f (make-rectangle x y lw h)))
+		((picture-draw right) (frame-change-dest f (make-rectangle (+ x lw) y rw h)))))))
+	(merge-deps (picture-deps left) (picture-deps right)))]))
 
   (define above
     (case-lambda
       [(top bottom) (above 0.5 top bottom)]
       [(ratio top bottom)
-       (lambda (f)
-	 (let ([dest (frame-dest f)])
-           (let-values ([(x y w h) (rectangle-values dest)])
-             (let* ([th (* h ratio)]
-                    [bh (- h th)])
-               (top    (frame-change-dest f (make-rectangle x y w th)))
-               (bottom (frame-change-dest f (make-rectangle x (+ y th) w bh)))))))]))
+       (make-picture
+	(lambda (f)
+	  (let ([dest (frame-dest f)])
+            (let-values ([(x y w h) (rectangle-values dest)])
+              (let* ([th (* h ratio)]
+                     [bh (- h th)])
+		((picture-draw top) (frame-change-dest f (make-rectangle x y w th)))
+		((picture-draw bottom) (frame-change-dest f (make-rectangle x (+ y th) w bh)))))))
+	(merge-deps (picture-deps top) (picture-deps bottom)))]))
   
   (define composite
     (lambda pics
-      (lambda (f)
-	(for-each (lambda (p) (p f)) pics))))
-
-  (define fade
-    (lambda (pic alpha)
-      (assert (<= 0 alpha 1.0))
-      (lambda (f)
-	(let* ([t (frame-tint f)])
-	  (pic (frame-change-tint f (color-alpha t alpha)))))))
+      (make-picture
+       (lambda (f)
+	 (for-each (lambda (p) ((picture-draw p) f)) pics))
+       (apply merge-deps (map picture-deps pics)))))
 
   (define to-int (lambda (x) (inexact->exact (round x))))
   
@@ -77,52 +110,56 @@
 				   (hashtable-set! addrs key addr)
 				   addr))))])
       (lambda (sh kv-list)
-	(let-values ([(pic-kv-list other-kv-list) (partition (lambda (kv) (procedure? (cdr kv))) kv-list)])
-	  (lambda (f)
-	    (let ([s (shader-data sh)]
-		  [locs (shader-locations sh)]
-		  [dest (frame-dest f)])
-	      (let-values ([(x y w h) (rectangle-values dest)])
-		(for-each (lambda (kv)
-			    (let ([name (car kv)])
-			      (unless (hashtable-contains? locs name)
-				(hashtable-set! locs name (GetShaderLocation s name))))) kv-list)
-		(for-each (lambda (pic-kv)
-			    (let* ([name (car pic-kv)]
-				   [pic-for-val (cdr pic-kv)]
-				   [rt-key (list name (to-int w) (to-int h))]
-				   [loc (hashtable-ref locs name #f)])
-			      (let ([rt (if (hashtable-contains? rt-pool rt-key)
-					    (hashtable-ref rt-pool rt-key #f)
-					    (let ([rt-new (LoadRenderTexture (to-int w) (to-int h))])
-					      (hashtable-set! rt-pool rt-key rt-new)
-					      rt-new))])
-				(BeginTextureMode rt)
-				(clear-background black)
-				(pic-for-val f)
-				(EndTextureMode))))
-			  pic-kv-list)
-		(BeginShaderMode s)
-		(for-each
-                 (lambda (pic-kv)
-                   (let* ([name (car pic-kv)]
-                          [rt-key (list name (to-int w) (to-int h))]
-                          [loc (hashtable-ref locs name #f)]
-                          [rt (hashtable-ref rt-pool rt-key #f)])
-                     (SetShaderValueTexture s loc (ftype-&ref RenderTexture (texture) rt))))
-                 pic-kv-list)
-		(for-each
-		 (lambda (other-kv)
-		   (let* ([name (car other-kv)]
-			  [val (cdr other-kv)]
-			  [loc (hashtable-ref locs name #f)])
-		     (cond
-		      [(texture? val) (SetShaderValueTexture s loc (texture-data val))]
-		      [(inexact? val)
-		       (let ([ptr (float-address name)])
-			 (foreign-set! 'float ptr 0 val)
-			 (SetShaderValue s loc ptr SHADER_UNIFORM_FLOAT))])))
-		 other-kv-list)
-		(draw-texture (color->texture blank) f)
-		(EndShaderMode))))))))
+	(let-values ([(pic-kv-list other-kv-list) (partition (lambda (kv) (picture? (cdr kv))) kv-list)])
+	  (make-picture
+	   (lambda (f)
+	     (let ([s (shader-data sh)]
+		   [locs (shader-locations sh)]
+		   [dest (frame-dest f)])
+	       (let-values ([(x y w h) (rectangle-values dest)])
+		 (for-each (lambda (kv)
+			     (let ([name (car kv)])
+			       (unless (hashtable-contains? locs name)
+				 (hashtable-set! locs name (GetShaderLocation s name))))) kv-list)
+		 (for-each (lambda (pic-kv)
+			     (let* ([name (car pic-kv)]
+				    [pic-for-val (cdr pic-kv)]
+				    [rt-key (list name (to-int w) (to-int h))]
+				    [loc (hashtable-ref locs name #f)])
+			       (let ([rt (if (hashtable-contains? rt-pool rt-key)
+					     (hashtable-ref rt-pool rt-key #f)
+					     (let ([rt-new (LoadRenderTexture (to-int w) (to-int h))])
+					       (hashtable-set! rt-pool rt-key rt-new)
+					       rt-new))])
+				 (BeginTextureMode rt)
+				 (clear-background black)
+				 ((picture-draw pic-for-val) f)
+				 (EndTextureMode))))
+			   pic-kv-list)
+		 (BeginShaderMode s)
+		 (for-each
+                  (lambda (pic-kv)
+                    (let* ([name (car pic-kv)]
+                           [rt-key (list name (to-int w) (to-int h))]
+                           [loc (hashtable-ref locs name #f)]
+                           [rt (hashtable-ref rt-pool rt-key #f)])
+                      (SetShaderValueTexture s loc (ftype-&ref RenderTexture (texture) rt))))
+                  pic-kv-list)
+		 (for-each
+		  (lambda (other-kv)
+		    (let* ([name (car other-kv)]
+			   [val (cdr other-kv)]
+			   [loc (hashtable-ref locs name #f)])
+		      (cond
+		       [(texture? val) (SetShaderValueTexture s loc (texture-data val))]
+		       [(inexact? val)
+			(let ([ptr (float-address name)])
+			  (foreign-set! 'float ptr 0 val)
+			  (SetShaderValue s loc ptr SHADER_UNIFORM_FLOAT))])))
+		  other-kv-list)
+		 (draw-texture (color->texture blank) f)
+		 (EndShaderMode))))
+	   (merge-deps ; picture的deps 和 texture本身的deps
+	    (map cdr (filter (lambda (kv) (texture? (cdr kv))) kv-list))
+	    (apply merge-deps (map (lambda (kv) (picture-deps (cdr kv))) pic-kv-list))))))))
   )

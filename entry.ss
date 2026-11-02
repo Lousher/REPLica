@@ -20,7 +20,7 @@
 (define rule3 (make-texture "store/asset/wipes/3.png"))
 (define rule4 (make-texture "store/asset/wipes/4.png"))
 (define sh1 (make-shader #f "store/shaders/dissolve.fs"))
-(define bun (make-bundle 1 (list tex tex2 mus sh1 rule1 rule2 rule3 rule4)))
+(define bun (list tex tex2 mus sh1 rule1 rule2 rule3 rule4))
 
 (define pic1 (default tex))
 (define pic2 (default tex2))
