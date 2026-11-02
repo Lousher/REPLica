@@ -13,8 +13,19 @@
 (import (game fader))
 (import (game tool))
 
-(load-texture-directory "store/asset/button/" "png")
+(alias resource resource-fuzzy-query)
+
+(load-directory ".")
+
+(define s (hold (linear 2
+			(crossfade (still (default (resource 'morning)))
+				   (still (default (resource 'afternoon)))))))
+
+(define s-with-loader (sequential loader s))
+
+(define bun (list (resource 'morning)
+		  (resource 'afternoon)))
 
 (define g (init "config.ini"))
 
-(g (s-full bun))
+(g (s-with-loader bun))

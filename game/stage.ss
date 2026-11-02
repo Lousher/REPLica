@@ -29,14 +29,13 @@
 	(lambda (win)
 	  (res win)))))
   
-  #| loader 是特殊的stage，加载资源 |#
+  #| loader 是特殊的stage，加载资源,bun 就是资源的list |# 
   (define loader
     (lambda (bun)
       (lambda (win)
-	(let* ([ress (bundle-resources bun)]
-	       [texs (filter texture? ress)]
-	       [mucs (filter music? ress)]
-	       [shs (filter shader? ress)]
+	(let* ([texs (filter texture? bun)]
+	       [mucs (filter music? bun)]
+	       [shs (filter shader? bun)]
 	       [texs-unload (filter (lambda (t) (not (texture-data t))) texs)]
 	       [mucs-unload (filter (lambda (t) (not (music-data t))) mucs)]
 	       [shs-unload (filter (lambda (t) (not (shader-data t))) shs)])
