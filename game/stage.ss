@@ -46,14 +46,15 @@
 	 (lambda (win)
 	   (when (and (ev win) (not switched?))
 	     (let* ([old-deps ((stage-deps current))]
-		    [new-deps ((stage-deps sg2))]
-		    [to-release (resource-difference old-deps new-deps)])
-	       (for-each unloader to-release))
+		    [new-deps ((stage-deps sg2))])
+	       (unless (null? new-deps)
+		 (let ([to-release (resource-difference old-deps new-deps)])
+		   (for-each unloader to-release))))
 	     (set! current sg2)
 	     (set! switched? #t))
 	   ((stage-perform current) win))
 	 (lambda ()
-	   (merge-deps (stage-deps sg1) (stage-deps sg2)))))))
+	   (merge-deps ((stage-deps sg1)) ((stage-deps sg2))))))))
   
   #| loader 是特殊的stage builder，加载资源,bun 就是资源的list |#
 

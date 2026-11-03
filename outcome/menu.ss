@@ -32,7 +32,7 @@
 		("rule" . ,rule) ("progress" . ,p) ("feather" . 0.0))))))
 
 (define ani1 (crossfade (still (default (resource 'morning)))
-			(still (default (resource 'morning)))))
+			(still (default (resource 'afternoon)))))
 
 (define ani2 (shaded-ani (still (scale (default (resource 'afternoon)) 2))
 			 (still (default (resource 'afternoon)))))
@@ -42,7 +42,9 @@
 (define four-matrix-pic (above (beside mor aft)
 			       (beside aft mor)))
 
-(define s1 (hold (linear 2 ani1)))
+(define s1 (change (clicked? MOUSE_BUTTON_LEFT)
+		   (hold (freeze 0 (still mor)))
+		   (hold (linear 2 ani1))))
 (define s2 (hold (linear 2 ani2)))
 
 
