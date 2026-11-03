@@ -50,4 +50,4 @@
 
 (define g (init "config.ini"))
 
-(g (row (column s1 s2) (column s2 s1)))
+(g s2)

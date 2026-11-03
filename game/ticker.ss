@@ -3,7 +3,8 @@
   (import (chezscheme)
 	  (game window)
 	  (game picture))
-  #| 目前用于驱动animator |# 
+  #| 目前用于驱动animator  #f for ending|#
+  
   (define linear
     (lambda (dur ani)
       (let ([started #f])
@@ -12,7 +13,8 @@
 	  (let* ([p (min 1.0 (/ (- (uptime win) started) dur))]
 		 [pic (ani p)])
 	    ((picture-drawer pic) (window-frame win))
-	    (picture-deps pic))))))
+	    (if (>= p 1.0) #f
+		(picture-deps pic)))))))
 
   (define backward
     (lambda (dur ani)
@@ -22,7 +24,8 @@
 	  (let* ([p (min 1.0 (/ (- (uptime win) started) dur))]
 		 [pic (ani (- 1.0 p))])
 	    ((picture-drawer pic) (window-frame win))
-	    (picture-deps pic))))))
+	    (if (>= p 1.0) #f
+		(picture-deps pic)))))))
 
   (define freeze
     (lambda (p ani)

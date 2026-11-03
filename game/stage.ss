@@ -1,7 +1,7 @@
 (library (game stage)
   (export stage? stage-perform stage-deps
-   hold loader 
-   parallel change row column)
+   hold 
+   parallel change row column sequential)
   (import
    (game resource)
    (game type)
@@ -15,26 +15,47 @@
   #| hold 是最简单的stage,持续在win上保持timer?存在|#
   (define hold
     (lambda (timer)
-      (let ([deps #f]
+      (let ([deps #f] [done? #f]
 	    [loaded (make-hashtable string-hash string=?)])
 	(make-stage
 	 (lambda (win)
-	   (let ([d (timer win)])
-	     (unless deps (set! deps d))
-	     (for-each
-	      (lambda (r)
-		(let ([k (resource->key r)])
-		  (unless (hashtable-contains? loaded k)
-		    (hashtable-set! loaded k #t)
-		    (loader r))))
-	      d)))
+	   (cond
+	    [done? #f]
+	    [else 
+	     (let ([d (timer win)])
+	       (if (not d)
+		   (begin (set! done? #t) #f)
+		   (begin 
+		     (unless deps (set! deps d))
+		     (for-each
+		      (lambda (r)
+			(let ([k (resource->key r)])
+			  (unless (hashtable-contains? loaded k)
+			    (hashtable-set! loaded k #t)
+			    (loader r))))
+		      d)
+		     #t)))]))
 	 (lambda () (or deps '()))))))
+
+  (define sequential
+    (lambda sgs
+      (let ([idx 0])
+	(make-stage
+	 (lambda (win)
+	   (if (>= idx (length sgs)) #f
+	       (let ([r ((stage-perform (list-ref sgs idx)) win)])
+		 (if r #t (begin (set! idx (+ idx 1)) #t)))))
+	 (lambda () (apply merge-deps (map (lambda (s) ((stage-deps s))) sgs)))))))
   
   (define parallel
     (lambda sgs
       (make-stage
        (lambda (win)
-         (for-each (lambda (s) ((stage-perform s) win)) sgs))
+	 (let loop ([rest sgs] [all-done? #t])
+	   (if (null? rest)
+	       (if all-done? #f #t)
+	       (let ([r ((stage-perform (car rest)) win)])
+		 (loop (cdr (and all-done? (not r))))))))
        (lambda ()
 	 (apply merge-deps (map (lambda (s) ((stage-deps s))) sgs))))))
 
@@ -48,8 +69,7 @@
 	     (let* ([old-deps ((stage-deps current))]
 		    [new-deps ((stage-deps sg2))])
 	       (unless (null? new-deps)
-		 (let ([to-release (resource-difference old-deps new-deps)])
-		   (for-each unloader to-release))))
+		 (for-each unloader (resource-difference old-deps new-deps))))
 	     (set! current sg2)
 	     (set! switched? #t))
 	   ((stage-perform current) win))
@@ -67,13 +87,14 @@
 	   (let-values ([(x y w h) (rectangle-values dest)])
 	     (let* ([n (length sgs)]
 		    [sw (/ w n)])
-	       (let loop ([rest sgs] [i 0])
-		 (unless (null? rest)
-		   ((stage-perform (car rest))
-		    (window-change-frame
-		     win
-		     (frame-change-dest f (make-rectangle (+ x (* i sw)) y sw h))))
-		   (loop (cdr rest) (+ i 1))))))))
+	       (let loop ([rest sgs] [i 0] [all-done? #t])
+		 (if (null? rest)
+		     (if all-done? #f #t)
+		     (let ([r ((stage-perform (car rest))
+			       (window-change-frame
+				win
+				(frame-change-dest f (make-rectangle (+ x (* i sw)) y sw h))))])
+		       (loop (cdr rest) (+ i 1) (and all-done? (not r))))))))))
        (lambda ()
 	 (apply merge-deps (map (lambda (s) ((stage-deps s))) sgs))))))
 
@@ -86,15 +107,16 @@
            (let-values ([(x y w h) (rectangle-values dest)])
 	     (let* ([n  (length sgs)]
 		    [sh (/ h n)])
-               (let loop ([rest sgs] [i 0])
-                 (unless (null? rest)
-                   ((stage-perform (car rest))
-		    (window-change-frame
-		     win
-		     (frame-change-dest
-		      f
-		      (make-rectangle x (+ y (* i sh)) w sh))))
-                   (loop (cdr rest) (+ i 1))))))))
+               (let loop ([rest sgs] [i 0] [all-done? #t])
+                 (if (null? rest)
+		     (if all-done? #f #t)
+		     (let ([r ((stage-perform (car rest))
+			       (window-change-frame
+				win
+				(frame-change-dest
+				 f
+				 (make-rectangle x (+ y (* i sh)) w sh))))])
+                       (loop (cdr rest) (+ i 1) (and all-done? (not r))))))))))
        (lambda ()
          (apply merge-deps (map (lambda (s) ((stage-deps s))) sgs))))))
 
