@@ -1,6 +1,6 @@
 (library (game clip) ;和picture一样，在
   (export clip? clip-player clip-deps
-   plain)
+   dry)
   (import (chezscheme)
 	  (game resource)
 	  (game window) ;广义上的window
@@ -9,7 +9,7 @@
   (define-record-type clip
     (fields player deps))
 
-  (define plain
+  (define dry
     (lambda (mus)
       (make-clip
        (lambda (cnl)			; ← 接收 channel

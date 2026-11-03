@@ -22,7 +22,7 @@
 		    (beside (default (resource 'wipes 4))
 			    (default (resource 'wipes 5)))))
 
-(define bgm (loop (full (plain (resource 'piano 'mp3)))))
+(define bgm (loop (plain (dry (resource 'piano 'mp3)))))
 
 (define shaded-ani
   (lambda (ani1 ani2)
@@ -31,14 +31,14 @@
 	      `(("texture2" . ,(ani2 p)) ("texture1" . ,(ani1 p))
 		("rule" . ,rule) ("progress" . ,p) ("feather" . 0.0))))))
 
-(define ani1 (crossfade (still (default (resource 'morning)))
+(define ani1 (shaded-ani (still (default (resource 'morning)))
 			(still (default (resource 'morning)))))
 
-(define ani2 (shaded-ani (still (scale (default (resource 'afternoon)) 2))
+(define ani2 (crossfade (still (scale (default (resource 'afternoon)) 2))
 			 (still (default (resource 'afternoon)))))
 
 (define s (hold (linear 2 ani1)))
-(define s2 (sequential
+(define s2 (parallel
 	    (hold bgm)
 	    (hold (linear 2 ani2))))
 (define s1 (change (clicked? MOUSE_BUTTON_LEFT) s s2))

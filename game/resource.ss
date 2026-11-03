@@ -1,5 +1,5 @@
 (library (game resource)
-  (export loader
+  (export loader unloader resource-difference merge-deps
 	  texture texture? make-texture texture-name texture-data texture-data-set! texture-source texture-source-set!
 	  music music? make-music music-name music-data music-data-set!
 	  shader shader? make-shader shader-fs shader-vs shader-data shader-data-set! shader-locations
@@ -137,13 +137,15 @@
 	     (texture-data-set! tex t)
 	     (texture-source-set! tex (make-rectangle 0.0 0.0
 						      (inexact w)
-						      (inexact h)))))
+						      (inexact h)))
+	     (TraceLog LOG_WARNING (format "[Loader]: Load ~a Texture Successfully" name))))
 	 texs-unload)
 	(for-each
 	 (lambda (muc)
 	   (let* ([name (music-name muc)]
 		  [m (LoadMusicStream name)])
-	     (music-data-set! muc m)))
+	     (music-data-set! muc m)
+	     (TraceLog LOG_WARNING (format "[Loader]: Load ~a Music Successfully" name))))
 	 mucs-unload)
 	(for-each
 	 (lambda (sh)
@@ -152,7 +154,80 @@
 		  [s (LoadShader vs fs)])
 	     (unless (IsShaderValid s)
 	       (error 'load (format "[Loader] ~a and ~a cannot load shader" fs vs)))
-	     (shader-data-set! sh s)))
+	     (shader-data-set! sh s)
+	     (TraceLog LOG_WARNING (format "[Loader]: Load ~a,~a Shader Successfully" vs fs))))
 	 shs-unload)
 	)))
+
+  (define unloader
+    (lambda (bun)
+      (let* ([texs (filter texture? bun)]
+	     [mucs (filter music? bun)]
+	     [shs (filter shader? bun)])
+	(for-each
+	 (lambda (tex)
+	   (let* ([name (texture-name tex)]
+		  [data (texture-data tex)])
+	     (UnloadTexture data)
+	     (texture-data-set! tex #f)
+	     (texture-source-set! tex #f)
+	     (TraceLog LOG_WARNING (format "[Unoader]: Unload ~a Texture Successfully" name))))
+	 texs)
+	(for-each
+	 (lambda (muc)
+	   (let* ([name (music-name muc)]
+		  [data (music-data muc)])
+	     (UnloadMusicStream data)
+	     (music-data-set! muc #f)
+	     (TraceLog LOG_WARNING (format "[Unoader]: Unload ~a Music Successfully" name))))
+	 mucs)
+	(for-each
+	 (lambda (sh)
+	   (let* ([fs (shader-fs sh)]
+		  [vs (shader-vs sh)]
+		  [data (shader-data sh)])
+	     (UnloadShader data)
+	     (shader-data-set! sh #f)
+	     (TraceLog LOG_WARNING (format "[Unoader]: Unload ~a, ~a Shader Successfully" vs fs))))
+	 shs))))
+
+  #| resource helper function |#
+
+  (define merge-deps
+    (lambda depss
+      (let ([seen (make-hashtable equal-hash equal?)]
+	    [out '()])
+	(for-each
+	 (lambda (ds)
+	   (for-each (lambda (d)
+		       (unless (hashtable-contains? seen d)
+			 (hashtable-set! seen d #t)
+			 (set! out (cons d out))))
+		     ds))
+	 depss)
+	(reverse out))))
+  
+  (define resource->key
+    (lambda (r)
+      (cond
+       [(texture? r) (texture-name r)]
+       [(music? r) (music-name r)]
+       [(shader? r) (format "~a | ~a"
+			    (or (shader-vs r) "")
+			    (or (shader-fs r) ""))]
+       [else (error 'resource->key "[Resource] Cannot generate key for resource" r)])))
+
+  (define resource-difference
+    (lambda (a b) ; a & b are both resource list
+      (let ([tbl (make-hashtable string-hash string=? (length b))])
+	(for-each (lambda (x) (hashtable-set! tbl (resource->key x) #t)) b)
+	(let loop ([rest a] [out '()])
+	  (if (null? rest)
+	      (reverse out)
+	      (let ([x (car rest)])
+		(loop (cdr rest)
+		      (if (hashtable-contains? tbl (resource->key x))
+			  out
+			  (cons x out)))))))))
   )
+

@@ -12,20 +12,6 @@
   (define-record-type picture
     (fields drawer deps))
 
-  (define merge-deps
-    (lambda depss
-      (let ([seen (make-hashtable equal-hash equal?)]
-	    [out '()])
-	(for-each
-	 (lambda (ds)
-	   (for-each (lambda (d)
-		       (unless (hashtable-contains? seen d)
-			 (hashtable-set! seen d #t)
-			 (set! out (cons d out))))
-		     ds))
-	 depss)
-	(reverse out))))
-
   (define default
     (lambda (tex)
       (make-picture
