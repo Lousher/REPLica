@@ -11,7 +11,7 @@
 	  (unless started (set! started (uptime win)))
 	  (let* ([p (min 1.0 (/ (- (uptime win) started) dur))]
 		 [pic (ani p)])
-	    ((picture-draw pic) (window-frame win))
+	    ((picture-drawer pic) (window-frame win))
 	    (picture-deps pic))))))
 
   (define backward
@@ -21,13 +21,13 @@
 	  (unless started (set! started (uptime win)))
 	  (let* ([p (min 1.0 (/ (- (uptime win) started) dur))]
 		 [pic (ani (- 1.0 p))])
-	    ((picture-draw pic) (window-frame win))
+	    ((picture-drawer pic) (window-frame win))
 	    (picture-deps pic))))))
 
   (define freeze
     (lambda (p ani)
       (let* ([pic (ani p)]
-	     [pic-draw (picture-draw pic)])
+	     [pic-draw (picture-drawer pic)])
 	(lambda (win)
 	  (pic-draw (window-frame win))
 	  (picture-deps pic)))))

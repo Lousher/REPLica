@@ -1,5 +1,5 @@
 (library (game picture)
-  (export picture? picture-draw picture-deps
+  (export picture? picture-drawer picture-deps
    default fade composite scale at shaded beside above)
   (import (chezscheme)
 	  (ffi raylib binding)
@@ -10,7 +10,7 @@
 	  (game color))
 
   (define-record-type picture
-    (fields draw deps))
+    (fields drawer deps))
 
   (define merge-deps
     (lambda depss
@@ -39,7 +39,7 @@
       (assert (<= 0 alpha 1.0))
       (make-picture
        (lambda (f)
-	 ((picture-draw pic)
+	 ((picture-drawer pic)
 	  (frame-change-tint f (color-alpha (frame-tint f) alpha))))
        (picture-deps pic))))
 
@@ -49,7 +49,7 @@
        (lambda (f)
 	 (let ([dest (frame-dest f)])
 	   (let-values ([(x y w h) (rectangle-values dest)])
-	     ((picture-draw pic)
+	     ((picture-drawer pic)
 	      (frame-change-dest f (make-rectangle x y (* w times) (* h times)))))))
        (picture-deps pic))))
 
@@ -60,7 +60,7 @@
 	 (let ([dest (frame-dest f)])
 	   (let*-values ([(x y w h) (rectangle-values dest)]
 			 [(x-new y-new) (fn-xy x y)])
-	     ((picture-draw pic) (frame-change-dest f (make-rectangle x-new y-new w h))))))
+	     ((picture-drawer pic) (frame-change-dest f (make-rectangle x-new y-new w h))))))
        (picture-deps pic))))
 
   (define beside
@@ -73,8 +73,8 @@
             (let-values ([(x y w h) (rectangle-values dest)])
               (let* ([lw (* w ratio)]
                      [rw (- w lw)])
-		((picture-draw left)  (frame-change-dest f (make-rectangle x y lw h)))
-		((picture-draw right) (frame-change-dest f (make-rectangle (+ x lw) y rw h)))))))
+		((picture-drawer left)  (frame-change-dest f (make-rectangle x y lw h)))
+		((picture-drawer right) (frame-change-dest f (make-rectangle (+ x lw) y rw h)))))))
 	(merge-deps (picture-deps left) (picture-deps right)))]))
 
   (define above
@@ -87,15 +87,15 @@
             (let-values ([(x y w h) (rectangle-values dest)])
               (let* ([th (* h ratio)]
                      [bh (- h th)])
-		((picture-draw top) (frame-change-dest f (make-rectangle x y w th)))
-		((picture-draw bottom) (frame-change-dest f (make-rectangle x (+ y th) w bh)))))))
+		((picture-drawer top) (frame-change-dest f (make-rectangle x y w th)))
+		((picture-drawer bottom) (frame-change-dest f (make-rectangle x (+ y th) w bh)))))))
 	(merge-deps (picture-deps top) (picture-deps bottom)))]))
   
   (define composite
     (lambda pics
       (make-picture
        (lambda (f)
-	 (for-each (lambda (p) ((picture-draw p) f)) pics))
+	 (for-each (lambda (p) ((picture-drawer p) f)) pics))
        (apply merge-deps (map picture-deps pics)))))
 
   (define to-int (lambda (x) (inexact->exact (round x))))
@@ -134,7 +134,7 @@
 						 rt-new))])
 				   (BeginTextureMode rt)
 				   (clear-background black)
-				   ((picture-draw pic-for-val) f)
+				   ((picture-drawer pic-for-val) f)
 				   (EndTextureMode))))
 			     pic-kv-list)
 		   (BeginShaderMode s)
