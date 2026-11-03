@@ -1,12 +1,15 @@
 (library (game fader)
   (export loop)
   (import (chezscheme)
-	  (game window))
+	  (game window)
+	  (game clip))
 
   #| envelope |#
   (define loop
     (lambda (ev)
-      (lambda (win)
-	(let ([cp (ev 0)])
-	  (cp (window-channel win))))))
+      (let* ([cp (ev 0)]
+	     [player (clip-player cp)])
+	(lambda (win)
+	  (player (window-channel win))
+	  (clip-deps cp)))))
   )

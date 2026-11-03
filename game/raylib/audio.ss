@@ -8,9 +8,10 @@
   (define play-music
     (lambda (mus)
       (let ([m (music-data mus)])
-	(if (IsMusicStreamPlaying m)
-	    (UpdateMusicStream m)
-	    (PlayMusicStream m)))))
+	(when m
+	  (if (IsMusicStreamPlaying m)
+	      (UpdateMusicStream m)
+	      (PlayMusicStream m))))))
 
   (define set-music-volume
     (lambda (mus v)
