@@ -14,12 +14,19 @@
   #| hold 是最简单的stage,持续在win上保持timer?存在|#
   (define hold
     (lambda (timer)
-      (let ([deps #f])
+      (let ([deps #f]
+	    [loaded (make-hashtable string-hash string=?)])
 	(make-stage
 	 (lambda (win)
 	   (let ([d (timer win)])
 	     (unless deps (set! deps d))
-	     (loader d)))
+	     (for-each
+	      (lambda (r)
+		(let ([k (resource->key r)])
+		  (unless (hashtable-contains? loaded k)
+		    (hashtable-set! loaded k #t)
+		    (loader r))))
+	      d)))
 	 (lambda () (or deps '()))))))
   
   (define parallel
@@ -32,15 +39,17 @@
 
   (define change
     (lambda (ev sg1 sg2)
-      (let ([current sg1])
+      (let ([current sg1]
+	    [switched? #f])
 	(make-stage
 	 (lambda (win)
-	   (when (ev)
+	   (when (and (ev) (not switched?))
 	     (let* ([old-deps ((stage-deps current))]
 		    [new-deps ((stage-deps sg2))]
 		    [to-release (resource-difference old-deps new-deps)])
-	       (unloader to-release))
-	     (set! current sg2))
+	       (for-each unloader to-release))
+	     (set! current sg2)
+	     (set! switched? #t))
 	   ((stage-perform current) win))
 	 (lambda ()
 	   (merge-deps (stage-deps sg1) (stage-deps sg2)))))))
