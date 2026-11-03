@@ -55,7 +55,7 @@
 	   (if (null? rest)
 	       (if all-done? #f #t)
 	       (let ([r ((stage-perform (car rest)) win)])
-		 (loop (cdr (and all-done? (not r))))))))
+		 (loop (cdr rest) (and all-done? (not r)))))))
        (lambda ()
 	 (apply merge-deps (map (lambda (s) ((stage-deps s))) sgs))))))
 

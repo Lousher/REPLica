@@ -10,7 +10,6 @@
 (import (game envelope))
 (import (game event))
 (import (game ticker))
-(import (game fader))
 (import (game tool))
 
 (alias resource resource-fuzzy-query)
@@ -22,7 +21,7 @@
 		    (beside (default (resource 'wipes 4))
 			    (default (resource 'wipes 5)))))
 
-(define bgm (loop (plain (dry (resource 'piano 'mp3)))))
+(define bgm (linear 3 (plain (dry (resource 'piano 'mp3)))))
 
 (define shaded-ani
   (lambda (ani1 ani2)
@@ -45,7 +44,9 @@
 (define s1 (change (clicked? MOUSE_BUTTON_LEFT)
 		   (hold (freeze 0 (still mor)))
 		   (hold (linear 2 ani1))))
-(define s2 (hold (linear 2 ani2)))
+(define s2 (parallel
+	    (hold bgm)
+	    (hold (loop 2 ani2))))
 
 
 (define g (init "config.ini"))
