@@ -6,6 +6,6 @@
   #| event 是一个输入 条件，与起始状态，满足条件后会改变输出状态的函数 |#
   (define clicked?
     (lambda (key)
-      (lambda ()
+      (lambda (win)
 	(IsMouseButtonPressed key))))
   )

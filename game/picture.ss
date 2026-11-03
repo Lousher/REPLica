@@ -16,7 +16,6 @@
     (lambda (tex)
       (make-picture
        (lambda (f)
-	 (clear-background black)
 	 (draw-texture tex f))
        (list tex))))
 
@@ -119,8 +118,10 @@
 						 (hashtable-set! rt-pool rt-key rt-new)
 						 rt-new))])
 				   (BeginTextureMode rt)
-				   (clear-background black)
-				   ((picture-drawer pic-for-val) f)
+				   ((picture-drawer pic-for-val)
+				    (frame-change-dest
+				     f
+				     (make-rectangle 0.0 0.0 w h)))
 				   (EndTextureMode))))
 			     pic-kv-list)
 		   (BeginShaderMode s)

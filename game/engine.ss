@@ -3,6 +3,8 @@
   (import (chezscheme)
 	  (game window)
 	  (game stage)
+	  (game color)
+	  (game type)
 	  (ffi raylib binding)
 	  (ffi rini binding))
 
@@ -14,7 +16,8 @@
 	     [h (rini_get_value ini-cfg "height")]
 	     [fps (rini_get_value ini-cfg "fps")])
 	(let* ([fr (make-frame w h)]
-	       [win-init (make-window fr)])
+	       [win-init (make-window fr)]
+	       [C (ftype-alloc Color)])
 	  (lambda (s)		; given stage
 	    (InitWindow w h title)
 	    (InitAudioDevice)
@@ -23,6 +26,7 @@
 	    (let loop ([win win-init])
 	      (unless (WindowShouldClose)
 		(BeginDrawing)
+		(ClearBackground (Color<=color black C))
 		((stage-perform s) win)
 		(EndDrawing)
 		(loop (tick win))))

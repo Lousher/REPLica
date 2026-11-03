@@ -1,10 +1,11 @@
 (library (game stage)
   (export stage? stage-perform stage-deps
-   hold loader
-   parallel change)
+   hold loader 
+   parallel change row column)
   (import
    (game resource)
    (game type)
+   (game window)
    (chezscheme))
 
   (define-record-type stage
@@ -43,7 +44,7 @@
 	    [switched? #f])
 	(make-stage
 	 (lambda (win)
-	   (when (and (ev) (not switched?))
+	   (when (and (ev win) (not switched?))
 	     (let* ([old-deps ((stage-deps current))]
 		    [new-deps ((stage-deps sg2))]
 		    [to-release (resource-difference old-deps new-deps)])
@@ -54,6 +55,46 @@
 	 (lambda ()
 	   (merge-deps (stage-deps sg1) (stage-deps sg2)))))))
   
-  #| loader 是特殊的stage builder，加载资源,bun 就是资源的list |# 
+  #| loader 是特殊的stage builder，加载资源,bun 就是资源的list |#
+
+  (define row
+    (lambda sgs
+      (make-stage
+       (lambda (win)
+	 (let* ([f (window-frame win)]
+		[dest (frame-dest f)])
+	   (let-values ([(x y w h) (rectangle-values dest)])
+	     (let* ([n (length sgs)]
+		    [sw (/ w n)])
+	       (let loop ([rest sgs] [i 0])
+		 (unless (null? rest)
+		   ((stage-perform (car rest))
+		    (window-change-frame
+		     win
+		     (frame-change-dest f (make-rectangle (+ x (* i sw)) y sw h))))
+		   (loop (cdr rest) (+ i 1))))))))
+       (lambda ()
+	 (apply merge-deps (map (lambda (s) ((stage-deps s))) sgs))))))
+
+  (define column
+    (lambda sgs
+      (make-stage
+       (lambda (win)
+         (let* ([f (window-frame win)]
+                [dest (frame-dest f)])
+           (let-values ([(x y w h) (rectangle-values dest)])
+	     (let* ([n  (length sgs)]
+		    [sh (/ h n)])
+               (let loop ([rest sgs] [i 0])
+                 (unless (null? rest)
+                   ((stage-perform (car rest))
+		    (window-change-frame
+		     win
+		     (frame-change-dest
+		      f
+		      (make-rectangle x (+ y (* i sh)) w sh))))
+                   (loop (cdr rest) (+ i 1))))))))
+       (lambda ()
+         (apply merge-deps (map (lambda (s) ((stage-deps s))) sgs))))))
 
   )

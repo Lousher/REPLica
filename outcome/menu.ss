@@ -31,18 +31,21 @@
 	      `(("texture2" . ,(ani2 p)) ("texture1" . ,(ani1 p))
 		("rule" . ,rule) ("progress" . ,p) ("feather" . 0.0))))))
 
-(define ani1 (shaded-ani (still (default (resource 'morning)))
+(define ani1 (crossfade (still (default (resource 'morning)))
 			(still (default (resource 'morning)))))
 
-(define ani2 (crossfade (still (scale (default (resource 'afternoon)) 2))
+(define ani2 (shaded-ani (still (scale (default (resource 'afternoon)) 2))
 			 (still (default (resource 'afternoon)))))
 
-(define s (hold (linear 2 ani1)))
-(define s2 (parallel
-	    (hold bgm)
-	    (hold (linear 2 ani2))))
-(define s1 (change (clicked? MOUSE_BUTTON_LEFT) s s2))
+(define mor (default (resource 'morning)))
+(define aft (default (resource 'afternoon)))
+(define four-matrix-pic (above (beside mor aft)
+			       (beside aft mor)))
+
+(define s1 (hold (linear 2 ani1)))
+(define s2 (hold (linear 2 ani2)))
+
 
 (define g (init "config.ini"))
 
-(g s1)
+(g (row (column s1 s2) (column s2 s1)))
