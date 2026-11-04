@@ -1,9 +1,10 @@
 (library (game resource)
   (export loader unloader resource-difference merge-deps resource->key
-	  texture texture? make-texture texture-name texture-data texture-data-set! texture-source texture-source-set!
-	  music music? make-music music-name music-data music-data-set!
-	  shader shader? make-shader shader-fs shader-vs shader-data shader-data-set! shader-locations
-	  file-image? file-music? directory-walk load-directory resource-fuzzy-query)
+	  texture? make-texture texture-name texture-data texture-data-set! texture-source texture-source-set!
+	  music? make-music music-name music-data music-data-set!
+	  sound? make-sound sound-name sound-data sound-data-set!
+	  shader? make-shader shader-fs shader-vs shader-data shader-data-set! shader-locations
+	  directory-walk load-directory resource-fuzzy-query)
   (import (chezscheme)
 	  (game tool)
 	  (game type)
@@ -29,6 +30,14 @@
        (lambda (n)
 	 (new n #f)))))
 
+    (define-record-type sound
+      (fields name
+	      (mutable data))
+      (protocol
+       (lambda (new)
+	 (lambda (n)
+	 (new n #f)))))
+
   (define-record-type shader
     (fields vs fs (mutable data) locations)
     (protocol
@@ -42,7 +51,7 @@
     (lambda (dir)
       (map (lambda (f) (path-build dir f)) (directory-list dir))))
 
-  (define file-image?
+  (define file-visual?
     (let ([image-exts '(png jpg jpeg bmp tga gif psd hdr pic pnm qoi)])
       (lambda (f)
 	(and (memq (string->symbol (path-extension f)) image-exts)
@@ -54,7 +63,7 @@
 	(and (memq (string->symbol (path-extension f)) exts)
              (file-regular? f)))))
 
-  (define file-music?
+  (define file-audio?
     (let ([exts '(wav ogg mp3 flac qoa xm mod)])
       (lambda (f)
 	(and (memq (string->symbol (path-extension f)) exts)
@@ -96,12 +105,12 @@
       (unless (file-directory? dir)
 	(error 'load-directory "[Resource] Not a directory" dir))
       (let* ([files (directory-walk dir)]
-	     [imgs (filter file-image? files)]
-	     [mucs (filter file-music? files)]
+	     [imgs (filter file-visual? files)]
+	     [auds (filter file-audio? files)]
 	     [shs (filter file-shader? files)])
-	(set! FILES (append imgs mucs shs))
+	(set! FILES (append imgs auds shs))
 	(for-each (lambda (img) (hashtable-set! RESOURCES img (make-texture img))) imgs)
-	(for-each (lambda (muc) (hashtable-set! RESOURCES muc (make-music muc))) mucs)
+	(for-each (lambda (aud) (hashtable-set! RESOURCES aud (make-music aud))) auds)
 	(for-each (lambda (sh) (hashtable-set! RESOURCES sh (make-shader (zf shs (format "~a.~a" (file-name sh) 'vs))
 									 (zf shs (format "~a.~a" (file-name sh) 'fs))))) shs)
 	)))

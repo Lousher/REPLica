@@ -1,3 +1,4 @@
+
 (load-shared-object "ffi/raylib/libraylib.so.6.2.0")
 (load-shared-object "ffi/rini/librini.so")
 (import (ffi raylib binding))
@@ -21,7 +22,8 @@
 		    (beside (default (resource 'wipes 4))
 			    (default (resource 'wipes 5)))))
 
-(define bgm (linear 3 (plain (dry (resource 'piano 'mp3)))))
+(define bgm (loop 3 (plain (dry (resource 'piano 'mp3)))))
+(define char-pic (contain (resource 'character)))
 
 (define shaded-ani
   (lambda (ani1 ani2)
@@ -41,14 +43,19 @@
 (define four-matrix-pic (above (beside mor aft)
 			       (beside aft mor)))
 
-(define s1 (change (clicked? MOUSE_BUTTON_LEFT)
-		   (hold (freeze 0 (still mor)))
-		   (hold (linear 2 ani1))))
 (define s2 (parallel
-	    (hold bgm)
 	    (hold (loop 2 ani2))))
+
+(define char-stage (hold (loop 1 (still char-pic))))
+
+(define s1 (change (clicked? MOUSE_BUTTON_LEFT)
+		   (parallel (hold bgm)
+			     (hold  (loop 3 (still mor)))
+			     (row char-stage char-stage char-stage char-stage char-stage))
+		   s2))
+
 
 
 (define g (init "config.ini"))
 
-(g s2)
+(g s1)

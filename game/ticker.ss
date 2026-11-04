@@ -1,12 +1,12 @@
 (library (game ticker)
-  (export linear freeze backward loop)
+  (export once freeze backward loop)
   (import (chezscheme)
 	  (game window)
 	  (game picture)
 	  (game clip))
   #| 目前用于驱动animator  #f for ending|#
   
-  (define linear
+  (define once
     (lambda (dur curve)
       (let ([started #f])
 	(lambda (win)
