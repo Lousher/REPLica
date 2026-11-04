@@ -65,7 +65,7 @@
             [("float") 'single-float]
             [("double") 'double-float]
             [("char") 'char]
-            [("bool") 'boolean]
+            [("bool") 'stdbool]
             [("void") 'void]
             [("unsigned char") 'unsigned-8]
             [("unsigned short") 'unsigned-16]
@@ -372,5 +372,5 @@
 
 (build-raylib-library
  "ffi/raylib/libraylib.so.6.2.0"
- "tool/raylib_api.sexpr"
+ "store/raylib/raylib_api.sexpr"
  "ffi/raylib/binding.ss")

@@ -1,7 +1,7 @@
 (library (game picture)
   (export picture? picture-drawer picture-deps
 	  default contain
-	  fade composite scale at shaded beside above )
+	  fade composite scale at shaded beside above)
   (import (chezscheme)
 	  (ffi raylib binding)
 	  (game resource) ;texture

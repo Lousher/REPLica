@@ -23,7 +23,8 @@
 			    (default (resource 'wipes 5)))))
 
 (define bgm (loop 3 (plain (dry (resource 'piano 'mp3)))))
-(define char-pic (contain (resource 'character)))
+(define c1-pic (contain (resource 'c1 'png)))
+(define c2-pic (contain (resource 'c2 'png)))
 
 (define shaded-ani
   (lambda (ani1 ani2)
@@ -46,16 +47,24 @@
 (define s2 (parallel
 	    (hold (loop 2 ani2))))
 
-(define char-stage (hold (loop 1 (still char-pic))))
+(define char-stage (hold (pingpong 5 (motivate
+				      (still c1-pic)
+				      (lambda (p)
+					(lambda (x y)
+					  (values (+ (- x 960) (* p 1920)) y)))))))
 
 (define s1 (change (clicked? MOUSE_BUTTON_LEFT)
 		   (parallel (hold bgm)
-			     (hold  (loop 3 (still mor)))
-			     (row char-stage char-stage char-stage char-stage char-stage))
+			     (hold  (loop 3 (still mor))))
 		   s2))
+
+(define char-changed-s (toggle hovered?
+			       (hold (loop 3 (still c1-pic)))
+			       (hold (loop 3 (still c2-pic)))))
 
 
 
 (define g (init "config.ini"))
 
-(g s1)
+(g (column (row s1 char-changed-s s1 char-changed-s s1) (row char-changed-s s1 char-changed-s s1 char-changed-s) ))
+

@@ -1,7 +1,7 @@
 (library (game stage)
   (export stage? stage-perform stage-deps
    hold 
-   parallel change row column sequential)
+   parallel change row column sequential toggle)
   (import
    (game resource)
    (game type)
@@ -119,5 +119,14 @@
                        (loop (cdr rest) (+ i 1) (and all-done? (not r))))))))))
        (lambda ()
          (apply merge-deps (map (lambda (s) ((stage-deps s))) sgs))))))
+
+  (define (toggle ev sg1 sg2)
+    (make-stage
+     (lambda (win)
+       (if (ev win)
+           ((stage-perform sg2) win)
+           ((stage-perform sg1) win)))
+     (lambda ()
+       (merge-deps ((stage-deps sg1)) ((stage-deps sg2))))))   ; ← 两个都合并，都预加载
 
   )

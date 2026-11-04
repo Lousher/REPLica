@@ -640,11 +640,11 @@
   (define-ftype LoadFileDataCallback
     (function (string (* integer-32)) (* unsigned-8)))
   (define-ftype SaveFileDataCallback
-    (function (string void* integer-32) boolean))
+    (function (string void* integer-32) stdbool))
   (define-ftype LoadFileTextCallback
     (function (string) string))
   (define-ftype SaveFileTextCallback
-    (function (string string) boolean))
+    (function (string string) stdbool))
   (define-ftype AudioCallback
     (function (void* unsigned-32) void))
   (define-ftype Vector2
@@ -879,25 +879,25 @@
   (define CloseWindow
     (foreign-procedure #f "CloseWindow" () void))
   (define WindowShouldClose
-    (foreign-procedure #f "WindowShouldClose" () boolean))
+    (foreign-procedure #f "WindowShouldClose" () stdbool))
   (define IsWindowReady
-    (foreign-procedure #f "IsWindowReady" () boolean))
+    (foreign-procedure #f "IsWindowReady" () stdbool))
   (define IsWindowFullscreen
-    (foreign-procedure #f "IsWindowFullscreen" () boolean))
+    (foreign-procedure #f "IsWindowFullscreen" () stdbool))
   (define IsWindowHidden
-    (foreign-procedure #f "IsWindowHidden" () boolean))
+    (foreign-procedure #f "IsWindowHidden" () stdbool))
   (define IsWindowMinimized
-    (foreign-procedure #f "IsWindowMinimized" () boolean))
+    (foreign-procedure #f "IsWindowMinimized" () stdbool))
   (define IsWindowMaximized
-    (foreign-procedure #f "IsWindowMaximized" () boolean))
+    (foreign-procedure #f "IsWindowMaximized" () stdbool))
   (define IsWindowFocused
-    (foreign-procedure #f "IsWindowFocused" () boolean))
+    (foreign-procedure #f "IsWindowFocused" () stdbool))
   (define IsWindowResized
-    (foreign-procedure #f "IsWindowResized" () boolean))
+    (foreign-procedure #f "IsWindowResized" () stdbool))
   (define IsWindowState
     (foreign-procedure #f "IsWindowState"
       (unsigned-32)
-      boolean))
+      stdbool))
   (define SetWindowState
     (foreign-procedure #f "SetWindowState" (unsigned-32) void))
   (define ClearWindowState
@@ -1035,13 +1035,13 @@
   (define HideCursor
     (foreign-procedure #f "HideCursor" () void))
   (define IsCursorHidden
-    (foreign-procedure #f "IsCursorHidden" () boolean))
+    (foreign-procedure #f "IsCursorHidden" () stdbool))
   (define EnableCursor
     (foreign-procedure #f "EnableCursor" () void))
   (define DisableCursor
     (foreign-procedure #f "DisableCursor" () void))
   (define IsCursorOnScreen
-    (foreign-procedure #f "IsCursorOnScreen" () boolean))
+    (foreign-procedure #f "IsCursorOnScreen" () stdbool))
   (define ClearBackground
     (foreign-procedure #f "ClearBackground" ((& Color)) void))
   (define BeginDrawing
@@ -1117,7 +1117,7 @@
           (apply proc ret-res xargs)
           ret-res))))
   (define IsShaderValid
-    (foreign-procedure #f "IsShaderValid" ((& Shader)) boolean))
+    (foreign-procedure #f "IsShaderValid" ((& Shader)) stdbool))
   (define GetShaderLocation
     (foreign-procedure #f "GetShaderLocation"
       ((& Shader) string)
@@ -1285,11 +1285,11 @@
   (define SaveFileData
     (foreign-procedure #f "SaveFileData"
       (string void* integer-32)
-      boolean))
+      stdbool))
   (define ExportDataAsCode
     (foreign-procedure #f "ExportDataAsCode"
       ((* unsigned-8) integer-32 string)
-      boolean))
+      stdbool))
   (define LoadFileText
     (foreign-procedure #f "LoadFileText" (string) string))
   (define UnloadFileText
@@ -1297,7 +1297,7 @@
   (define SaveFileText
     (foreign-procedure #f "SaveFileText"
       (string string)
-      boolean))
+      stdbool))
   (define SetLoadFileDataCallback
     (foreign-procedure #f "SetLoadFileDataCallback"
       ((* LoadFileDataCallback))
@@ -1337,15 +1337,15 @@
       (string string)
       integer-32))
   (define FileExists
-    (foreign-procedure #f "FileExists" (string) boolean))
+    (foreign-procedure #f "FileExists" (string) stdbool))
   (define DirectoryExists
-    (foreign-procedure #f "DirectoryExists" (string) boolean))
+    (foreign-procedure #f "DirectoryExists" (string) stdbool))
   (define IsFileExtension
     (foreign-procedure #f "IsFileExtension"
       (string string)
-      boolean))
+      stdbool))
   (define IsFileHidden
-    (foreign-procedure #f "IsFileHidden" (string) boolean))
+    (foreign-procedure #f "IsFileHidden" (string) stdbool))
   (define GetFileLength
     (foreign-procedure #f "GetFileLength" (string) integer-32))
   (define GetFileModTime
@@ -1375,13 +1375,13 @@
       (string)
       integer-32))
   (define IsPathFile
-    (foreign-procedure #f "IsPathFile" (string) boolean))
+    (foreign-procedure #f "IsPathFile" (string) stdbool))
   (define IsPathDirectory
-    (foreign-procedure #f "IsPathDirectory" (string) boolean))
+    (foreign-procedure #f "IsPathDirectory" (string) stdbool))
   (define IsPathAbsolute
-    (foreign-procedure #f "IsPathAbsolute" (string) boolean))
+    (foreign-procedure #f "IsPathAbsolute" (string) stdbool))
   (define IsFileNameValid
-    (foreign-procedure #f "IsFileNameValid" (string) boolean))
+    (foreign-procedure #f "IsFileNameValid" (string) stdbool))
   (define LoadDirectoryFiles
     (let ([proc (foreign-procedure #f "LoadDirectoryFiles"
                   (string)
@@ -1394,7 +1394,7 @@
           ret-res))))
   (define LoadDirectoryFilesEx
     (let ([proc (foreign-procedure #f "LoadDirectoryFilesEx"
-                  (string string boolean)
+                  (string string stdbool)
                   (& FilePathList))])
       (lambda xargs
         (let ([ret-res (make-ftype-pointer
@@ -1407,7 +1407,7 @@
       ((& FilePathList))
       void))
   (define IsFileDropped
-    (foreign-procedure #f "IsFileDropped" () boolean))
+    (foreign-procedure #f "IsFileDropped" () stdbool))
   (define LoadDroppedFiles
     (let ([proc (foreign-procedure #f "LoadDroppedFiles"
                   ()
@@ -1428,7 +1428,7 @@
       unsigned-32))
   (define GetDirectoryFileCountEx
     (foreign-procedure #f "GetDirectoryFileCountEx"
-      (string string boolean)
+      (string string stdbool)
       unsigned-32))
   (define CompressData
     (foreign-procedure #f "CompressData"
@@ -1480,7 +1480,7 @@
   (define ExportAutomationEventList
     (foreign-procedure #f "ExportAutomationEventList"
       ((& AutomationEventList) string)
-      boolean))
+      stdbool))
   (define SetAutomationEventList
     (foreign-procedure #f "SetAutomationEventList"
       ((* AutomationEventList))
@@ -1502,17 +1502,17 @@
       ((& AutomationEvent))
       void))
   (define IsKeyPressed
-    (foreign-procedure #f "IsKeyPressed" (integer-32) boolean))
+    (foreign-procedure #f "IsKeyPressed" (integer-32) stdbool))
   (define IsKeyPressedRepeat
     (foreign-procedure #f "IsKeyPressedRepeat"
       (integer-32)
-      boolean))
+      stdbool))
   (define IsKeyDown
-    (foreign-procedure #f "IsKeyDown" (integer-32) boolean))
+    (foreign-procedure #f "IsKeyDown" (integer-32) stdbool))
   (define IsKeyReleased
-    (foreign-procedure #f "IsKeyReleased" (integer-32) boolean))
+    (foreign-procedure #f "IsKeyReleased" (integer-32) stdbool))
   (define IsKeyUp
-    (foreign-procedure #f "IsKeyUp" (integer-32) boolean))
+    (foreign-procedure #f "IsKeyUp" (integer-32) stdbool))
   (define GetKeyPressed
     (foreign-procedure #f "GetKeyPressed" () integer-32))
   (define GetCharPressed
@@ -1524,25 +1524,25 @@
   (define IsGamepadAvailable
     (foreign-procedure #f "IsGamepadAvailable"
       (integer-32)
-      boolean))
+      stdbool))
   (define GetGamepadName
     (foreign-procedure #f "GetGamepadName" (integer-32) string))
   (define IsGamepadButtonPressed
     (foreign-procedure #f "IsGamepadButtonPressed"
       (integer-32 integer-32)
-      boolean))
+      stdbool))
   (define IsGamepadButtonDown
     (foreign-procedure #f "IsGamepadButtonDown"
       (integer-32 integer-32)
-      boolean))
+      stdbool))
   (define IsGamepadButtonReleased
     (foreign-procedure #f "IsGamepadButtonReleased"
       (integer-32 integer-32)
-      boolean))
+      stdbool))
   (define IsGamepadButtonUp
     (foreign-procedure #f "IsGamepadButtonUp"
       (integer-32 integer-32)
-      boolean))
+      stdbool))
   (define GetGamepadButtonPressed
     (foreign-procedure #f "GetGamepadButtonPressed"
       ()
@@ -1566,19 +1566,19 @@
   (define IsMouseButtonPressed
     (foreign-procedure #f "IsMouseButtonPressed"
       (integer-32)
-      boolean))
+      stdbool))
   (define IsMouseButtonDown
     (foreign-procedure #f "IsMouseButtonDown"
       (integer-32)
-      boolean))
+      stdbool))
   (define IsMouseButtonReleased
     (foreign-procedure #f "IsMouseButtonReleased"
       (integer-32)
-      boolean))
+      stdbool))
   (define IsMouseButtonUp
     (foreign-procedure #f "IsMouseButtonUp"
       (integer-32)
-      boolean))
+      stdbool))
   (define GetMouseX
     (foreign-procedure #f "GetMouseX" () integer-32))
   (define GetMouseY
@@ -1656,7 +1656,7 @@
   (define IsGestureDetected
     (foreign-procedure #f "IsGestureDetected"
       (unsigned-32)
-      boolean))
+      stdbool))
   (define GetGestureDetected
     (foreign-procedure #f "GetGestureDetected" () integer-32))
   (define GetGestureHoldDuration
@@ -2090,39 +2090,39 @@
   (define CheckCollisionRecs
     (foreign-procedure #f "CheckCollisionRecs"
       ((& Rectangle) (& Rectangle))
-      boolean))
+      stdbool))
   (define CheckCollisionCircles
     (foreign-procedure #f "CheckCollisionCircles"
       ((& Vector2) single-float (& Vector2) single-float)
-      boolean))
+      stdbool))
   (define CheckCollisionCircleRec
     (foreign-procedure #f "CheckCollisionCircleRec"
       ((& Vector2) single-float (& Rectangle))
-      boolean))
+      stdbool))
   (define CheckCollisionCircleLine
     (foreign-procedure #f "CheckCollisionCircleLine"
       ((& Vector2) single-float (& Vector2) (& Vector2))
-      boolean))
+      stdbool))
   (define CheckCollisionPointRec
     (foreign-procedure #f "CheckCollisionPointRec"
       ((& Vector2) (& Rectangle))
-      boolean))
+      stdbool))
   (define CheckCollisionPointCircle
     (foreign-procedure #f "CheckCollisionPointCircle"
       ((& Vector2) (& Vector2) single-float)
-      boolean))
+      stdbool))
   (define CheckCollisionPointTriangle
     (foreign-procedure #f "CheckCollisionPointTriangle"
       ((& Vector2) (& Vector2) (& Vector2) (& Vector2))
-      boolean))
+      stdbool))
   (define CheckCollisionPointLine
     (foreign-procedure #f "CheckCollisionPointLine"
       ((& Vector2) (& Vector2) (& Vector2) integer-32)
-      boolean))
+      stdbool))
   (define CheckCollisionPointPoly
     (foreign-procedure #f "CheckCollisionPointPoly"
       ((& Vector2) (* Vector2) integer-32)
-      boolean))
+      stdbool))
   (define CheckCollisionLines
     (foreign-procedure #f "CheckCollisionLines"
       ((& Vector2)
@@ -2130,7 +2130,7 @@
        (& Vector2)
        (& Vector2)
        (* Vector2))
-      boolean))
+      stdbool))
   (define GetCollisionRec
     (let ([proc (foreign-procedure #f "GetCollisionRec"
                   ((& Rectangle) (& Rectangle))
@@ -2212,13 +2212,13 @@
           (apply proc ret-res xargs)
           ret-res))))
   (define IsImageValid
-    (foreign-procedure #f "IsImageValid" ((& Image)) boolean))
+    (foreign-procedure #f "IsImageValid" ((& Image)) stdbool))
   (define UnloadImage
     (foreign-procedure #f "UnloadImage" ((& Image)) void))
   (define ExportImage
     (foreign-procedure #f "ExportImage"
       ((& Image) string)
-      boolean))
+      stdbool))
   (define ExportImageToMemory
     (foreign-procedure #f "ExportImageToMemory"
       ((& Image) string (* integer-32))
@@ -2226,7 +2226,7 @@
   (define ExportImageAsCode
     (foreign-procedure #f "ExportImageAsCode"
       ((& Image) string)
-      boolean))
+      stdbool))
   (define GenImageColor
     (let ([proc (foreign-procedure #f "GenImageColor"
                   (integer-32 integer-32 (& Color))
@@ -2738,13 +2738,13 @@
   (define IsTextureValid
     (foreign-procedure #f "IsTextureValid"
       ((& Texture2D))
-      boolean))
+      stdbool))
   (define UnloadTexture
     (foreign-procedure #f "UnloadTexture" ((& Texture2D)) void))
   (define IsRenderTextureValid
     (foreign-procedure #f "IsRenderTextureValid"
       ((& RenderTexture2D))
-      boolean))
+      stdbool))
   (define UnloadRenderTexture
     (foreign-procedure #f "UnloadRenderTexture"
       ((& RenderTexture2D))
@@ -2810,7 +2810,7 @@
   (define ColorIsEqual
     (foreign-procedure #f "ColorIsEqual"
       ((& Color) (& Color))
-      boolean))
+      stdbool))
   (define Fade
     (let ([proc (foreign-procedure #f "Fade"
                   ((& Color) single-float)
@@ -3007,7 +3007,7 @@
           (apply proc ret-res xargs)
           ret-res))))
   (define IsFontValid
-    (foreign-procedure #f "IsFontValid" ((& Font)) boolean))
+    (foreign-procedure #f "IsFontValid" ((& Font)) stdbool))
   (define LoadFontData
     (foreign-procedure #f "LoadFontData"
       ((* unsigned-8)
@@ -3042,7 +3042,7 @@
   (define ExportFontAsCode
     (foreign-procedure #f "ExportFontAsCode"
       ((& Font) string)
-      boolean))
+      stdbool))
   (define DrawFPS
     (foreign-procedure #f "DrawFPS"
       (integer-32 integer-32)
@@ -3190,7 +3190,7 @@
   (define TextIsEqual
     (foreign-procedure #f "TextIsEqual"
       (string string)
-      boolean))
+      stdbool))
   (define TextLength
     (foreign-procedure #f "TextLength" (string) unsigned-32))
   (define TextFormat
@@ -3404,7 +3404,7 @@
           (apply proc ret-res xargs)
           ret-res))))
   (define IsModelValid
-    (foreign-procedure #f "IsModelValid" ((& Model)) boolean))
+    (foreign-procedure #f "IsModelValid" ((& Model)) stdbool))
   (define UnloadModel
     (foreign-procedure #f "UnloadModel" ((& Model)) void))
   (define GetModelBoundingBox
@@ -3477,7 +3477,7 @@
        (& Color))
       void))
   (define UploadMesh
-    (foreign-procedure #f "UploadMesh" ((* Mesh) boolean) void))
+    (foreign-procedure #f "UploadMesh" ((* Mesh) stdbool) void))
   (define UpdateMeshBuffer
     (foreign-procedure #f "UpdateMeshBuffer"
       ((& Mesh) integer-32 void* integer-32 integer-32)
@@ -3507,11 +3507,11 @@
   (define ExportMesh
     (foreign-procedure #f "ExportMesh"
       ((& Mesh) string)
-      boolean))
+      stdbool))
   (define ExportMeshAsCode
     (foreign-procedure #f "ExportMeshAsCode"
       ((& Mesh) string)
-      boolean))
+      stdbool))
   (define GenMeshPoly
     (let ([proc (foreign-procedure #f "GenMeshPoly"
                   (integer-32 single-float)
@@ -3639,7 +3639,7 @@
   (define IsMaterialValid
     (foreign-procedure #f "IsMaterialValid"
       ((& Material))
-      boolean))
+      stdbool))
   (define UnloadMaterial
     (foreign-procedure #f "UnloadMaterial" ((& Material)) void))
   (define SetMaterialTexture
@@ -3674,19 +3674,19 @@
   (define IsModelAnimationValid
     (foreign-procedure #f "IsModelAnimationValid"
       ((& Model) (& ModelAnimation))
-      boolean))
+      stdbool))
   (define CheckCollisionSpheres
     (foreign-procedure #f "CheckCollisionSpheres"
       ((& Vector3) single-float (& Vector3) single-float)
-      boolean))
+      stdbool))
   (define CheckCollisionBoxes
     (foreign-procedure #f "CheckCollisionBoxes"
       ((& BoundingBox) (& BoundingBox))
-      boolean))
+      stdbool))
   (define CheckCollisionBoxSphere
     (foreign-procedure #f "CheckCollisionBoxSphere"
       ((& BoundingBox) (& Vector3) single-float)
-      boolean))
+      stdbool))
   (define GetRayCollisionSphere
     (let ([proc (foreign-procedure #f "GetRayCollisionSphere"
                   ((& Ray) (& Vector3) single-float)
@@ -3742,7 +3742,7 @@
   (define CloseAudioDevice
     (foreign-procedure #f "CloseAudioDevice" () void))
   (define IsAudioDeviceReady
-    (foreign-procedure #f "IsAudioDeviceReady" () boolean))
+    (foreign-procedure #f "IsAudioDeviceReady" () stdbool))
   (define SetMasterVolume
     (foreign-procedure #f "SetMasterVolume"
       (single-float)
@@ -3770,7 +3770,7 @@
           (apply proc ret-res xargs)
           ret-res))))
   (define IsWaveValid
-    (foreign-procedure #f "IsWaveValid" ((& Wave)) boolean))
+    (foreign-procedure #f "IsWaveValid" ((& Wave)) stdbool))
   (define LoadSound
     (let ([proc (foreign-procedure #f "LoadSound"
                   (string)
@@ -3802,7 +3802,7 @@
           (apply proc ret-res xargs)
           ret-res))))
   (define IsSoundValid
-    (foreign-procedure #f "IsSoundValid" ((& Sound)) boolean))
+    (foreign-procedure #f "IsSoundValid" ((& Sound)) stdbool))
   (define UpdateSound
     (foreign-procedure #f "UpdateSound"
       ((& Sound) void* integer-32)
@@ -3816,11 +3816,11 @@
   (define ExportWave
     (foreign-procedure #f "ExportWave"
       ((& Wave) string)
-      boolean))
+      stdbool))
   (define ExportWaveAsCode
     (foreign-procedure #f "ExportWaveAsCode"
       ((& Wave) string)
-      boolean))
+      stdbool))
   (define PlaySound
     (foreign-procedure #f "PlaySound" ((& Sound)) void))
   (define StopSound
@@ -3830,7 +3830,7 @@
   (define ResumeSound
     (foreign-procedure #f "ResumeSound" ((& Sound)) void))
   (define IsSoundPlaying
-    (foreign-procedure #f "IsSoundPlaying" ((& Sound)) boolean))
+    (foreign-procedure #f "IsSoundPlaying" ((& Sound)) stdbool))
   (define SetSoundVolume
     (foreign-procedure #f "SetSoundVolume"
       ((& Sound) single-float)
@@ -3890,7 +3890,7 @@
           (apply proc ret-res xargs)
           ret-res))))
   (define IsMusicValid
-    (foreign-procedure #f "IsMusicValid" ((& Music)) boolean))
+    (foreign-procedure #f "IsMusicValid" ((& Music)) stdbool))
   (define UnloadMusicStream
     (foreign-procedure #f "UnloadMusicStream" ((& Music)) void))
   (define PlayMusicStream
@@ -3898,7 +3898,7 @@
   (define IsMusicStreamPlaying
     (foreign-procedure #f "IsMusicStreamPlaying"
       ((& Music))
-      boolean))
+      stdbool))
   (define UpdateMusicStream
     (foreign-procedure #f "UpdateMusicStream" ((& Music)) void))
   (define StopMusicStream
@@ -3944,7 +3944,7 @@
   (define IsAudioStreamValid
     (foreign-procedure #f "IsAudioStreamValid"
       ((& AudioStream))
-      boolean))
+      stdbool))
   (define UnloadAudioStream
     (foreign-procedure #f "UnloadAudioStream"
       ((& AudioStream))
@@ -3956,7 +3956,7 @@
   (define IsAudioStreamProcessed
     (foreign-procedure #f "IsAudioStreamProcessed"
       ((& AudioStream))
-      boolean))
+      stdbool))
   (define PlayAudioStream
     (foreign-procedure #f "PlayAudioStream"
       ((& AudioStream))
@@ -3972,7 +3972,7 @@
   (define IsAudioStreamPlaying
     (foreign-procedure #f "IsAudioStreamPlaying"
       ((& AudioStream))
-      boolean))
+      stdbool))
   (define StopAudioStream
     (foreign-procedure #f "StopAudioStream"
       ((& AudioStream))

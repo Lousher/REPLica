@@ -1,5 +1,5 @@
 (library (game ticker)
-  (export once freeze backward loop)
+  (export once freeze backward loop pingpong)
   (import (chezscheme)
 	  (game window)
 	  (game picture)
@@ -68,4 +68,23 @@
 		 [(clip? out)
 		  ((clip-player out) (window-channel win))
 		  (clip-deps out)])))))))
+
+  (define pingpong
+    (lambda (dur curve)
+      (let ([started #f])
+	(lambda (win)
+          (unless started (set! started (uptime win)))
+          (let* ([t     (/ (- (uptime win) started) dur)]
+		 [phase (mod t 2.0)]                    ; 一个完整来回 = 2×dur
+		 [p (if (<= phase 1.0)
+                        phase                        ; 0 → 1
+                        (- 2.0 phase))]              ; 1 → 0
+		 [out (curve p)])
+            (cond
+             [(picture? out)
+              ((picture-drawer out) (window-frame win))
+              (picture-deps out)]
+             [(clip? out)
+              ((clip-player out) (window-channel win))
+              (clip-deps out)]))))))
   )
