@@ -13,7 +13,6 @@
 	       [f (window-frame win)]
 	       [dest (frame-dest f)])
 	  (let ([res (CheckCollisionPointRec mouse-pos (Rectangle<=rectangle dest RECT))])
-	    (TraceLog LOG_WARNING (format "[Event] Hovered status ~a, ~a, ~a" res dest (vector2<=Vector2 mouse-pos)))
 	    res)))))
   
   (define clicked?

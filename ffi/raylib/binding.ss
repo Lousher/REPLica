@@ -873,3143 +873,5987 @@
   (define-ftype *char (* char))
   (define-ftype *Rectangle (* Rectangle))
   (define InitWindow
-    (foreign-procedure #f "InitWindow"
-      (integer-32 integer-32 string)
-      void))
+    (let ([f #f])
+      (lambda (width height title)
+        (unless f
+          (set! f
+            (foreign-procedure #f "InitWindow"
+              (integer-32 integer-32 string)
+              void)))
+        (f width height title))))
   (define CloseWindow
-    (foreign-procedure #f "CloseWindow" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "CloseWindow" () void)))
+        (f))))
   (define WindowShouldClose
-    (foreign-procedure #f "WindowShouldClose" () stdbool))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "WindowShouldClose" () stdbool)))
+        (f))))
   (define IsWindowReady
-    (foreign-procedure #f "IsWindowReady" () stdbool))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "IsWindowReady" () stdbool)))
+        (f))))
   (define IsWindowFullscreen
-    (foreign-procedure #f "IsWindowFullscreen" () stdbool))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsWindowFullscreen" () stdbool)))
+        (f))))
   (define IsWindowHidden
-    (foreign-procedure #f "IsWindowHidden" () stdbool))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "IsWindowHidden" () stdbool)))
+        (f))))
   (define IsWindowMinimized
-    (foreign-procedure #f "IsWindowMinimized" () stdbool))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsWindowMinimized" () stdbool)))
+        (f))))
   (define IsWindowMaximized
-    (foreign-procedure #f "IsWindowMaximized" () stdbool))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsWindowMaximized" () stdbool)))
+        (f))))
   (define IsWindowFocused
-    (foreign-procedure #f "IsWindowFocused" () stdbool))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsWindowFocused" () stdbool)))
+        (f))))
   (define IsWindowResized
-    (foreign-procedure #f "IsWindowResized" () stdbool))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsWindowResized" () stdbool)))
+        (f))))
   (define IsWindowState
-    (foreign-procedure #f "IsWindowState"
-      (unsigned-32)
-      stdbool))
+    (let ([f #f])
+      (lambda (flag)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsWindowState"
+              (unsigned-32)
+              stdbool)))
+        (f flag))))
   (define SetWindowState
-    (foreign-procedure #f "SetWindowState" (unsigned-32) void))
+    (let ([f #f])
+      (lambda (flags)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetWindowState" (unsigned-32) void)))
+        (f flags))))
   (define ClearWindowState
-    (foreign-procedure #f "ClearWindowState"
-      (unsigned-32)
-      void))
+    (let ([f #f])
+      (lambda (flags)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ClearWindowState"
+              (unsigned-32)
+              void)))
+        (f flags))))
   (define ToggleFullscreen
-    (foreign-procedure #f "ToggleFullscreen" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "ToggleFullscreen" () void)))
+        (f))))
   (define ToggleBorderlessWindowed
-    (foreign-procedure #f "ToggleBorderlessWindowed" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "ToggleBorderlessWindowed" () void)))
+        (f))))
   (define MaximizeWindow
-    (foreign-procedure #f "MaximizeWindow" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "MaximizeWindow" () void)))
+        (f))))
   (define MinimizeWindow
-    (foreign-procedure #f "MinimizeWindow" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "MinimizeWindow" () void)))
+        (f))))
   (define RestoreWindow
-    (foreign-procedure #f "RestoreWindow" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "RestoreWindow" () void)))
+        (f))))
   (define SetWindowIcon
-    (foreign-procedure #f "SetWindowIcon" ((& Image)) void))
+    (let ([f #f])
+      (lambda (image)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetWindowIcon" ((& Image)) void)))
+        (f image))))
   (define SetWindowIcons
-    (foreign-procedure #f "SetWindowIcons"
-      ((* Image) integer-32)
-      void))
+    (let ([f #f])
+      (lambda (images count)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetWindowIcons"
+              ((* Image) integer-32)
+              void)))
+        (f images count))))
   (define SetWindowTitle
-    (foreign-procedure #f "SetWindowTitle" (string) void))
+    (let ([f #f])
+      (lambda (title)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetWindowTitle" (string) void)))
+        (f title))))
   (define SetWindowPosition
-    (foreign-procedure #f "SetWindowPosition"
-      (integer-32 integer-32)
-      void))
+    (let ([f #f])
+      (lambda (x y)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetWindowPosition"
+              (integer-32 integer-32)
+              void)))
+        (f x y))))
   (define SetWindowMonitor
-    (foreign-procedure #f "SetWindowMonitor" (integer-32) void))
+    (let ([f #f])
+      (lambda (monitor)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetWindowMonitor"
+              (integer-32)
+              void)))
+        (f monitor))))
   (define SetWindowMinSize
-    (foreign-procedure #f "SetWindowMinSize"
-      (integer-32 integer-32)
-      void))
+    (let ([f #f])
+      (lambda (width height)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetWindowMinSize"
+              (integer-32 integer-32)
+              void)))
+        (f width height))))
   (define SetWindowMaxSize
-    (foreign-procedure #f "SetWindowMaxSize"
-      (integer-32 integer-32)
-      void))
+    (let ([f #f])
+      (lambda (width height)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetWindowMaxSize"
+              (integer-32 integer-32)
+              void)))
+        (f width height))))
   (define SetWindowSize
-    (foreign-procedure #f "SetWindowSize"
-      (integer-32 integer-32)
-      void))
+    (let ([f #f])
+      (lambda (width height)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetWindowSize"
+              (integer-32 integer-32)
+              void)))
+        (f width height))))
   (define SetWindowOpacity
-    (foreign-procedure #f "SetWindowOpacity"
-      (single-float)
-      void))
+    (let ([f #f])
+      (lambda (opacity)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetWindowOpacity"
+              (single-float)
+              void)))
+        (f opacity))))
   (define SetWindowFocused
-    (foreign-procedure #f "SetWindowFocused" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "SetWindowFocused" () void)))
+        (f))))
   (define GetWindowHandle
-    (foreign-procedure #f "GetWindowHandle" () void*))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "GetWindowHandle" () void*)))
+        (f))))
   (define GetScreenWidth
-    (foreign-procedure #f "GetScreenWidth" () integer-32))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetScreenWidth" () integer-32)))
+        (f))))
   (define GetScreenHeight
-    (foreign-procedure #f "GetScreenHeight" () integer-32))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetScreenHeight" () integer-32)))
+        (f))))
   (define GetRenderWidth
-    (foreign-procedure #f "GetRenderWidth" () integer-32))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetRenderWidth" () integer-32)))
+        (f))))
   (define GetRenderHeight
-    (foreign-procedure #f "GetRenderHeight" () integer-32))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetRenderHeight" () integer-32)))
+        (f))))
   (define GetMonitorCount
-    (foreign-procedure #f "GetMonitorCount" () integer-32))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetMonitorCount" () integer-32)))
+        (f))))
   (define GetCurrentMonitor
-    (foreign-procedure #f "GetCurrentMonitor" () integer-32))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetCurrentMonitor" () integer-32)))
+        (f))))
   (define GetMonitorPosition
-    (let ([proc (foreign-procedure #f "GetMonitorPosition"
-                  (integer-32)
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (monitor)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetMonitorPosition"
+              (integer-32)
+              (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res monitor)
           ret-res))))
   (define GetMonitorWidth
-    (foreign-procedure #f "GetMonitorWidth"
-      (integer-32)
-      integer-32))
+    (let ([f #f])
+      (lambda (monitor)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetMonitorWidth"
+              (integer-32)
+              integer-32)))
+        (f monitor))))
   (define GetMonitorHeight
-    (foreign-procedure #f "GetMonitorHeight"
-      (integer-32)
-      integer-32))
+    (let ([f #f])
+      (lambda (monitor)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetMonitorHeight"
+              (integer-32)
+              integer-32)))
+        (f monitor))))
   (define GetMonitorPhysicalWidth
-    (foreign-procedure #f "GetMonitorPhysicalWidth"
-      (integer-32)
-      integer-32))
+    (let ([f #f])
+      (lambda (monitor)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetMonitorPhysicalWidth"
+              (integer-32)
+              integer-32)))
+        (f monitor))))
   (define GetMonitorPhysicalHeight
-    (foreign-procedure #f "GetMonitorPhysicalHeight"
-      (integer-32)
-      integer-32))
+    (let ([f #f])
+      (lambda (monitor)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetMonitorPhysicalHeight"
+              (integer-32)
+              integer-32)))
+        (f monitor))))
   (define GetMonitorRefreshRate
-    (foreign-procedure #f "GetMonitorRefreshRate"
-      (integer-32)
-      integer-32))
+    (let ([f #f])
+      (lambda (monitor)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetMonitorRefreshRate"
+              (integer-32)
+              integer-32)))
+        (f monitor))))
   (define GetWindowPosition
-    (let ([proc (foreign-procedure #f "GetWindowPosition"
-                  ()
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetWindowPosition" () (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res)
           ret-res))))
   (define GetWindowScaleDPI
-    (let ([proc (foreign-procedure #f "GetWindowScaleDPI"
-                  ()
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetWindowScaleDPI" () (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res)
           ret-res))))
   (define GetMonitorName
-    (foreign-procedure #f "GetMonitorName" (integer-32) string))
+    (let ([f #f])
+      (lambda (monitor)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetMonitorName"
+              (integer-32)
+              string)))
+        (f monitor))))
   (define SetClipboardText
-    (foreign-procedure #f "SetClipboardText" (string) void))
+    (let ([f #f])
+      (lambda (text)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetClipboardText" (string) void)))
+        (f text))))
   (define GetClipboardText
-    (foreign-procedure #f "GetClipboardText" () string))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetClipboardText" () string)))
+        (f))))
   (define GetClipboardImage
-    (let ([proc (foreign-procedure #f "GetClipboardImage"
-                  ()
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetClipboardImage" () (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res)
           ret-res))))
   (define EnableEventWaiting
-    (foreign-procedure #f "EnableEventWaiting" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "EnableEventWaiting" () void)))
+        (f))))
   (define DisableEventWaiting
-    (foreign-procedure #f "DisableEventWaiting" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "DisableEventWaiting" () void)))
+        (f))))
   (define ShowCursor
-    (foreign-procedure #f "ShowCursor" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "ShowCursor" () void)))
+        (f))))
   (define HideCursor
-    (foreign-procedure #f "HideCursor" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "HideCursor" () void)))
+        (f))))
   (define IsCursorHidden
-    (foreign-procedure #f "IsCursorHidden" () stdbool))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "IsCursorHidden" () stdbool)))
+        (f))))
   (define EnableCursor
-    (foreign-procedure #f "EnableCursor" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "EnableCursor" () void)))
+        (f))))
   (define DisableCursor
-    (foreign-procedure #f "DisableCursor" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "DisableCursor" () void)))
+        (f))))
   (define IsCursorOnScreen
-    (foreign-procedure #f "IsCursorOnScreen" () stdbool))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsCursorOnScreen" () stdbool)))
+        (f))))
   (define ClearBackground
-    (foreign-procedure #f "ClearBackground" ((& Color)) void))
+    (let ([f #f])
+      (lambda (color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ClearBackground" ((& Color)) void)))
+        (f color))))
   (define BeginDrawing
-    (foreign-procedure #f "BeginDrawing" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "BeginDrawing" () void)))
+        (f))))
   (define EndDrawing
-    (foreign-procedure #f "EndDrawing" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "EndDrawing" () void)))
+        (f))))
   (define BeginMode2D
-    (foreign-procedure #f "BeginMode2D" ((& Camera2D)) void))
+    (let ([f #f])
+      (lambda (camera)
+        (unless f
+          (set! f
+            (foreign-procedure #f "BeginMode2D" ((& Camera2D)) void)))
+        (f camera))))
   (define EndMode2D
-    (foreign-procedure #f "EndMode2D" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "EndMode2D" () void)))
+        (f))))
   (define BeginMode3D
-    (foreign-procedure #f "BeginMode3D" ((& Camera3D)) void))
+    (let ([f #f])
+      (lambda (camera)
+        (unless f
+          (set! f
+            (foreign-procedure #f "BeginMode3D" ((& Camera3D)) void)))
+        (f camera))))
   (define EndMode3D
-    (foreign-procedure #f "EndMode3D" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "EndMode3D" () void)))
+        (f))))
   (define BeginTextureMode
-    (foreign-procedure #f "BeginTextureMode"
-      ((& RenderTexture2D))
-      void))
+    (let ([f #f])
+      (lambda (target)
+        (unless f
+          (set! f
+            (foreign-procedure #f "BeginTextureMode"
+              ((& RenderTexture2D))
+              void)))
+        (f target))))
   (define EndTextureMode
-    (foreign-procedure #f "EndTextureMode" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "EndTextureMode" () void)))
+        (f))))
   (define BeginShaderMode
-    (foreign-procedure #f "BeginShaderMode" ((& Shader)) void))
+    (let ([f #f])
+      (lambda (shader)
+        (unless f
+          (set! f
+            (foreign-procedure #f "BeginShaderMode" ((& Shader)) void)))
+        (f shader))))
   (define EndShaderMode
-    (foreign-procedure #f "EndShaderMode" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "EndShaderMode" () void)))
+        (f))))
   (define BeginBlendMode
-    (foreign-procedure #f "BeginBlendMode" (integer-32) void))
+    (let ([f #f])
+      (lambda (mode)
+        (unless f
+          (set! f
+            (foreign-procedure #f "BeginBlendMode" (integer-32) void)))
+        (f mode))))
   (define EndBlendMode
-    (foreign-procedure #f "EndBlendMode" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "EndBlendMode" () void)))
+        (f))))
   (define BeginScissorMode
-    (foreign-procedure #f "BeginScissorMode"
-      (integer-32 integer-32 integer-32 integer-32)
-      void))
+    (let ([f #f])
+      (lambda (x y width height)
+        (unless f
+          (set! f
+            (foreign-procedure #f "BeginScissorMode"
+              (integer-32 integer-32 integer-32 integer-32)
+              void)))
+        (f x y width height))))
   (define EndScissorMode
-    (foreign-procedure #f "EndScissorMode" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "EndScissorMode" () void)))
+        (f))))
   (define BeginVrStereoMode
-    (foreign-procedure #f "BeginVrStereoMode"
-      ((& VrStereoConfig))
-      void))
+    (let ([f #f])
+      (lambda (config)
+        (unless f
+          (set! f
+            (foreign-procedure #f "BeginVrStereoMode"
+              ((& VrStereoConfig))
+              void)))
+        (f config))))
   (define EndVrStereoMode
-    (foreign-procedure #f "EndVrStereoMode" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "EndVrStereoMode" () void)))
+        (f))))
   (define LoadVrStereoConfig
-    (let ([proc (foreign-procedure #f "LoadVrStereoConfig"
-                  ((& VrDeviceInfo))
-                  (& VrStereoConfig))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (device)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadVrStereoConfig"
+              ((& VrDeviceInfo))
+              (& VrStereoConfig))))
         (let ([ret-res (make-ftype-pointer
                          VrStereoConfig
                          (foreign-alloc (ftype-sizeof VrStereoConfig)))])
-          (apply proc ret-res xargs)
+          (f ret-res device)
           ret-res))))
   (define UnloadVrStereoConfig
-    (foreign-procedure #f "UnloadVrStereoConfig"
-      ((& VrStereoConfig))
-      void))
+    (let ([f #f])
+      (lambda (config)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadVrStereoConfig"
+              ((& VrStereoConfig))
+              void)))
+        (f config))))
   (define LoadShader
-    (let ([proc (foreign-procedure #f "LoadShader"
-                  (string string)
-                  (& Shader))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (vsFileName fsFileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadShader"
+              (string string)
+              (& Shader))))
         (let ([ret-res (make-ftype-pointer
                          Shader
                          (foreign-alloc (ftype-sizeof Shader)))])
-          (apply proc ret-res xargs)
+          (f ret-res vsFileName fsFileName)
           ret-res))))
   (define LoadShaderFromMemory
-    (let ([proc (foreign-procedure #f "LoadShaderFromMemory"
-                  (string string)
-                  (& Shader))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (vsCode fsCode)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadShaderFromMemory"
+              (string string)
+              (& Shader))))
         (let ([ret-res (make-ftype-pointer
                          Shader
                          (foreign-alloc (ftype-sizeof Shader)))])
-          (apply proc ret-res xargs)
+          (f ret-res vsCode fsCode)
           ret-res))))
   (define IsShaderValid
-    (foreign-procedure #f "IsShaderValid" ((& Shader)) stdbool))
+    (let ([f #f])
+      (lambda (shader)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsShaderValid"
+              ((& Shader))
+              stdbool)))
+        (f shader))))
   (define GetShaderLocation
-    (foreign-procedure #f "GetShaderLocation"
-      ((& Shader) string)
-      integer-32))
+    (let ([f #f])
+      (lambda (shader uniformName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetShaderLocation"
+              ((& Shader) string)
+              integer-32)))
+        (f shader uniformName))))
   (define GetShaderLocationAttrib
-    (foreign-procedure #f "GetShaderLocationAttrib"
-      ((& Shader) string)
-      integer-32))
+    (let ([f #f])
+      (lambda (shader attribName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetShaderLocationAttrib"
+              ((& Shader) string)
+              integer-32)))
+        (f shader attribName))))
   (define SetShaderValue
-    (foreign-procedure #f "SetShaderValue"
-      ((& Shader) integer-32 void* integer-32)
-      void))
+    (let ([f #f])
+      (lambda (shader locIndex value uniformType)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetShaderValue"
+              ((& Shader) integer-32 void* integer-32)
+              void)))
+        (f shader locIndex value uniformType))))
   (define SetShaderValueV
-    (foreign-procedure #f "SetShaderValueV"
-      ((& Shader) integer-32 void* integer-32 integer-32)
-      void))
+    (let ([f #f])
+      (lambda (shader locIndex value uniformType count)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetShaderValueV"
+              ((& Shader) integer-32 void* integer-32 integer-32)
+              void)))
+        (f shader locIndex value uniformType count))))
   (define SetShaderValueMatrix
-    (foreign-procedure #f "SetShaderValueMatrix"
-      ((& Shader) integer-32 (& Matrix))
-      void))
+    (let ([f #f])
+      (lambda (shader locIndex mat)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetShaderValueMatrix"
+              ((& Shader) integer-32 (& Matrix))
+              void)))
+        (f shader locIndex mat))))
   (define SetShaderValueTexture
-    (foreign-procedure #f "SetShaderValueTexture"
-      ((& Shader) integer-32 (& Texture2D))
-      void))
+    (let ([f #f])
+      (lambda (shader locIndex texture)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetShaderValueTexture"
+              ((& Shader) integer-32 (& Texture2D))
+              void)))
+        (f shader locIndex texture))))
   (define UnloadShader
-    (foreign-procedure #f "UnloadShader" ((& Shader)) void))
+    (let ([f #f])
+      (lambda (shader)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadShader" ((& Shader)) void)))
+        (f shader))))
   (define GetScreenToWorldRay
-    (let ([proc (foreign-procedure #f "GetScreenToWorldRay"
-                  ((& Vector2) (& Camera))
-                  (& Ray))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (position camera)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetScreenToWorldRay"
+              ((& Vector2) (& Camera))
+              (& Ray))))
         (let ([ret-res (make-ftype-pointer
                          Ray
                          (foreign-alloc (ftype-sizeof Ray)))])
-          (apply proc ret-res xargs)
+          (f ret-res position camera)
           ret-res))))
   (define GetScreenToWorldRayEx
-    (let ([proc (foreign-procedure #f "GetScreenToWorldRayEx"
-                  ((& Vector2) (& Camera) integer-32 integer-32)
-                  (& Ray))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (position camera width height)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetScreenToWorldRayEx"
+              ((& Vector2) (& Camera) integer-32 integer-32)
+              (& Ray))))
         (let ([ret-res (make-ftype-pointer
                          Ray
                          (foreign-alloc (ftype-sizeof Ray)))])
-          (apply proc ret-res xargs)
+          (f ret-res position camera width height)
           ret-res))))
   (define GetWorldToScreen
-    (let ([proc (foreign-procedure #f "GetWorldToScreen"
-                  ((& Vector3) (& Camera))
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (position camera)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetWorldToScreen"
+              ((& Vector3) (& Camera))
+              (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res position camera)
           ret-res))))
   (define GetWorldToScreenEx
-    (let ([proc (foreign-procedure #f "GetWorldToScreenEx"
-                  ((& Vector3) (& Camera) integer-32 integer-32)
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (position camera width height)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetWorldToScreenEx"
+              ((& Vector3) (& Camera) integer-32 integer-32)
+              (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res position camera width height)
           ret-res))))
   (define GetWorldToScreen2D
-    (let ([proc (foreign-procedure #f "GetWorldToScreen2D"
-                  ((& Vector2) (& Camera2D))
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (position camera)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetWorldToScreen2D"
+              ((& Vector2) (& Camera2D))
+              (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res position camera)
           ret-res))))
   (define GetScreenToWorld2D
-    (let ([proc (foreign-procedure #f "GetScreenToWorld2D"
-                  ((& Vector2) (& Camera2D))
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (position camera)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetScreenToWorld2D"
+              ((& Vector2) (& Camera2D))
+              (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res position camera)
           ret-res))))
   (define GetCameraMatrix
-    (let ([proc (foreign-procedure #f "GetCameraMatrix"
-                  ((& Camera))
-                  (& Matrix))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (camera)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetCameraMatrix"
+              ((& Camera))
+              (& Matrix))))
         (let ([ret-res (make-ftype-pointer
                          Matrix
                          (foreign-alloc (ftype-sizeof Matrix)))])
-          (apply proc ret-res xargs)
+          (f ret-res camera)
           ret-res))))
   (define GetCameraMatrix2D
-    (let ([proc (foreign-procedure #f "GetCameraMatrix2D"
-                  ((& Camera2D))
-                  (& Matrix))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (camera)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetCameraMatrix2D"
+              ((& Camera2D))
+              (& Matrix))))
         (let ([ret-res (make-ftype-pointer
                          Matrix
                          (foreign-alloc (ftype-sizeof Matrix)))])
-          (apply proc ret-res xargs)
+          (f ret-res camera)
           ret-res))))
   (define SetTargetFPS
-    (foreign-procedure #f "SetTargetFPS" (integer-32) void))
+    (let ([f #f])
+      (lambda (fps)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetTargetFPS" (integer-32) void)))
+        (f fps))))
   (define GetFrameTime
-    (foreign-procedure #f "GetFrameTime" () single-float))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetFrameTime" () single-float)))
+        (f))))
   (define GetTime
-    (foreign-procedure #f "GetTime" () double-float))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "GetTime" () double-float)))
+        (f))))
   (define GetFPS
-    (foreign-procedure #f "GetFPS" () integer-32))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "GetFPS" () integer-32)))
+        (f))))
   (define SwapScreenBuffer
-    (foreign-procedure #f "SwapScreenBuffer" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "SwapScreenBuffer" () void)))
+        (f))))
   (define PollInputEvents
-    (foreign-procedure #f "PollInputEvents" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "PollInputEvents" () void)))
+        (f))))
   (define WaitTime
-    (foreign-procedure #f "WaitTime" (double-float) void))
+    (let ([f #f])
+      (lambda (seconds)
+        (unless f
+          (set! f
+            (foreign-procedure #f "WaitTime" (double-float) void)))
+        (f seconds))))
   (define SetRandomSeed
-    (foreign-procedure #f "SetRandomSeed" (unsigned-32) void))
+    (let ([f #f])
+      (lambda (seed)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetRandomSeed" (unsigned-32) void)))
+        (f seed))))
   (define GetRandomValue
-    (foreign-procedure #f "GetRandomValue"
-      (integer-32 integer-32)
-      integer-32))
+    (let ([f #f])
+      (lambda (min max)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetRandomValue"
+              (integer-32 integer-32)
+              integer-32)))
+        (f min max))))
   (define LoadRandomSequence
-    (foreign-procedure #f "LoadRandomSequence"
-      (unsigned-32 integer-32 integer-32)
-      (* integer-32)))
+    (let ([f #f])
+      (lambda (count min max)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadRandomSequence"
+              (unsigned-32 integer-32 integer-32)
+              (* integer-32))))
+        (f count min max))))
   (define UnloadRandomSequence
-    (foreign-procedure #f "UnloadRandomSequence"
-      ((* integer-32))
-      void))
+    (let ([f #f])
+      (lambda (sequence)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadRandomSequence"
+              ((* integer-32))
+              void)))
+        (f sequence))))
   (define TakeScreenshot
-    (foreign-procedure #f "TakeScreenshot" (string) void))
+    (let ([f #f])
+      (lambda (fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TakeScreenshot" (string) void)))
+        (f fileName))))
   (define SetConfigFlags
-    (foreign-procedure #f "SetConfigFlags" (unsigned-32) void))
+    (let ([f #f])
+      (lambda (flags)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetConfigFlags" (unsigned-32) void)))
+        (f flags))))
   (define OpenURL
-    (foreign-procedure #f "OpenURL" (string) void))
+    (let ([f #f])
+      (lambda (url)
+        (unless f
+          (set! f (foreign-procedure #f "OpenURL" (string) void)))
+        (f url))))
   (define SetTraceLogLevel
-    (foreign-procedure #f "SetTraceLogLevel" (integer-32) void))
+    (let ([f #f])
+      (lambda (logLevel)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetTraceLogLevel"
+              (integer-32)
+              void)))
+        (f logLevel))))
   (define TraceLog
-    (foreign-procedure #f "TraceLog" (integer-32 string) void))
+    (let ([f #f])
+      (lambda (logLevel text)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TraceLog" (integer-32 string) void)))
+        (f logLevel text))))
   (define SetTraceLogCallback
-    (foreign-procedure #f "SetTraceLogCallback"
-      ((* TraceLogCallback))
-      void))
+    (let ([f #f])
+      (lambda (callback)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetTraceLogCallback" (void*) void)))
+        (f callback))))
   (define MemAlloc
-    (foreign-procedure #f "MemAlloc" (unsigned-32) void*))
+    (let ([f #f])
+      (lambda (size)
+        (unless f
+          (set! f
+            (foreign-procedure #f "MemAlloc" (unsigned-32) void*)))
+        (f size))))
   (define MemRealloc
-    (foreign-procedure #f "MemRealloc"
-      (void* unsigned-32)
-      void*))
+    (let ([f #f])
+      (lambda (ptr size)
+        (unless f
+          (set! f
+            (foreign-procedure #f "MemRealloc"
+              (void* unsigned-32)
+              void*)))
+        (f ptr size))))
   (define MemFree
-    (foreign-procedure #f "MemFree" (void*) void))
+    (let ([f #f])
+      (lambda (ptr)
+        (unless f
+          (set! f (foreign-procedure #f "MemFree" (void*) void)))
+        (f ptr))))
   (define LoadFileData
-    (foreign-procedure #f "LoadFileData"
-      (string (* integer-32))
-      (* unsigned-8)))
+    (let ([f #f])
+      (lambda (fileName dataSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadFileData"
+              (string (* integer-32))
+              (* unsigned-8))))
+        (f fileName dataSize))))
   (define UnloadFileData
-    (foreign-procedure #f "UnloadFileData"
-      ((* unsigned-8))
-      void))
+    (let ([f #f])
+      (lambda (data)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadFileData"
+              ((* unsigned-8))
+              void)))
+        (f data))))
   (define SaveFileData
-    (foreign-procedure #f "SaveFileData"
-      (string void* integer-32)
-      stdbool))
+    (let ([f #f])
+      (lambda (fileName data dataSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SaveFileData"
+              (string void* integer-32)
+              stdbool)))
+        (f fileName data dataSize))))
   (define ExportDataAsCode
-    (foreign-procedure #f "ExportDataAsCode"
-      ((* unsigned-8) integer-32 string)
-      stdbool))
+    (let ([f #f])
+      (lambda (data dataSize fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ExportDataAsCode"
+              ((* unsigned-8) integer-32 string)
+              stdbool)))
+        (f data dataSize fileName))))
   (define LoadFileText
-    (foreign-procedure #f "LoadFileText" (string) string))
+    (let ([f #f])
+      (lambda (fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadFileText" (string) string)))
+        (f fileName))))
   (define UnloadFileText
-    (foreign-procedure #f "UnloadFileText" (string) void))
+    (let ([f #f])
+      (lambda (text)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadFileText" (string) void)))
+        (f text))))
   (define SaveFileText
-    (foreign-procedure #f "SaveFileText"
-      (string string)
-      stdbool))
+    (let ([f #f])
+      (lambda (fileName text)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SaveFileText"
+              (string string)
+              stdbool)))
+        (f fileName text))))
   (define SetLoadFileDataCallback
-    (foreign-procedure #f "SetLoadFileDataCallback"
-      ((* LoadFileDataCallback))
-      void))
+    (let ([f #f])
+      (lambda (callback)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetLoadFileDataCallback"
+              (void*)
+              void)))
+        (f callback))))
   (define SetSaveFileDataCallback
-    (foreign-procedure #f "SetSaveFileDataCallback"
-      ((* SaveFileDataCallback))
-      void))
+    (let ([f #f])
+      (lambda (callback)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetSaveFileDataCallback"
+              (void*)
+              void)))
+        (f callback))))
   (define SetLoadFileTextCallback
-    (foreign-procedure #f "SetLoadFileTextCallback"
-      ((* LoadFileTextCallback))
-      void))
+    (let ([f #f])
+      (lambda (callback)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetLoadFileTextCallback"
+              (void*)
+              void)))
+        (f callback))))
   (define SetSaveFileTextCallback
-    (foreign-procedure #f "SetSaveFileTextCallback"
-      ((* SaveFileTextCallback))
-      void))
+    (let ([f #f])
+      (lambda (callback)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetSaveFileTextCallback"
+              (void*)
+              void)))
+        (f callback))))
   (define FileRename
-    (foreign-procedure #f "FileRename"
-      (string string)
-      integer-32))
+    (let ([f #f])
+      (lambda (fileName fileRename)
+        (unless f
+          (set! f
+            (foreign-procedure #f "FileRename"
+              (string string)
+              integer-32)))
+        (f fileName fileRename))))
   (define FileRemove
-    (foreign-procedure #f "FileRemove" (string) integer-32))
+    (let ([f #f])
+      (lambda (fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "FileRemove" (string) integer-32)))
+        (f fileName))))
   (define FileCopy
-    (foreign-procedure #f "FileCopy"
-      (string string)
-      integer-32))
+    (let ([f #f])
+      (lambda (srcPath dstPath)
+        (unless f
+          (set! f
+            (foreign-procedure #f "FileCopy"
+              (string string)
+              integer-32)))
+        (f srcPath dstPath))))
   (define FileMove
-    (foreign-procedure #f "FileMove"
-      (string string)
-      integer-32))
+    (let ([f #f])
+      (lambda (srcPath dstPath)
+        (unless f
+          (set! f
+            (foreign-procedure #f "FileMove"
+              (string string)
+              integer-32)))
+        (f srcPath dstPath))))
   (define FileTextReplace
-    (foreign-procedure #f "FileTextReplace"
-      (string string string)
-      integer-32))
+    (let ([f #f])
+      (lambda (fileName search replacement)
+        (unless f
+          (set! f
+            (foreign-procedure #f "FileTextReplace"
+              (string string string)
+              integer-32)))
+        (f fileName search replacement))))
   (define FileTextFindIndex
-    (foreign-procedure #f "FileTextFindIndex"
-      (string string)
-      integer-32))
+    (let ([f #f])
+      (lambda (fileName search)
+        (unless f
+          (set! f
+            (foreign-procedure #f "FileTextFindIndex"
+              (string string)
+              integer-32)))
+        (f fileName search))))
   (define FileExists
-    (foreign-procedure #f "FileExists" (string) stdbool))
+    (let ([f #f])
+      (lambda (fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "FileExists" (string) stdbool)))
+        (f fileName))))
   (define DirectoryExists
-    (foreign-procedure #f "DirectoryExists" (string) stdbool))
+    (let ([f #f])
+      (lambda (dirPath)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DirectoryExists" (string) stdbool)))
+        (f dirPath))))
   (define IsFileExtension
-    (foreign-procedure #f "IsFileExtension"
-      (string string)
-      stdbool))
+    (let ([f #f])
+      (lambda (fileName ext)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsFileExtension"
+              (string string)
+              stdbool)))
+        (f fileName ext))))
   (define IsFileHidden
-    (foreign-procedure #f "IsFileHidden" (string) stdbool))
+    (let ([f #f])
+      (lambda (filePath)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsFileHidden" (string) stdbool)))
+        (f filePath))))
   (define GetFileLength
-    (foreign-procedure #f "GetFileLength" (string) integer-32))
+    (let ([f #f])
+      (lambda (fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetFileLength" (string) integer-32)))
+        (f fileName))))
   (define GetFileModTime
-    (foreign-procedure #f "GetFileModTime" (string) long))
+    (let ([f #f])
+      (lambda (fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetFileModTime" (string) long)))
+        (f fileName))))
   (define GetFileExtension
-    (foreign-procedure #f "GetFileExtension" (string) string))
+    (let ([f #f])
+      (lambda (fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetFileExtension" (string) string)))
+        (f fileName))))
   (define GetFileName
-    (foreign-procedure #f "GetFileName" (string) string))
+    (let ([f #f])
+      (lambda (filePath)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetFileName" (string) string)))
+        (f filePath))))
   (define GetFileNameWithoutExt
-    (foreign-procedure #f "GetFileNameWithoutExt"
-      (string)
-      string))
+    (let ([f #f])
+      (lambda (filePath)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetFileNameWithoutExt"
+              (string)
+              string)))
+        (f filePath))))
   (define GetDirectoryPath
-    (foreign-procedure #f "GetDirectoryPath" (string) string))
+    (let ([f #f])
+      (lambda (filePath)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetDirectoryPath" (string) string)))
+        (f filePath))))
   (define GetPrevDirectoryPath
-    (foreign-procedure #f "GetPrevDirectoryPath"
-      (string)
-      string))
+    (let ([f #f])
+      (lambda (dirPath)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetPrevDirectoryPath"
+              (string)
+              string)))
+        (f dirPath))))
   (define GetWorkingDirectory
-    (foreign-procedure #f "GetWorkingDirectory" () string))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetWorkingDirectory" () string)))
+        (f))))
   (define GetApplicationDirectory
-    (foreign-procedure #f "GetApplicationDirectory" () string))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetApplicationDirectory" () string)))
+        (f))))
   (define MakeDirectory
-    (foreign-procedure #f "MakeDirectory" (string) integer-32))
+    (let ([f #f])
+      (lambda (dirPath)
+        (unless f
+          (set! f
+            (foreign-procedure #f "MakeDirectory" (string) integer-32)))
+        (f dirPath))))
   (define ChangeDirectory
-    (foreign-procedure #f "ChangeDirectory"
-      (string)
-      integer-32))
+    (let ([f #f])
+      (lambda (dirPath)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ChangeDirectory"
+              (string)
+              integer-32)))
+        (f dirPath))))
   (define IsPathFile
-    (foreign-procedure #f "IsPathFile" (string) stdbool))
+    (let ([f #f])
+      (lambda (path)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsPathFile" (string) stdbool)))
+        (f path))))
   (define IsPathDirectory
-    (foreign-procedure #f "IsPathDirectory" (string) stdbool))
+    (let ([f #f])
+      (lambda (path)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsPathDirectory" (string) stdbool)))
+        (f path))))
   (define IsPathAbsolute
-    (foreign-procedure #f "IsPathAbsolute" (string) stdbool))
+    (let ([f #f])
+      (lambda (path)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsPathAbsolute" (string) stdbool)))
+        (f path))))
   (define IsFileNameValid
-    (foreign-procedure #f "IsFileNameValid" (string) stdbool))
+    (let ([f #f])
+      (lambda (fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsFileNameValid" (string) stdbool)))
+        (f fileName))))
   (define LoadDirectoryFiles
-    (let ([proc (foreign-procedure #f "LoadDirectoryFiles"
-                  (string)
-                  (& FilePathList))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (dirPath)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadDirectoryFiles"
+              (string)
+              (& FilePathList))))
         (let ([ret-res (make-ftype-pointer
                          FilePathList
                          (foreign-alloc (ftype-sizeof FilePathList)))])
-          (apply proc ret-res xargs)
+          (f ret-res dirPath)
           ret-res))))
   (define LoadDirectoryFilesEx
-    (let ([proc (foreign-procedure #f "LoadDirectoryFilesEx"
-                  (string string stdbool)
-                  (& FilePathList))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (basePath filter scanSubdirs)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadDirectoryFilesEx"
+              (string string stdbool)
+              (& FilePathList))))
         (let ([ret-res (make-ftype-pointer
                          FilePathList
                          (foreign-alloc (ftype-sizeof FilePathList)))])
-          (apply proc ret-res xargs)
+          (f ret-res basePath filter scanSubdirs)
           ret-res))))
   (define UnloadDirectoryFiles
-    (foreign-procedure #f "UnloadDirectoryFiles"
-      ((& FilePathList))
-      void))
+    (let ([f #f])
+      (lambda (files)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadDirectoryFiles"
+              ((& FilePathList))
+              void)))
+        (f files))))
   (define IsFileDropped
-    (foreign-procedure #f "IsFileDropped" () stdbool))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "IsFileDropped" () stdbool)))
+        (f))))
   (define LoadDroppedFiles
-    (let ([proc (foreign-procedure #f "LoadDroppedFiles"
-                  ()
-                  (& FilePathList))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadDroppedFiles"
+              ()
+              (& FilePathList))))
         (let ([ret-res (make-ftype-pointer
                          FilePathList
                          (foreign-alloc (ftype-sizeof FilePathList)))])
-          (apply proc ret-res xargs)
+          (f ret-res)
           ret-res))))
   (define UnloadDroppedFiles
-    (foreign-procedure #f "UnloadDroppedFiles"
-      ((& FilePathList))
-      void))
+    (let ([f #f])
+      (lambda (files)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadDroppedFiles"
+              ((& FilePathList))
+              void)))
+        (f files))))
   (define GetDirectoryFileCount
-    (foreign-procedure #f "GetDirectoryFileCount"
-      (string)
-      unsigned-32))
+    (let ([f #f])
+      (lambda (dirPath)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetDirectoryFileCount"
+              (string)
+              unsigned-32)))
+        (f dirPath))))
   (define GetDirectoryFileCountEx
-    (foreign-procedure #f "GetDirectoryFileCountEx"
-      (string string stdbool)
-      unsigned-32))
+    (let ([f #f])
+      (lambda (basePath filter scanSubdirs)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetDirectoryFileCountEx"
+              (string string stdbool)
+              unsigned-32)))
+        (f basePath filter scanSubdirs))))
   (define CompressData
-    (foreign-procedure #f "CompressData"
-      ((* unsigned-8) integer-32 (* integer-32))
-      (* unsigned-8)))
+    (let ([f #f])
+      (lambda (data dataSize compDataSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "CompressData"
+              ((* unsigned-8) integer-32 (* integer-32))
+              (* unsigned-8))))
+        (f data dataSize compDataSize))))
   (define DecompressData
-    (foreign-procedure #f "DecompressData"
-      ((* unsigned-8) integer-32 (* integer-32))
-      (* unsigned-8)))
+    (let ([f #f])
+      (lambda (compData compDataSize dataSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DecompressData"
+              ((* unsigned-8) integer-32 (* integer-32))
+              (* unsigned-8))))
+        (f compData compDataSize dataSize))))
   (define EncodeDataBase64
-    (foreign-procedure #f "EncodeDataBase64"
-      ((* unsigned-8) integer-32 (* integer-32))
-      string))
+    (let ([f #f])
+      (lambda (data dataSize outputSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "EncodeDataBase64"
+              ((* unsigned-8) integer-32 (* integer-32))
+              string)))
+        (f data dataSize outputSize))))
   (define DecodeDataBase64
-    (foreign-procedure #f "DecodeDataBase64"
-      (string (* integer-32))
-      (* unsigned-8)))
+    (let ([f #f])
+      (lambda (text outputSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DecodeDataBase64"
+              (string (* integer-32))
+              (* unsigned-8))))
+        (f text outputSize))))
   (define ComputeCRC32
-    (foreign-procedure #f "ComputeCRC32"
-      ((* unsigned-8) integer-32)
-      unsigned-32))
+    (let ([f #f])
+      (lambda (data dataSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ComputeCRC32"
+              ((* unsigned-8) integer-32)
+              unsigned-32)))
+        (f data dataSize))))
   (define ComputeMD5
-    (foreign-procedure #f "ComputeMD5"
-      ((* unsigned-8) integer-32)
-      (* unsigned-32)))
+    (let ([f #f])
+      (lambda (data dataSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ComputeMD5"
+              ((* unsigned-8) integer-32)
+              (* unsigned-32))))
+        (f data dataSize))))
   (define ComputeSHA1
-    (foreign-procedure #f "ComputeSHA1"
-      ((* unsigned-8) integer-32)
-      (* unsigned-32)))
+    (let ([f #f])
+      (lambda (data dataSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ComputeSHA1"
+              ((* unsigned-8) integer-32)
+              (* unsigned-32))))
+        (f data dataSize))))
   (define ComputeSHA256
-    (foreign-procedure #f "ComputeSHA256"
-      ((* unsigned-8) integer-32)
-      (* unsigned-32)))
+    (let ([f #f])
+      (lambda (data dataSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ComputeSHA256"
+              ((* unsigned-8) integer-32)
+              (* unsigned-32))))
+        (f data dataSize))))
   (define LoadAutomationEventList
-    (let ([proc (foreign-procedure #f "LoadAutomationEventList"
-                  (string)
-                  (& AutomationEventList))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadAutomationEventList"
+              (string)
+              (& AutomationEventList))))
         (let ([ret-res (make-ftype-pointer
                          AutomationEventList
                          (foreign-alloc
                            (ftype-sizeof AutomationEventList)))])
-          (apply proc ret-res xargs)
+          (f ret-res fileName)
           ret-res))))
   (define UnloadAutomationEventList
-    (foreign-procedure #f "UnloadAutomationEventList"
-      ((& AutomationEventList))
-      void))
+    (let ([f #f])
+      (lambda (list)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadAutomationEventList"
+              ((& AutomationEventList))
+              void)))
+        (f list))))
   (define ExportAutomationEventList
-    (foreign-procedure #f "ExportAutomationEventList"
-      ((& AutomationEventList) string)
-      stdbool))
+    (let ([f #f])
+      (lambda (list fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ExportAutomationEventList"
+              ((& AutomationEventList) string)
+              stdbool)))
+        (f list fileName))))
   (define SetAutomationEventList
-    (foreign-procedure #f "SetAutomationEventList"
-      ((* AutomationEventList))
-      void))
+    (let ([f #f])
+      (lambda (list)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetAutomationEventList"
+              ((* AutomationEventList))
+              void)))
+        (f list))))
   (define SetAutomationEventBaseFrame
-    (foreign-procedure #f "SetAutomationEventBaseFrame"
-      (integer-32)
-      void))
+    (let ([f #f])
+      (lambda (frame)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetAutomationEventBaseFrame"
+              (integer-32)
+              void)))
+        (f frame))))
   (define StartAutomationEventRecording
-    (foreign-procedure #f "StartAutomationEventRecording"
-      ()
-      void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "StartAutomationEventRecording"
+              ()
+              void)))
+        (f))))
   (define StopAutomationEventRecording
-    (foreign-procedure #f "StopAutomationEventRecording"
-      ()
-      void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "StopAutomationEventRecording"
+              ()
+              void)))
+        (f))))
   (define PlayAutomationEvent
-    (foreign-procedure #f "PlayAutomationEvent"
-      ((& AutomationEvent))
-      void))
+    (let ([f #f])
+      (lambda (event)
+        (unless f
+          (set! f
+            (foreign-procedure #f "PlayAutomationEvent"
+              ((& AutomationEvent))
+              void)))
+        (f event))))
   (define IsKeyPressed
-    (foreign-procedure #f "IsKeyPressed" (integer-32) stdbool))
+    (let ([f #f])
+      (lambda (key)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsKeyPressed" (integer-32) stdbool)))
+        (f key))))
   (define IsKeyPressedRepeat
-    (foreign-procedure #f "IsKeyPressedRepeat"
-      (integer-32)
-      stdbool))
+    (let ([f #f])
+      (lambda (key)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsKeyPressedRepeat"
+              (integer-32)
+              stdbool)))
+        (f key))))
   (define IsKeyDown
-    (foreign-procedure #f "IsKeyDown" (integer-32) stdbool))
+    (let ([f #f])
+      (lambda (key)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsKeyDown" (integer-32) stdbool)))
+        (f key))))
   (define IsKeyReleased
-    (foreign-procedure #f "IsKeyReleased" (integer-32) stdbool))
+    (let ([f #f])
+      (lambda (key)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsKeyReleased"
+              (integer-32)
+              stdbool)))
+        (f key))))
   (define IsKeyUp
-    (foreign-procedure #f "IsKeyUp" (integer-32) stdbool))
+    (let ([f #f])
+      (lambda (key)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsKeyUp" (integer-32) stdbool)))
+        (f key))))
   (define GetKeyPressed
-    (foreign-procedure #f "GetKeyPressed" () integer-32))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetKeyPressed" () integer-32)))
+        (f))))
   (define GetCharPressed
-    (foreign-procedure #f "GetCharPressed" () integer-32))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetCharPressed" () integer-32)))
+        (f))))
   (define GetKeyName
-    (foreign-procedure #f "GetKeyName" (integer-32) string))
+    (let ([f #f])
+      (lambda (key)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetKeyName" (integer-32) string)))
+        (f key))))
   (define SetExitKey
-    (foreign-procedure #f "SetExitKey" (integer-32) void))
+    (let ([f #f])
+      (lambda (key)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetExitKey" (integer-32) void)))
+        (f key))))
   (define IsGamepadAvailable
-    (foreign-procedure #f "IsGamepadAvailable"
-      (integer-32)
-      stdbool))
+    (let ([f #f])
+      (lambda (gamepad)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsGamepadAvailable"
+              (integer-32)
+              stdbool)))
+        (f gamepad))))
   (define GetGamepadName
-    (foreign-procedure #f "GetGamepadName" (integer-32) string))
+    (let ([f #f])
+      (lambda (gamepad)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetGamepadName"
+              (integer-32)
+              string)))
+        (f gamepad))))
   (define IsGamepadButtonPressed
-    (foreign-procedure #f "IsGamepadButtonPressed"
-      (integer-32 integer-32)
-      stdbool))
+    (let ([f #f])
+      (lambda (gamepad button)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsGamepadButtonPressed"
+              (integer-32 integer-32)
+              stdbool)))
+        (f gamepad button))))
   (define IsGamepadButtonDown
-    (foreign-procedure #f "IsGamepadButtonDown"
-      (integer-32 integer-32)
-      stdbool))
+    (let ([f #f])
+      (lambda (gamepad button)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsGamepadButtonDown"
+              (integer-32 integer-32)
+              stdbool)))
+        (f gamepad button))))
   (define IsGamepadButtonReleased
-    (foreign-procedure #f "IsGamepadButtonReleased"
-      (integer-32 integer-32)
-      stdbool))
+    (let ([f #f])
+      (lambda (gamepad button)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsGamepadButtonReleased"
+              (integer-32 integer-32)
+              stdbool)))
+        (f gamepad button))))
   (define IsGamepadButtonUp
-    (foreign-procedure #f "IsGamepadButtonUp"
-      (integer-32 integer-32)
-      stdbool))
+    (let ([f #f])
+      (lambda (gamepad button)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsGamepadButtonUp"
+              (integer-32 integer-32)
+              stdbool)))
+        (f gamepad button))))
   (define GetGamepadButtonPressed
-    (foreign-procedure #f "GetGamepadButtonPressed"
-      ()
-      integer-32))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetGamepadButtonPressed"
+              ()
+              integer-32)))
+        (f))))
   (define GetGamepadAxisCount
-    (foreign-procedure #f "GetGamepadAxisCount"
-      (integer-32)
-      integer-32))
+    (let ([f #f])
+      (lambda (gamepad)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetGamepadAxisCount"
+              (integer-32)
+              integer-32)))
+        (f gamepad))))
   (define GetGamepadAxisMovement
-    (foreign-procedure #f "GetGamepadAxisMovement"
-      (integer-32 integer-32)
-      single-float))
+    (let ([f #f])
+      (lambda (gamepad axis)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetGamepadAxisMovement"
+              (integer-32 integer-32)
+              single-float)))
+        (f gamepad axis))))
   (define SetGamepadMappings
-    (foreign-procedure #f "SetGamepadMappings"
-      (string)
-      integer-32))
+    (let ([f #f])
+      (lambda (mappings)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetGamepadMappings"
+              (string)
+              integer-32)))
+        (f mappings))))
   (define SetGamepadVibration
-    (foreign-procedure #f "SetGamepadVibration"
-      (integer-32 single-float single-float single-float)
-      void))
+    (let ([f #f])
+      (lambda (gamepad leftMotor rightMotor duration)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetGamepadVibration"
+              (integer-32 single-float single-float single-float)
+              void)))
+        (f gamepad leftMotor rightMotor duration))))
   (define IsMouseButtonPressed
-    (foreign-procedure #f "IsMouseButtonPressed"
-      (integer-32)
-      stdbool))
+    (let ([f #f])
+      (lambda (button)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsMouseButtonPressed"
+              (integer-32)
+              stdbool)))
+        (f button))))
   (define IsMouseButtonDown
-    (foreign-procedure #f "IsMouseButtonDown"
-      (integer-32)
-      stdbool))
+    (let ([f #f])
+      (lambda (button)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsMouseButtonDown"
+              (integer-32)
+              stdbool)))
+        (f button))))
   (define IsMouseButtonReleased
-    (foreign-procedure #f "IsMouseButtonReleased"
-      (integer-32)
-      stdbool))
+    (let ([f #f])
+      (lambda (button)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsMouseButtonReleased"
+              (integer-32)
+              stdbool)))
+        (f button))))
   (define IsMouseButtonUp
-    (foreign-procedure #f "IsMouseButtonUp"
-      (integer-32)
-      stdbool))
+    (let ([f #f])
+      (lambda (button)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsMouseButtonUp"
+              (integer-32)
+              stdbool)))
+        (f button))))
   (define GetMouseX
-    (foreign-procedure #f "GetMouseX" () integer-32))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "GetMouseX" () integer-32)))
+        (f))))
   (define GetMouseY
-    (foreign-procedure #f "GetMouseY" () integer-32))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "GetMouseY" () integer-32)))
+        (f))))
   (define GetMousePosition
-    (let ([proc (foreign-procedure #f "GetMousePosition"
-                  ()
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetMousePosition" () (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res)
           ret-res))))
   (define GetMouseDelta
-    (let ([proc (foreign-procedure #f "GetMouseDelta"
-                  ()
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetMouseDelta" () (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res)
           ret-res))))
   (define SetMousePosition
-    (foreign-procedure #f "SetMousePosition"
-      (integer-32 integer-32)
-      void))
+    (let ([f #f])
+      (lambda (x y)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetMousePosition"
+              (integer-32 integer-32)
+              void)))
+        (f x y))))
   (define SetMouseOffset
-    (foreign-procedure #f "SetMouseOffset"
-      (integer-32 integer-32)
-      void))
+    (let ([f #f])
+      (lambda (offsetX offsetY)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetMouseOffset"
+              (integer-32 integer-32)
+              void)))
+        (f offsetX offsetY))))
   (define SetMouseScale
-    (foreign-procedure #f "SetMouseScale"
-      (single-float single-float)
-      void))
+    (let ([f #f])
+      (lambda (scaleX scaleY)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetMouseScale"
+              (single-float single-float)
+              void)))
+        (f scaleX scaleY))))
   (define GetMouseWheelMove
-    (foreign-procedure #f "GetMouseWheelMove" () single-float))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetMouseWheelMove" () single-float)))
+        (f))))
   (define GetMouseWheelMoveV
-    (let ([proc (foreign-procedure #f "GetMouseWheelMoveV"
-                  ()
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetMouseWheelMoveV" () (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res)
           ret-res))))
   (define SetMouseCursor
-    (foreign-procedure #f "SetMouseCursor" (integer-32) void))
+    (let ([f #f])
+      (lambda (cursor)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetMouseCursor" (integer-32) void)))
+        (f cursor))))
   (define GetTouchX
-    (foreign-procedure #f "GetTouchX" () integer-32))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "GetTouchX" () integer-32)))
+        (f))))
   (define GetTouchY
-    (foreign-procedure #f "GetTouchY" () integer-32))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "GetTouchY" () integer-32)))
+        (f))))
   (define GetTouchPosition
-    (let ([proc (foreign-procedure #f "GetTouchPosition"
-                  (integer-32)
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (index)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetTouchPosition"
+              (integer-32)
+              (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res index)
           ret-res))))
   (define GetTouchPointId
-    (foreign-procedure #f "GetTouchPointId"
-      (integer-32)
-      integer-32))
+    (let ([f #f])
+      (lambda (index)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetTouchPointId"
+              (integer-32)
+              integer-32)))
+        (f index))))
   (define GetTouchPointCount
-    (foreign-procedure #f "GetTouchPointCount" () integer-32))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetTouchPointCount" () integer-32)))
+        (f))))
   (define SetGesturesEnabled
-    (foreign-procedure #f "SetGesturesEnabled"
-      (unsigned-32)
-      void))
+    (let ([f #f])
+      (lambda (flags)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetGesturesEnabled"
+              (unsigned-32)
+              void)))
+        (f flags))))
   (define IsGestureDetected
-    (foreign-procedure #f "IsGestureDetected"
-      (unsigned-32)
-      stdbool))
+    (let ([f #f])
+      (lambda (gesture)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsGestureDetected"
+              (unsigned-32)
+              stdbool)))
+        (f gesture))))
   (define GetGestureDetected
-    (foreign-procedure #f "GetGestureDetected" () integer-32))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetGestureDetected" () integer-32)))
+        (f))))
   (define GetGestureHoldDuration
-    (foreign-procedure #f "GetGestureHoldDuration"
-      ()
-      single-float))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetGestureHoldDuration"
+              ()
+              single-float)))
+        (f))))
   (define GetGestureDragVector
-    (let ([proc (foreign-procedure #f "GetGestureDragVector"
-                  ()
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetGestureDragVector"
+              ()
+              (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res)
           ret-res))))
   (define GetGestureDragAngle
-    (foreign-procedure #f "GetGestureDragAngle"
-      ()
-      single-float))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetGestureDragAngle"
+              ()
+              single-float)))
+        (f))))
   (define GetGesturePinchVector
-    (let ([proc (foreign-procedure #f "GetGesturePinchVector"
-                  ()
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetGesturePinchVector"
+              ()
+              (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res)
           ret-res))))
   (define GetGesturePinchAngle
-    (foreign-procedure #f "GetGesturePinchAngle"
-      ()
-      single-float))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetGesturePinchAngle"
+              ()
+              single-float)))
+        (f))))
   (define UpdateCamera
-    (foreign-procedure #f "UpdateCamera"
-      ((* Camera) integer-32)
-      void))
+    (let ([f #f])
+      (lambda (camera mode)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UpdateCamera"
+              ((* Camera) integer-32)
+              void)))
+        (f camera mode))))
   (define UpdateCameraPro
-    (foreign-procedure #f "UpdateCameraPro"
-      ((* Camera) (& Vector3) (& Vector3) single-float)
-      void))
+    (let ([f #f])
+      (lambda (camera movement rotation zoom)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UpdateCameraPro"
+              ((* Camera) (& Vector3) (& Vector3) single-float)
+              void)))
+        (f camera movement rotation zoom))))
   (define SetShapesTexture
-    (foreign-procedure #f "SetShapesTexture"
-      ((& Texture2D) (& Rectangle))
-      void))
+    (let ([f #f])
+      (lambda (texture rec)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetShapesTexture"
+              ((& Texture2D) (& Rectangle))
+              void)))
+        (f texture rec))))
   (define GetShapesTexture
-    (let ([proc (foreign-procedure #f "GetShapesTexture"
-                  ()
-                  (& Texture2D))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetShapesTexture" () (& Texture2D))))
         (let ([ret-res (make-ftype-pointer
                          Texture2D
                          (foreign-alloc (ftype-sizeof Texture2D)))])
-          (apply proc ret-res xargs)
+          (f ret-res)
           ret-res))))
   (define GetShapesTextureRectangle
-    (let ([proc (foreign-procedure #f "GetShapesTextureRectangle"
-                  ()
-                  (& Rectangle))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetShapesTextureRectangle"
+              ()
+              (& Rectangle))))
         (let ([ret-res (make-ftype-pointer
                          Rectangle
                          (foreign-alloc (ftype-sizeof Rectangle)))])
-          (apply proc ret-res xargs)
+          (f ret-res)
           ret-res))))
   (define DrawPixel
-    (foreign-procedure #f "DrawPixel"
-      (integer-32 integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (posX posY color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawPixel"
+              (integer-32 integer-32 (& Color))
+              void)))
+        (f posX posY color))))
   (define DrawPixelV
-    (foreign-procedure #f "DrawPixelV"
-      ((& Vector2) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (position color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawPixelV"
+              ((& Vector2) (& Color))
+              void)))
+        (f position color))))
   (define DrawLine
-    (foreign-procedure #f "DrawLine"
-      (integer-32 integer-32 integer-32 integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (startPosX startPosY endPosX endPosY color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawLine"
+              (integer-32 integer-32 integer-32 integer-32 (& Color))
+              void)))
+        (f startPosX startPosY endPosX endPosY color))))
   (define DrawLineV
-    (foreign-procedure #f "DrawLineV"
-      ((& Vector2) (& Vector2) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (startPos endPos color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawLineV"
+              ((& Vector2) (& Vector2) (& Color))
+              void)))
+        (f startPos endPos color))))
   (define DrawLineEx
-    (foreign-procedure #f "DrawLineEx"
-      ((& Vector2) (& Vector2) single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (startPos endPos thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawLineEx"
+              ((& Vector2) (& Vector2) single-float (& Color))
+              void)))
+        (f startPos endPos thick color))))
   (define DrawLineStrip
-    (foreign-procedure #f "DrawLineStrip"
-      ((* Vector2) integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (points pointCount color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawLineStrip"
+              ((* Vector2) integer-32 (& Color))
+              void)))
+        (f points pointCount color))))
   (define DrawLineBezier
-    (foreign-procedure #f "DrawLineBezier"
-      ((& Vector2) (& Vector2) single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (startPos endPos thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawLineBezier"
+              ((& Vector2) (& Vector2) single-float (& Color))
+              void)))
+        (f startPos endPos thick color))))
   (define DrawLineDashed
-    (foreign-procedure #f "DrawLineDashed"
-      ((& Vector2) (& Vector2) integer-32 integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (startPos endPos dashSize spaceSize color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawLineDashed"
+              ((& Vector2) (& Vector2) integer-32 integer-32 (& Color))
+              void)))
+        (f startPos endPos dashSize spaceSize color))))
   (define DrawTriangle
-    (foreign-procedure #f "DrawTriangle"
-      ((& Vector2) (& Vector2) (& Vector2) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (v1 v2 v3 color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTriangle"
+              ((& Vector2) (& Vector2) (& Vector2) (& Color))
+              void)))
+        (f v1 v2 v3 color))))
   (define DrawTriangleGradient
-    (foreign-procedure #f "DrawTriangleGradient"
-      ((& Vector2)
-       (& Vector2)
-       (& Vector2)
-       (& Color)
-       (& Color)
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (v1 v2 v3 c1 c2 c3)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTriangleGradient"
+              ((& Vector2)
+               (& Vector2)
+               (& Vector2)
+               (& Color)
+               (& Color)
+               (& Color))
+              void)))
+        (f v1 v2 v3 c1 c2 c3))))
   (define DrawTriangleLines
-    (foreign-procedure #f "DrawTriangleLines"
-      ((& Vector2) (& Vector2) (& Vector2) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (v1 v2 v3 color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTriangleLines"
+              ((& Vector2) (& Vector2) (& Vector2) (& Color))
+              void)))
+        (f v1 v2 v3 color))))
   (define DrawTriangleLinesEx
-    (foreign-procedure #f "DrawTriangleLinesEx"
-      ((& Vector2) (& Vector2) (& Vector2) single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (v1 v2 v3 thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTriangleLinesEx"
+              ((& Vector2) (& Vector2) (& Vector2) single-float (& Color))
+              void)))
+        (f v1 v2 v3 thick color))))
   (define DrawTriangleFan
-    (foreign-procedure #f "DrawTriangleFan"
-      ((* Vector2) integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (points pointCount color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTriangleFan"
+              ((* Vector2) integer-32 (& Color))
+              void)))
+        (f points pointCount color))))
   (define DrawTriangleStrip
-    (foreign-procedure #f "DrawTriangleStrip"
-      ((* Vector2) integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (points pointCount color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTriangleStrip"
+              ((* Vector2) integer-32 (& Color))
+              void)))
+        (f points pointCount color))))
   (define DrawRectangle
-    (foreign-procedure #f "DrawRectangle"
-      (integer-32 integer-32 integer-32 integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (posX posY width height color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawRectangle"
+              (integer-32 integer-32 integer-32 integer-32 (& Color))
+              void)))
+        (f posX posY width height color))))
   (define DrawRectangleV
-    (foreign-procedure #f "DrawRectangleV"
-      ((& Vector2) (& Vector2) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (position size color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawRectangleV"
+              ((& Vector2) (& Vector2) (& Color))
+              void)))
+        (f position size color))))
   (define DrawRectangleRec
-    (foreign-procedure #f "DrawRectangleRec"
-      ((& Rectangle) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (rec color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawRectangleRec"
+              ((& Rectangle) (& Color))
+              void)))
+        (f rec color))))
   (define DrawRectanglePro
-    (foreign-procedure #f "DrawRectanglePro"
-      ((& Rectangle) (& Vector2) single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (rec origin rotation color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawRectanglePro"
+              ((& Rectangle) (& Vector2) single-float (& Color))
+              void)))
+        (f rec origin rotation color))))
   (define DrawRectangleGradientV
-    (foreign-procedure #f "DrawRectangleGradientV"
-      (integer-32
-       integer-32
-       integer-32
-       integer-32
-       (& Color)
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (posX posY width height top bottom)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawRectangleGradientV"
+              (integer-32
+               integer-32
+               integer-32
+               integer-32
+               (& Color)
+               (& Color))
+              void)))
+        (f posX posY width height top bottom))))
   (define DrawRectangleGradientH
-    (foreign-procedure #f "DrawRectangleGradientH"
-      (integer-32
-       integer-32
-       integer-32
-       integer-32
-       (& Color)
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (posX posY width height left right)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawRectangleGradientH"
+              (integer-32
+               integer-32
+               integer-32
+               integer-32
+               (& Color)
+               (& Color))
+              void)))
+        (f posX posY width height left right))))
   (define DrawRectangleGradientEx
-    (foreign-procedure #f "DrawRectangleGradientEx"
-      ((& Rectangle) (& Color) (& Color) (& Color) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (rec col1 col2 col3 col4)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawRectangleGradientEx"
+              ((& Rectangle) (& Color) (& Color) (& Color) (& Color))
+              void)))
+        (f rec col1 col2 col3 col4))))
   (define DrawRectangleLines
-    (foreign-procedure #f "DrawRectangleLines"
-      (integer-32 integer-32 integer-32 integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (posX posY width height color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawRectangleLines"
+              (integer-32 integer-32 integer-32 integer-32 (& Color))
+              void)))
+        (f posX posY width height color))))
   (define DrawRectangleLinesEx
-    (foreign-procedure #f "DrawRectangleLinesEx"
-      ((& Rectangle) single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (rec thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawRectangleLinesEx"
+              ((& Rectangle) single-float (& Color))
+              void)))
+        (f rec thick color))))
   (define DrawRectangleRounded
-    (foreign-procedure #f "DrawRectangleRounded"
-      ((& Rectangle) single-float integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (rec roundness segments color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawRectangleRounded"
+              ((& Rectangle) single-float integer-32 (& Color))
+              void)))
+        (f rec roundness segments color))))
   (define DrawRectangleRoundedLines
-    (foreign-procedure #f "DrawRectangleRoundedLines"
-      ((& Rectangle) single-float integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (rec roundness segments color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawRectangleRoundedLines"
+              ((& Rectangle) single-float integer-32 (& Color))
+              void)))
+        (f rec roundness segments color))))
   (define DrawRectangleRoundedLinesEx
-    (foreign-procedure #f "DrawRectangleRoundedLinesEx"
-      ((& Rectangle)
-       single-float
-       integer-32
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (rec roundness segments thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawRectangleRoundedLinesEx"
+              ((& Rectangle)
+               single-float
+               integer-32
+               single-float
+               (& Color))
+              void)))
+        (f rec roundness segments thick color))))
   (define DrawPoly
-    (foreign-procedure #f "DrawPoly"
-      ((& Vector2) integer-32 single-float single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (center sides radius rotation color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawPoly"
+              ((& Vector2) integer-32 single-float single-float (& Color))
+              void)))
+        (f center sides radius rotation color))))
   (define DrawPolyLines
-    (foreign-procedure #f "DrawPolyLines"
-      ((& Vector2) integer-32 single-float single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (center sides radius rotation color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawPolyLines"
+              ((& Vector2) integer-32 single-float single-float (& Color))
+              void)))
+        (f center sides radius rotation color))))
   (define DrawPolyLinesEx
-    (foreign-procedure #f "DrawPolyLinesEx"
-      ((& Vector2)
-       integer-32
-       single-float
-       single-float
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (center sides radius rotation thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawPolyLinesEx"
+              ((& Vector2)
+               integer-32
+               single-float
+               single-float
+               single-float
+               (& Color))
+              void)))
+        (f center sides radius rotation thick color))))
   (define DrawCircle
-    (foreign-procedure #f "DrawCircle"
-      (integer-32 integer-32 single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (centerX centerY radius color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCircle"
+              (integer-32 integer-32 single-float (& Color))
+              void)))
+        (f centerX centerY radius color))))
   (define DrawCircleV
-    (foreign-procedure #f "DrawCircleV"
-      ((& Vector2) single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (center radius color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCircleV"
+              ((& Vector2) single-float (& Color))
+              void)))
+        (f center radius color))))
   (define DrawCircleGradient
-    (foreign-procedure #f "DrawCircleGradient"
-      ((& Vector2) single-float (& Color) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (center radius inner outer)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCircleGradient"
+              ((& Vector2) single-float (& Color) (& Color))
+              void)))
+        (f center radius inner outer))))
   (define DrawCircleSector
-    (foreign-procedure #f "DrawCircleSector"
-      ((& Vector2)
-       single-float
-       single-float
-       single-float
-       integer-32
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (center radius startAngle endAngle segments color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCircleSector"
+              ((& Vector2)
+               single-float
+               single-float
+               single-float
+               integer-32
+               (& Color))
+              void)))
+        (f center radius startAngle endAngle segments color))))
   (define DrawCircleSectorLines
-    (foreign-procedure #f "DrawCircleSectorLines"
-      ((& Vector2)
-       single-float
-       single-float
-       single-float
-       integer-32
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (center radius startAngle endAngle segments color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCircleSectorLines"
+              ((& Vector2)
+               single-float
+               single-float
+               single-float
+               integer-32
+               (& Color))
+              void)))
+        (f center radius startAngle endAngle segments color))))
   (define DrawCircleSectorLinesEx
-    (foreign-procedure #f "DrawCircleSectorLinesEx"
-      ((& Vector2)
-       single-float
-       single-float
-       single-float
-       integer-32
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (center radius startAngle endAngle segments thick
+               color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCircleSectorLinesEx"
+              ((& Vector2)
+               single-float
+               single-float
+               single-float
+               integer-32
+               single-float
+               (& Color))
+              void)))
+        (f center radius startAngle endAngle segments thick
+           color))))
   (define DrawCircleLines
-    (foreign-procedure #f "DrawCircleLines"
-      (integer-32 integer-32 single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (centerX centerY radius color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCircleLines"
+              (integer-32 integer-32 single-float (& Color))
+              void)))
+        (f centerX centerY radius color))))
   (define DrawCircleLinesV
-    (foreign-procedure #f "DrawCircleLinesV"
-      ((& Vector2) single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (center radius color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCircleLinesV"
+              ((& Vector2) single-float (& Color))
+              void)))
+        (f center radius color))))
   (define DrawCircleLinesEx
-    (foreign-procedure #f "DrawCircleLinesEx"
-      ((& Vector2) single-float single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (center radius thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCircleLinesEx"
+              ((& Vector2) single-float single-float (& Color))
+              void)))
+        (f center radius thick color))))
   (define DrawEllipse
-    (foreign-procedure #f "DrawEllipse"
-      (integer-32 integer-32 single-float single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (centerX centerY radiusH radiusV color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawEllipse"
+              (integer-32 integer-32 single-float single-float (& Color))
+              void)))
+        (f centerX centerY radiusH radiusV color))))
   (define DrawEllipseV
-    (foreign-procedure #f "DrawEllipseV"
-      ((& Vector2) single-float single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (center radiusH radiusV color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawEllipseV"
+              ((& Vector2) single-float single-float (& Color))
+              void)))
+        (f center radiusH radiusV color))))
   (define DrawEllipseLines
-    (foreign-procedure #f "DrawEllipseLines"
-      (integer-32 integer-32 single-float single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (centerX centerY radiusH radiusV color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawEllipseLines"
+              (integer-32 integer-32 single-float single-float (& Color))
+              void)))
+        (f centerX centerY radiusH radiusV color))))
   (define DrawEllipseLinesV
-    (foreign-procedure #f "DrawEllipseLinesV"
-      ((& Vector2) single-float single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (center radiusH radiusV color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawEllipseLinesV"
+              ((& Vector2) single-float single-float (& Color))
+              void)))
+        (f center radiusH radiusV color))))
   (define DrawEllipseLinesEx
-    (foreign-procedure #f "DrawEllipseLinesEx"
-      ((& Vector2)
-       single-float
-       single-float
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (center radiusH radiusV thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawEllipseLinesEx"
+              ((& Vector2)
+               single-float
+               single-float
+               single-float
+               (& Color))
+              void)))
+        (f center radiusH radiusV thick color))))
   (define DrawRing
-    (foreign-procedure #f "DrawRing"
-      ((& Vector2)
-       single-float
-       single-float
-       single-float
-       single-float
-       integer-32
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (center innerRadius outerRadius startAngle endAngle
+               segments color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawRing"
+              ((& Vector2)
+               single-float
+               single-float
+               single-float
+               single-float
+               integer-32
+               (& Color))
+              void)))
+        (f center innerRadius outerRadius startAngle endAngle
+           segments color))))
   (define DrawRingLines
-    (foreign-procedure #f "DrawRingLines"
-      ((& Vector2)
-       single-float
-       single-float
-       single-float
-       single-float
-       integer-32
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (center innerRadius outerRadius startAngle endAngle
+               segments color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawRingLines"
+              ((& Vector2)
+               single-float
+               single-float
+               single-float
+               single-float
+               integer-32
+               (& Color))
+              void)))
+        (f center innerRadius outerRadius startAngle endAngle
+           segments color))))
   (define DrawRingLinesEx
-    (foreign-procedure #f "DrawRingLinesEx"
-      ((& Vector2)
-       single-float
-       single-float
-       single-float
-       single-float
-       integer-32
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (center innerRadius outerRadius startAngle endAngle
+               segments thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawRingLinesEx"
+              ((& Vector2)
+               single-float
+               single-float
+               single-float
+               single-float
+               integer-32
+               single-float
+               (& Color))
+              void)))
+        (f center innerRadius outerRadius startAngle endAngle
+           segments thick color))))
   (define DrawSplineLinear
-    (foreign-procedure #f "DrawSplineLinear"
-      ((* Vector2) integer-32 single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (points pointCount thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawSplineLinear"
+              ((* Vector2) integer-32 single-float (& Color))
+              void)))
+        (f points pointCount thick color))))
   (define DrawSplineBasis
-    (foreign-procedure #f "DrawSplineBasis"
-      ((* Vector2) integer-32 single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (points pointCount thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawSplineBasis"
+              ((* Vector2) integer-32 single-float (& Color))
+              void)))
+        (f points pointCount thick color))))
   (define DrawSplineCatmullRom
-    (foreign-procedure #f "DrawSplineCatmullRom"
-      ((* Vector2) integer-32 single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (points pointCount thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawSplineCatmullRom"
+              ((* Vector2) integer-32 single-float (& Color))
+              void)))
+        (f points pointCount thick color))))
   (define DrawSplineBezierQuadratic
-    (foreign-procedure #f "DrawSplineBezierQuadratic"
-      ((* Vector2) integer-32 single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (points pointCount thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawSplineBezierQuadratic"
+              ((* Vector2) integer-32 single-float (& Color))
+              void)))
+        (f points pointCount thick color))))
   (define DrawSplineBezierCubic
-    (foreign-procedure #f "DrawSplineBezierCubic"
-      ((* Vector2) integer-32 single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (points pointCount thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawSplineBezierCubic"
+              ((* Vector2) integer-32 single-float (& Color))
+              void)))
+        (f points pointCount thick color))))
   (define DrawSplineSegmentLinear
-    (foreign-procedure #f "DrawSplineSegmentLinear"
-      ((& Vector2) (& Vector2) single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (p1 p2 thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawSplineSegmentLinear"
+              ((& Vector2) (& Vector2) single-float (& Color))
+              void)))
+        (f p1 p2 thick color))))
   (define DrawSplineSegmentBasis
-    (foreign-procedure #f "DrawSplineSegmentBasis"
-      ((& Vector2)
-       (& Vector2)
-       (& Vector2)
-       (& Vector2)
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (p1 p2 p3 p4 thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawSplineSegmentBasis"
+              ((& Vector2)
+               (& Vector2)
+               (& Vector2)
+               (& Vector2)
+               single-float
+               (& Color))
+              void)))
+        (f p1 p2 p3 p4 thick color))))
   (define DrawSplineSegmentCatmullRom
-    (foreign-procedure #f "DrawSplineSegmentCatmullRom"
-      ((& Vector2)
-       (& Vector2)
-       (& Vector2)
-       (& Vector2)
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (p1 p2 p3 p4 thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawSplineSegmentCatmullRom"
+              ((& Vector2)
+               (& Vector2)
+               (& Vector2)
+               (& Vector2)
+               single-float
+               (& Color))
+              void)))
+        (f p1 p2 p3 p4 thick color))))
   (define DrawSplineSegmentBezierQuadratic
-    (foreign-procedure #f "DrawSplineSegmentBezierQuadratic"
-      ((& Vector2) (& Vector2) (& Vector2) single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (p1 c2 p3 thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawSplineSegmentBezierQuadratic"
+              ((& Vector2) (& Vector2) (& Vector2) single-float (& Color))
+              void)))
+        (f p1 c2 p3 thick color))))
   (define DrawSplineSegmentBezierCubic
-    (foreign-procedure #f "DrawSplineSegmentBezierCubic"
-      ((& Vector2)
-       (& Vector2)
-       (& Vector2)
-       (& Vector2)
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (p1 c2 c3 p4 thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawSplineSegmentBezierCubic"
+              ((& Vector2)
+               (& Vector2)
+               (& Vector2)
+               (& Vector2)
+               single-float
+               (& Color))
+              void)))
+        (f p1 c2 c3 p4 thick color))))
   (define GetSplinePointLinear
-    (let ([proc (foreign-procedure #f "GetSplinePointLinear"
-                  ((& Vector2) (& Vector2) single-float)
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (startPos endPos t)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetSplinePointLinear"
+              ((& Vector2) (& Vector2) single-float)
+              (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res startPos endPos t)
           ret-res))))
   (define GetSplinePointBasis
-    (let ([proc (foreign-procedure #f "GetSplinePointBasis"
-                  ((& Vector2)
-                   (& Vector2)
-                   (& Vector2)
-                   (& Vector2)
-                   single-float)
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (p1 p2 p3 p4 t)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetSplinePointBasis"
+              ((& Vector2)
+               (& Vector2)
+               (& Vector2)
+               (& Vector2)
+               single-float)
+              (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res p1 p2 p3 p4 t)
           ret-res))))
   (define GetSplinePointCatmullRom
-    (let ([proc (foreign-procedure #f "GetSplinePointCatmullRom"
-                  ((& Vector2)
-                   (& Vector2)
-                   (& Vector2)
-                   (& Vector2)
-                   single-float)
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (p1 p2 p3 p4 t)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetSplinePointCatmullRom"
+              ((& Vector2)
+               (& Vector2)
+               (& Vector2)
+               (& Vector2)
+               single-float)
+              (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res p1 p2 p3 p4 t)
           ret-res))))
   (define GetSplinePointBezierQuadratic
-    (let ([proc (foreign-procedure #f "GetSplinePointBezierQuadratic"
-                  ((& Vector2) (& Vector2) (& Vector2) single-float)
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (p1 c2 p3 t)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetSplinePointBezierQuadratic"
+              ((& Vector2) (& Vector2) (& Vector2) single-float)
+              (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res p1 c2 p3 t)
           ret-res))))
   (define GetSplinePointBezierCubic
-    (let ([proc (foreign-procedure #f "GetSplinePointBezierCubic"
-                  ((& Vector2)
-                   (& Vector2)
-                   (& Vector2)
-                   (& Vector2)
-                   single-float)
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (p1 c2 c3 p4 t)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetSplinePointBezierCubic"
+              ((& Vector2)
+               (& Vector2)
+               (& Vector2)
+               (& Vector2)
+               single-float)
+              (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res p1 c2 c3 p4 t)
           ret-res))))
   (define CheckCollisionRecs
-    (foreign-procedure #f "CheckCollisionRecs"
-      ((& Rectangle) (& Rectangle))
-      stdbool))
+    (let ([f #f])
+      (lambda (rec1 rec2)
+        (unless f
+          (set! f
+            (foreign-procedure #f "CheckCollisionRecs"
+              ((& Rectangle) (& Rectangle))
+              stdbool)))
+        (f rec1 rec2))))
   (define CheckCollisionCircles
-    (foreign-procedure #f "CheckCollisionCircles"
-      ((& Vector2) single-float (& Vector2) single-float)
-      stdbool))
+    (let ([f #f])
+      (lambda (center1 radius1 center2 radius2)
+        (unless f
+          (set! f
+            (foreign-procedure #f "CheckCollisionCircles"
+              ((& Vector2) single-float (& Vector2) single-float)
+              stdbool)))
+        (f center1 radius1 center2 radius2))))
   (define CheckCollisionCircleRec
-    (foreign-procedure #f "CheckCollisionCircleRec"
-      ((& Vector2) single-float (& Rectangle))
-      stdbool))
+    (let ([f #f])
+      (lambda (center radius rec)
+        (unless f
+          (set! f
+            (foreign-procedure #f "CheckCollisionCircleRec"
+              ((& Vector2) single-float (& Rectangle))
+              stdbool)))
+        (f center radius rec))))
   (define CheckCollisionCircleLine
-    (foreign-procedure #f "CheckCollisionCircleLine"
-      ((& Vector2) single-float (& Vector2) (& Vector2))
-      stdbool))
+    (let ([f #f])
+      (lambda (center radius p1 p2)
+        (unless f
+          (set! f
+            (foreign-procedure #f "CheckCollisionCircleLine"
+              ((& Vector2) single-float (& Vector2) (& Vector2))
+              stdbool)))
+        (f center radius p1 p2))))
   (define CheckCollisionPointRec
-    (foreign-procedure #f "CheckCollisionPointRec"
-      ((& Vector2) (& Rectangle))
-      stdbool))
+    (let ([f #f])
+      (lambda (point rec)
+        (unless f
+          (set! f
+            (foreign-procedure #f "CheckCollisionPointRec"
+              ((& Vector2) (& Rectangle))
+              stdbool)))
+        (f point rec))))
   (define CheckCollisionPointCircle
-    (foreign-procedure #f "CheckCollisionPointCircle"
-      ((& Vector2) (& Vector2) single-float)
-      stdbool))
+    (let ([f #f])
+      (lambda (point center radius)
+        (unless f
+          (set! f
+            (foreign-procedure #f "CheckCollisionPointCircle"
+              ((& Vector2) (& Vector2) single-float)
+              stdbool)))
+        (f point center radius))))
   (define CheckCollisionPointTriangle
-    (foreign-procedure #f "CheckCollisionPointTriangle"
-      ((& Vector2) (& Vector2) (& Vector2) (& Vector2))
-      stdbool))
+    (let ([f #f])
+      (lambda (point p1 p2 p3)
+        (unless f
+          (set! f
+            (foreign-procedure #f "CheckCollisionPointTriangle"
+              ((& Vector2) (& Vector2) (& Vector2) (& Vector2))
+              stdbool)))
+        (f point p1 p2 p3))))
   (define CheckCollisionPointLine
-    (foreign-procedure #f "CheckCollisionPointLine"
-      ((& Vector2) (& Vector2) (& Vector2) integer-32)
-      stdbool))
+    (let ([f #f])
+      (lambda (point p1 p2 threshold)
+        (unless f
+          (set! f
+            (foreign-procedure #f "CheckCollisionPointLine"
+              ((& Vector2) (& Vector2) (& Vector2) integer-32)
+              stdbool)))
+        (f point p1 p2 threshold))))
   (define CheckCollisionPointPoly
-    (foreign-procedure #f "CheckCollisionPointPoly"
-      ((& Vector2) (* Vector2) integer-32)
-      stdbool))
+    (let ([f #f])
+      (lambda (point points pointCount)
+        (unless f
+          (set! f
+            (foreign-procedure #f "CheckCollisionPointPoly"
+              ((& Vector2) (* Vector2) integer-32)
+              stdbool)))
+        (f point points pointCount))))
   (define CheckCollisionLines
-    (foreign-procedure #f "CheckCollisionLines"
-      ((& Vector2)
-       (& Vector2)
-       (& Vector2)
-       (& Vector2)
-       (* Vector2))
-      stdbool))
+    (let ([f #f])
+      (lambda (startPos1 endPos1 startPos2 endPos2 collisionPoint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "CheckCollisionLines"
+              ((& Vector2)
+               (& Vector2)
+               (& Vector2)
+               (& Vector2)
+               (* Vector2))
+              stdbool)))
+        (f startPos1 endPos1 startPos2 endPos2 collisionPoint))))
   (define GetCollisionRec
-    (let ([proc (foreign-procedure #f "GetCollisionRec"
-                  ((& Rectangle) (& Rectangle))
-                  (& Rectangle))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (rec1 rec2)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetCollisionRec"
+              ((& Rectangle) (& Rectangle))
+              (& Rectangle))))
         (let ([ret-res (make-ftype-pointer
                          Rectangle
                          (foreign-alloc (ftype-sizeof Rectangle)))])
-          (apply proc ret-res xargs)
+          (f ret-res rec1 rec2)
           ret-res))))
   (define LoadImage
-    (let ([proc (foreign-procedure #f "LoadImage"
-                  (string)
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadImage" (string) (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res fileName)
           ret-res))))
   (define LoadImageRaw
-    (let ([proc (foreign-procedure #f "LoadImageRaw"
-                  (string integer-32 integer-32 integer-32 integer-32)
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (fileName width height format headerSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadImageRaw"
+              (string integer-32 integer-32 integer-32 integer-32)
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res fileName width height format headerSize)
           ret-res))))
   (define LoadImageAnim
-    (let ([proc (foreign-procedure #f "LoadImageAnim"
-                  (string (* integer-32))
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (fileName frames)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadImageAnim"
+              (string (* integer-32))
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res fileName frames)
           ret-res))))
   (define LoadImageAnimFromMemory
-    (let ([proc (foreign-procedure #f "LoadImageAnimFromMemory"
-                  (string (* unsigned-8) integer-32 (* integer-32))
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (fileType fileData dataSize frames)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadImageAnimFromMemory"
+              (string (* unsigned-8) integer-32 (* integer-32))
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res fileType fileData dataSize frames)
           ret-res))))
   (define LoadImageFromMemory
-    (let ([proc (foreign-procedure #f "LoadImageFromMemory"
-                  (string (* unsigned-8) integer-32)
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (fileType fileData dataSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadImageFromMemory"
+              (string (* unsigned-8) integer-32)
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res fileType fileData dataSize)
           ret-res))))
   (define LoadImageFromTexture
-    (let ([proc (foreign-procedure #f "LoadImageFromTexture"
-                  ((& Texture2D))
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (texture)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadImageFromTexture"
+              ((& Texture2D))
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res texture)
           ret-res))))
   (define LoadImageFromScreen
-    (let ([proc (foreign-procedure #f "LoadImageFromScreen"
-                  ()
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadImageFromScreen" () (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res)
           ret-res))))
   (define IsImageValid
-    (foreign-procedure #f "IsImageValid" ((& Image)) stdbool))
+    (let ([f #f])
+      (lambda (image)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsImageValid" ((& Image)) stdbool)))
+        (f image))))
   (define UnloadImage
-    (foreign-procedure #f "UnloadImage" ((& Image)) void))
+    (let ([f #f])
+      (lambda (image)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadImage" ((& Image)) void)))
+        (f image))))
   (define ExportImage
-    (foreign-procedure #f "ExportImage"
-      ((& Image) string)
-      stdbool))
+    (let ([f #f])
+      (lambda (image fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ExportImage"
+              ((& Image) string)
+              stdbool)))
+        (f image fileName))))
   (define ExportImageToMemory
-    (foreign-procedure #f "ExportImageToMemory"
-      ((& Image) string (* integer-32))
-      (* unsigned-8)))
+    (let ([f #f])
+      (lambda (image fileType fileSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ExportImageToMemory"
+              ((& Image) string (* integer-32))
+              (* unsigned-8))))
+        (f image fileType fileSize))))
   (define ExportImageAsCode
-    (foreign-procedure #f "ExportImageAsCode"
-      ((& Image) string)
-      stdbool))
+    (let ([f #f])
+      (lambda (image fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ExportImageAsCode"
+              ((& Image) string)
+              stdbool)))
+        (f image fileName))))
   (define GenImageColor
-    (let ([proc (foreign-procedure #f "GenImageColor"
-                  (integer-32 integer-32 (& Color))
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (width height color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenImageColor"
+              (integer-32 integer-32 (& Color))
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res width height color)
           ret-res))))
   (define GenImageGradientLinear
-    (let ([proc (foreign-procedure #f "GenImageGradientLinear"
-                  (integer-32 integer-32 integer-32 (& Color) (& Color))
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (width height direction start end)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenImageGradientLinear"
+              (integer-32 integer-32 integer-32 (& Color) (& Color))
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res width height direction start end)
           ret-res))))
   (define GenImageGradientRadial
-    (let ([proc (foreign-procedure #f "GenImageGradientRadial"
-                  (integer-32 integer-32 single-float (& Color) (& Color))
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (width height density inner outer)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenImageGradientRadial"
+              (integer-32 integer-32 single-float (& Color) (& Color))
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res width height density inner outer)
           ret-res))))
   (define GenImageGradientSquare
-    (let ([proc (foreign-procedure #f "GenImageGradientSquare"
-                  (integer-32 integer-32 single-float (& Color) (& Color))
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (width height density inner outer)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenImageGradientSquare"
+              (integer-32 integer-32 single-float (& Color) (& Color))
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res width height density inner outer)
           ret-res))))
   (define GenImageChecked
-    (let ([proc (foreign-procedure #f "GenImageChecked"
-                  (integer-32
-                   integer-32
-                   integer-32
-                   integer-32
-                   (& Color)
-                   (& Color))
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (width height checksX checksY col1 col2)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenImageChecked"
+              (integer-32
+               integer-32
+               integer-32
+               integer-32
+               (& Color)
+               (& Color))
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res width height checksX checksY col1 col2)
           ret-res))))
   (define GenImageWhiteNoise
-    (let ([proc (foreign-procedure #f "GenImageWhiteNoise"
-                  (integer-32 integer-32 single-float)
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (width height factor)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenImageWhiteNoise"
+              (integer-32 integer-32 single-float)
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res width height factor)
           ret-res))))
   (define GenImagePerlinNoise
-    (let ([proc (foreign-procedure #f "GenImagePerlinNoise"
-                  (integer-32
-                   integer-32
-                   integer-32
-                   integer-32
-                   single-float)
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (width height offsetX offsetY scale)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenImagePerlinNoise"
+              (integer-32 integer-32 integer-32 integer-32 single-float)
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res width height offsetX offsetY scale)
           ret-res))))
   (define GenImageCellular
-    (let ([proc (foreign-procedure #f "GenImageCellular"
-                  (integer-32 integer-32 integer-32)
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (width height tileSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenImageCellular"
+              (integer-32 integer-32 integer-32)
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res width height tileSize)
           ret-res))))
   (define GenImageText
-    (let ([proc (foreign-procedure #f "GenImageText"
-                  (integer-32 integer-32 string)
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (width height text)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenImageText"
+              (integer-32 integer-32 string)
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res width height text)
           ret-res))))
   (define ImageCopy
-    (let ([proc (foreign-procedure #f "ImageCopy"
-                  ((& Image))
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (image)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageCopy" ((& Image)) (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res image)
           ret-res))))
   (define ImageFromImage
-    (let ([proc (foreign-procedure #f "ImageFromImage"
-                  ((& Image) (& Rectangle))
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (image rec)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageFromImage"
+              ((& Image) (& Rectangle))
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res image rec)
           ret-res))))
   (define ImageFromChannel
-    (let ([proc (foreign-procedure #f "ImageFromChannel"
-                  ((& Image) integer-32)
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (image selectedChannel)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageFromChannel"
+              ((& Image) integer-32)
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res image selectedChannel)
           ret-res))))
   (define ImageText
-    (let ([proc (foreign-procedure #f "ImageText"
-                  (string integer-32 (& Color))
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (text fontSize color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageText"
+              (string integer-32 (& Color))
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res text fontSize color)
           ret-res))))
   (define ImageTextEx
-    (let ([proc (foreign-procedure #f "ImageTextEx"
-                  ((& Font) string single-float single-float (& Color))
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (font text fontSize spacing tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageTextEx"
+              ((& Font) string single-float single-float (& Color))
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res font text fontSize spacing tint)
           ret-res))))
   (define ImageFormat
-    (foreign-procedure #f "ImageFormat"
-      ((* Image) integer-32)
-      void))
+    (let ([f #f])
+      (lambda (image newFormat)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageFormat"
+              ((* Image) integer-32)
+              void)))
+        (f image newFormat))))
   (define ImageToPOT
-    (foreign-procedure #f "ImageToPOT"
-      ((* Image) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (image fill)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageToPOT"
+              ((* Image) (& Color))
+              void)))
+        (f image fill))))
   (define ImageCrop
-    (foreign-procedure #f "ImageCrop"
-      ((* Image) (& Rectangle))
-      void))
+    (let ([f #f])
+      (lambda (image crop)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageCrop"
+              ((* Image) (& Rectangle))
+              void)))
+        (f image crop))))
   (define ImageAlphaCrop
-    (foreign-procedure #f "ImageAlphaCrop"
-      ((* Image) single-float)
-      void))
+    (let ([f #f])
+      (lambda (image threshold)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageAlphaCrop"
+              ((* Image) single-float)
+              void)))
+        (f image threshold))))
   (define ImageAlphaClear
-    (foreign-procedure #f "ImageAlphaClear"
-      ((* Image) (& Color) single-float)
-      void))
+    (let ([f #f])
+      (lambda (image color threshold)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageAlphaClear"
+              ((* Image) (& Color) single-float)
+              void)))
+        (f image color threshold))))
   (define ImageAlphaMask
-    (foreign-procedure #f "ImageAlphaMask"
-      ((* Image) (& Image))
-      void))
+    (let ([f #f])
+      (lambda (image alphaMask)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageAlphaMask"
+              ((* Image) (& Image))
+              void)))
+        (f image alphaMask))))
   (define ImageAlphaPremultiply
-    (foreign-procedure #f "ImageAlphaPremultiply"
-      ((* Image))
-      void))
+    (let ([f #f])
+      (lambda (image)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageAlphaPremultiply"
+              ((* Image))
+              void)))
+        (f image))))
   (define ImageBlurGaussian
-    (foreign-procedure #f "ImageBlurGaussian"
-      ((* Image) integer-32)
-      void))
+    (let ([f #f])
+      (lambda (image blurSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageBlurGaussian"
+              ((* Image) integer-32)
+              void)))
+        (f image blurSize))))
   (define ImageKernelConvolution
-    (foreign-procedure #f "ImageKernelConvolution"
-      ((* Image) (* single-float) integer-32)
-      void))
+    (let ([f #f])
+      (lambda (image kernel kernelSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageKernelConvolution"
+              ((* Image) (* single-float) integer-32)
+              void)))
+        (f image kernel kernelSize))))
   (define ImageResize
-    (foreign-procedure #f "ImageResize"
-      ((* Image) integer-32 integer-32)
-      void))
+    (let ([f #f])
+      (lambda (image newWidth newHeight)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageResize"
+              ((* Image) integer-32 integer-32)
+              void)))
+        (f image newWidth newHeight))))
   (define ImageResizeNN
-    (foreign-procedure #f "ImageResizeNN"
-      ((* Image) integer-32 integer-32)
-      void))
+    (let ([f #f])
+      (lambda (image newWidth newHeight)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageResizeNN"
+              ((* Image) integer-32 integer-32)
+              void)))
+        (f image newWidth newHeight))))
   (define ImageResizeCanvas
-    (foreign-procedure #f "ImageResizeCanvas"
-      ((* Image)
-       integer-32
-       integer-32
-       integer-32
-       integer-32
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (image newWidth newHeight offsetX offsetY fill)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageResizeCanvas"
+              ((* Image)
+               integer-32
+               integer-32
+               integer-32
+               integer-32
+               (& Color))
+              void)))
+        (f image newWidth newHeight offsetX offsetY fill))))
   (define ImageMipmaps
-    (foreign-procedure #f "ImageMipmaps" ((* Image)) void))
+    (let ([f #f])
+      (lambda (image)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageMipmaps" ((* Image)) void)))
+        (f image))))
   (define ImageDither
-    (foreign-procedure #f "ImageDither"
-      ((* Image) integer-32 integer-32 integer-32 integer-32)
-      void))
+    (let ([f #f])
+      (lambda (image rBpp gBpp bBpp aBpp)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDither"
+              ((* Image) integer-32 integer-32 integer-32 integer-32)
+              void)))
+        (f image rBpp gBpp bBpp aBpp))))
   (define ImageFlipVertical
-    (foreign-procedure #f "ImageFlipVertical" ((* Image)) void))
+    (let ([f #f])
+      (lambda (image)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageFlipVertical"
+              ((* Image))
+              void)))
+        (f image))))
   (define ImageFlipHorizontal
-    (foreign-procedure #f "ImageFlipHorizontal"
-      ((* Image))
-      void))
+    (let ([f #f])
+      (lambda (image)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageFlipHorizontal"
+              ((* Image))
+              void)))
+        (f image))))
   (define ImageRotate
-    (foreign-procedure #f "ImageRotate"
-      ((* Image) integer-32)
-      void))
+    (let ([f #f])
+      (lambda (image degrees)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageRotate"
+              ((* Image) integer-32)
+              void)))
+        (f image degrees))))
   (define ImageRotateCW
-    (foreign-procedure #f "ImageRotateCW" ((* Image)) void))
+    (let ([f #f])
+      (lambda (image)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageRotateCW" ((* Image)) void)))
+        (f image))))
   (define ImageRotateCCW
-    (foreign-procedure #f "ImageRotateCCW" ((* Image)) void))
+    (let ([f #f])
+      (lambda (image)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageRotateCCW" ((* Image)) void)))
+        (f image))))
   (define ImageColorTint
-    (foreign-procedure #f "ImageColorTint"
-      ((* Image) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (image color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageColorTint"
+              ((* Image) (& Color))
+              void)))
+        (f image color))))
   (define ImageColorInvert
-    (foreign-procedure #f "ImageColorInvert" ((* Image)) void))
+    (let ([f #f])
+      (lambda (image)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageColorInvert" ((* Image)) void)))
+        (f image))))
   (define ImageColorGrayscale
-    (foreign-procedure #f "ImageColorGrayscale"
-      ((* Image))
-      void))
+    (let ([f #f])
+      (lambda (image)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageColorGrayscale"
+              ((* Image))
+              void)))
+        (f image))))
   (define ImageColorContrast
-    (foreign-procedure #f "ImageColorContrast"
-      ((* Image) integer-32)
-      void))
+    (let ([f #f])
+      (lambda (image contrast)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageColorContrast"
+              ((* Image) integer-32)
+              void)))
+        (f image contrast))))
   (define ImageColorBrightness
-    (foreign-procedure #f "ImageColorBrightness"
-      ((* Image) integer-32)
-      void))
+    (let ([f #f])
+      (lambda (image brightness)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageColorBrightness"
+              ((* Image) integer-32)
+              void)))
+        (f image brightness))))
   (define ImageColorReplace
-    (foreign-procedure #f "ImageColorReplace"
-      ((* Image) (& Color) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (image color replace)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageColorReplace"
+              ((* Image) (& Color) (& Color))
+              void)))
+        (f image color replace))))
   (define LoadImageColors
-    (foreign-procedure #f "LoadImageColors"
-      ((& Image))
-      (* Color)))
+    (let ([f #f])
+      (lambda (image)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadImageColors"
+              ((& Image))
+              (* Color))))
+        (f image))))
   (define LoadImagePalette
-    (foreign-procedure #f "LoadImagePalette"
-      ((& Image) integer-32 (* integer-32))
-      (* Color)))
+    (let ([f #f])
+      (lambda (image maxPaletteSize colorCount)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadImagePalette"
+              ((& Image) integer-32 (* integer-32))
+              (* Color))))
+        (f image maxPaletteSize colorCount))))
   (define UnloadImageColors
-    (foreign-procedure #f "UnloadImageColors" ((* Color)) void))
+    (let ([f #f])
+      (lambda (colors)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadImageColors"
+              ((* Color))
+              void)))
+        (f colors))))
   (define UnloadImagePalette
-    (foreign-procedure #f "UnloadImagePalette"
-      ((* Color))
-      void))
+    (let ([f #f])
+      (lambda (colors)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadImagePalette"
+              ((* Color))
+              void)))
+        (f colors))))
   (define GetImageAlphaBorder
-    (let ([proc (foreign-procedure #f "GetImageAlphaBorder"
-                  ((& Image) single-float)
-                  (& Rectangle))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (image threshold)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetImageAlphaBorder"
+              ((& Image) single-float)
+              (& Rectangle))))
         (let ([ret-res (make-ftype-pointer
                          Rectangle
                          (foreign-alloc (ftype-sizeof Rectangle)))])
-          (apply proc ret-res xargs)
+          (f ret-res image threshold)
           ret-res))))
   (define GetImageColor
-    (let ([proc (foreign-procedure #f "GetImageColor"
-                  ((& Image) integer-32 integer-32)
-                  (& Color))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (image x y)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetImageColor"
+              ((& Image) integer-32 integer-32)
+              (& Color))))
         (let ([ret-res (make-ftype-pointer
                          Color
                          (foreign-alloc (ftype-sizeof Color)))])
-          (apply proc ret-res xargs)
+          (f ret-res image x y)
           ret-res))))
   (define ImageClearBackground
-    (foreign-procedure #f "ImageClearBackground"
-      ((* Image) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageClearBackground"
+              ((* Image) (& Color))
+              void)))
+        (f dst color))))
   (define ImageDrawPixel
-    (foreign-procedure #f "ImageDrawPixel"
-      ((* Image) integer-32 integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst posX posY color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawPixel"
+              ((* Image) integer-32 integer-32 (& Color))
+              void)))
+        (f dst posX posY color))))
   (define ImageDrawPixelV
-    (foreign-procedure #f "ImageDrawPixelV"
-      ((* Image) (& Vector2) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst position color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawPixelV"
+              ((* Image) (& Vector2) (& Color))
+              void)))
+        (f dst position color))))
   (define ImageDrawLine
-    (foreign-procedure #f "ImageDrawLine"
-      ((* Image)
-       integer-32
-       integer-32
-       integer-32
-       integer-32
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst startPosX startPosY endPosX endPosY color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawLine"
+              ((* Image)
+               integer-32
+               integer-32
+               integer-32
+               integer-32
+               (& Color))
+              void)))
+        (f dst startPosX startPosY endPosX endPosY color))))
   (define ImageDrawLineV
-    (foreign-procedure #f "ImageDrawLineV"
-      ((* Image) (& Vector2) (& Vector2) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst start end color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawLineV"
+              ((* Image) (& Vector2) (& Vector2) (& Color))
+              void)))
+        (f dst start end color))))
   (define ImageDrawLineEx
-    (foreign-procedure #f "ImageDrawLineEx"
-      ((* Image) (& Vector2) (& Vector2) integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst start end thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawLineEx"
+              ((* Image) (& Vector2) (& Vector2) integer-32 (& Color))
+              void)))
+        (f dst start end thick color))))
   (define ImageDrawLineStrip
-    (foreign-procedure #f "ImageDrawLineStrip"
-      ((* Image) (* Vector2) integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst points pointCount color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawLineStrip"
+              ((* Image) (* Vector2) integer-32 (& Color))
+              void)))
+        (f dst points pointCount color))))
   (define ImageDrawTriangle
-    (foreign-procedure #f "ImageDrawTriangle"
-      ((* Image) (& Vector2) (& Vector2) (& Vector2) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst v1 v2 v3 color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawTriangle"
+              ((* Image) (& Vector2) (& Vector2) (& Vector2) (& Color))
+              void)))
+        (f dst v1 v2 v3 color))))
   (define ImageDrawTriangleGradient
-    (foreign-procedure #f "ImageDrawTriangleGradient"
-      ((* Image)
-       (& Vector2)
-       (& Vector2)
-       (& Vector2)
-       (& Color)
-       (& Color)
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst v1 v2 v3 c1 c2 c3)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawTriangleGradient"
+              ((* Image)
+               (& Vector2)
+               (& Vector2)
+               (& Vector2)
+               (& Color)
+               (& Color)
+               (& Color))
+              void)))
+        (f dst v1 v2 v3 c1 c2 c3))))
   (define ImageDrawTriangleLines
-    (foreign-procedure #f "ImageDrawTriangleLines"
-      ((* Image) (& Vector2) (& Vector2) (& Vector2) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst v1 v2 v3 color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawTriangleLines"
+              ((* Image) (& Vector2) (& Vector2) (& Vector2) (& Color))
+              void)))
+        (f dst v1 v2 v3 color))))
   (define ImageDrawTriangleFan
-    (foreign-procedure #f "ImageDrawTriangleFan"
-      ((* Image) (* Vector2) integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst points pointCount color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawTriangleFan"
+              ((* Image) (* Vector2) integer-32 (& Color))
+              void)))
+        (f dst points pointCount color))))
   (define ImageDrawTriangleStrip
-    (foreign-procedure #f "ImageDrawTriangleStrip"
-      ((* Image) (* Vector2) integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst points pointCount color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawTriangleStrip"
+              ((* Image) (* Vector2) integer-32 (& Color))
+              void)))
+        (f dst points pointCount color))))
   (define ImageDrawRectangle
-    (foreign-procedure #f "ImageDrawRectangle"
-      ((* Image)
-       integer-32
-       integer-32
-       integer-32
-       integer-32
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst posX posY width height color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawRectangle"
+              ((* Image)
+               integer-32
+               integer-32
+               integer-32
+               integer-32
+               (& Color))
+              void)))
+        (f dst posX posY width height color))))
   (define ImageDrawRectangleV
-    (foreign-procedure #f "ImageDrawRectangleV"
-      ((* Image) (& Vector2) (& Vector2) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst position size color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawRectangleV"
+              ((* Image) (& Vector2) (& Vector2) (& Color))
+              void)))
+        (f dst position size color))))
   (define ImageDrawRectangleRec
-    (foreign-procedure #f "ImageDrawRectangleRec"
-      ((* Image) (& Rectangle) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst rec color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawRectangleRec"
+              ((* Image) (& Rectangle) (& Color))
+              void)))
+        (f dst rec color))))
   (define ImageDrawRectanglePro
-    (foreign-procedure #f "ImageDrawRectanglePro"
-      ((* Image) (& Rectangle) (& Vector2) single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst rec origin rotation color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawRectanglePro"
+              ((* Image) (& Rectangle) (& Vector2) single-float (& Color))
+              void)))
+        (f dst rec origin rotation color))))
   (define ImageDrawRectangleLines
-    (foreign-procedure #f "ImageDrawRectangleLines"
-      ((* Image)
-       integer-32
-       integer-32
-       integer-32
-       integer-32
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst posX posY width height color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawRectangleLines"
+              ((* Image)
+               integer-32
+               integer-32
+               integer-32
+               integer-32
+               (& Color))
+              void)))
+        (f dst posX posY width height color))))
   (define ImageDrawRectangleLinesEx
-    (foreign-procedure #f "ImageDrawRectangleLinesEx"
-      ((* Image) (& Rectangle) integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst rec thick color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawRectangleLinesEx"
+              ((* Image) (& Rectangle) integer-32 (& Color))
+              void)))
+        (f dst rec thick color))))
   (define ImageDrawRectangleGradientEx
-    (foreign-procedure #f "ImageDrawRectangleGradientEx"
-      ((* Image)
-       (& Rectangle)
-       (& Color)
-       (& Color)
-       (& Color)
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst rec col1 col2 col3 col4)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawRectangleGradientEx"
+              ((* Image)
+               (& Rectangle)
+               (& Color)
+               (& Color)
+               (& Color)
+               (& Color))
+              void)))
+        (f dst rec col1 col2 col3 col4))))
   (define ImageDrawCircle
-    (foreign-procedure #f "ImageDrawCircle"
-      ((* Image) integer-32 integer-32 integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst centerX centerY radius color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawCircle"
+              ((* Image) integer-32 integer-32 integer-32 (& Color))
+              void)))
+        (f dst centerX centerY radius color))))
   (define ImageDrawCircleV
-    (foreign-procedure #f "ImageDrawCircleV"
-      ((* Image) (& Vector2) integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst center radius color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawCircleV"
+              ((* Image) (& Vector2) integer-32 (& Color))
+              void)))
+        (f dst center radius color))))
   (define ImageDrawCircleLines
-    (foreign-procedure #f "ImageDrawCircleLines"
-      ((* Image) integer-32 integer-32 integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst centerX centerY radius color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawCircleLines"
+              ((* Image) integer-32 integer-32 integer-32 (& Color))
+              void)))
+        (f dst centerX centerY radius color))))
   (define ImageDrawCircleLinesV
-    (foreign-procedure #f "ImageDrawCircleLinesV"
-      ((* Image) (& Vector2) integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst center radius color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawCircleLinesV"
+              ((* Image) (& Vector2) integer-32 (& Color))
+              void)))
+        (f dst center radius color))))
   (define ImageDrawCircleGradient
-    (foreign-procedure #f "ImageDrawCircleGradient"
-      ((* Image) (& Vector2) single-float (& Color) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst center radius inner outer)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawCircleGradient"
+              ((* Image) (& Vector2) single-float (& Color) (& Color))
+              void)))
+        (f dst center radius inner outer))))
   (define ImageDrawImage
-    (foreign-procedure #f "ImageDrawImage"
-      ((* Image) (& Image) integer-32 integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst src posX posY tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawImage"
+              ((* Image) (& Image) integer-32 integer-32 (& Color))
+              void)))
+        (f dst src posX posY tint))))
   (define ImageDrawImageEx
-    (foreign-procedure #f "ImageDrawImageEx"
-      ((* Image)
-       (& Image)
-       (& Vector2)
-       single-float
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst src position rotation scale tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawImageEx"
+              ((* Image)
+               (& Image)
+               (& Vector2)
+               single-float
+               single-float
+               (& Color))
+              void)))
+        (f dst src position rotation scale tint))))
   (define ImageDrawImageRec
-    (foreign-procedure #f "ImageDrawImageRec"
-      ((* Image) (& Image) (& Rectangle) (& Vector2) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst src srcRec position tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawImageRec"
+              ((* Image) (& Image) (& Rectangle) (& Vector2) (& Color))
+              void)))
+        (f dst src srcRec position tint))))
   (define ImageDrawImagePro
-    (foreign-procedure #f "ImageDrawImagePro"
-      ((* Image)
-       (& Image)
-       (& Rectangle)
-       (& Rectangle)
-       (& Vector2)
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst src srcRec dstRec origin rotation tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawImagePro"
+              ((* Image)
+               (& Image)
+               (& Rectangle)
+               (& Rectangle)
+               (& Vector2)
+               single-float
+               (& Color))
+              void)))
+        (f dst src srcRec dstRec origin rotation tint))))
   (define ImageDrawText
-    (foreign-procedure #f "ImageDrawText"
-      ((* Image)
-       string
-       integer-32
-       integer-32
-       integer-32
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst text posX posY fontSize color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawText"
+              ((* Image)
+               string
+               integer-32
+               integer-32
+               integer-32
+               (& Color))
+              void)))
+        (f dst text posX posY fontSize color))))
   (define ImageDrawTextEx
-    (foreign-procedure #f "ImageDrawTextEx"
-      ((* Image)
-       (& Font)
-       string
-       (& Vector2)
-       single-float
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst font text position fontSize spacing tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawTextEx"
+              ((* Image)
+               (& Font)
+               string
+               (& Vector2)
+               single-float
+               single-float
+               (& Color))
+              void)))
+        (f dst font text position fontSize spacing tint))))
   (define ImageDrawTextPro
-    (foreign-procedure #f "ImageDrawTextPro"
-      ((* Image)
-       (& Font)
-       string
-       (& Vector2)
-       (& Vector2)
-       single-float
-       single-float
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (dst font text position origin rotation fontSize
+               spacing tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ImageDrawTextPro"
+              ((* Image)
+               (& Font)
+               string
+               (& Vector2)
+               (& Vector2)
+               single-float
+               single-float
+               single-float
+               (& Color))
+              void)))
+        (f dst font text position origin rotation fontSize spacing
+           tint))))
   (define LoadTexture
-    (let ([proc (foreign-procedure #f "LoadTexture"
-                  (string)
-                  (& Texture2D))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadTexture"
+              (string)
+              (& Texture2D))))
         (let ([ret-res (make-ftype-pointer
                          Texture2D
                          (foreign-alloc (ftype-sizeof Texture2D)))])
-          (apply proc ret-res xargs)
+          (f ret-res fileName)
           ret-res))))
   (define LoadTextureFromImage
-    (let ([proc (foreign-procedure #f "LoadTextureFromImage"
-                  ((& Image))
-                  (& Texture2D))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (image)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadTextureFromImage"
+              ((& Image))
+              (& Texture2D))))
         (let ([ret-res (make-ftype-pointer
                          Texture2D
                          (foreign-alloc (ftype-sizeof Texture2D)))])
-          (apply proc ret-res xargs)
+          (f ret-res image)
           ret-res))))
   (define LoadTextureCubemap
-    (let ([proc (foreign-procedure #f "LoadTextureCubemap"
-                  ((& Image) integer-32)
-                  (& TextureCubemap))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (image layout)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadTextureCubemap"
+              ((& Image) integer-32)
+              (& TextureCubemap))))
         (let ([ret-res (make-ftype-pointer
                          TextureCubemap
                          (foreign-alloc (ftype-sizeof TextureCubemap)))])
-          (apply proc ret-res xargs)
+          (f ret-res image layout)
           ret-res))))
   (define LoadRenderTexture
-    (let ([proc (foreign-procedure #f "LoadRenderTexture"
-                  (integer-32 integer-32)
-                  (& RenderTexture2D))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (width height)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadRenderTexture"
+              (integer-32 integer-32)
+              (& RenderTexture2D))))
         (let ([ret-res (make-ftype-pointer
                          RenderTexture2D
                          (foreign-alloc (ftype-sizeof RenderTexture2D)))])
-          (apply proc ret-res xargs)
+          (f ret-res width height)
           ret-res))))
   (define LoadRenderTextureEx
-    (let ([proc (foreign-procedure #f "LoadRenderTextureEx"
-                  (integer-32 integer-32 integer-32)
-                  (& RenderTexture2D))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (width height format)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadRenderTextureEx"
+              (integer-32 integer-32 integer-32)
+              (& RenderTexture2D))))
         (let ([ret-res (make-ftype-pointer
                          RenderTexture2D
                          (foreign-alloc (ftype-sizeof RenderTexture2D)))])
-          (apply proc ret-res xargs)
+          (f ret-res width height format)
           ret-res))))
   (define IsTextureValid
-    (foreign-procedure #f "IsTextureValid"
-      ((& Texture2D))
-      stdbool))
+    (let ([f #f])
+      (lambda (texture)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsTextureValid"
+              ((& Texture2D))
+              stdbool)))
+        (f texture))))
   (define UnloadTexture
-    (foreign-procedure #f "UnloadTexture" ((& Texture2D)) void))
+    (let ([f #f])
+      (lambda (texture)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadTexture"
+              ((& Texture2D))
+              void)))
+        (f texture))))
   (define IsRenderTextureValid
-    (foreign-procedure #f "IsRenderTextureValid"
-      ((& RenderTexture2D))
-      stdbool))
+    (let ([f #f])
+      (lambda (target)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsRenderTextureValid"
+              ((& RenderTexture2D))
+              stdbool)))
+        (f target))))
   (define UnloadRenderTexture
-    (foreign-procedure #f "UnloadRenderTexture"
-      ((& RenderTexture2D))
-      void))
+    (let ([f #f])
+      (lambda (target)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadRenderTexture"
+              ((& RenderTexture2D))
+              void)))
+        (f target))))
   (define UpdateTexture
-    (foreign-procedure #f "UpdateTexture"
-      ((& Texture2D) void*)
-      void))
+    (let ([f #f])
+      (lambda (texture pixels)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UpdateTexture"
+              ((& Texture2D) void*)
+              void)))
+        (f texture pixels))))
   (define UpdateTextureRec
-    (foreign-procedure #f "UpdateTextureRec"
-      ((& Texture2D) (& Rectangle) void*)
-      void))
+    (let ([f #f])
+      (lambda (texture rec pixels)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UpdateTextureRec"
+              ((& Texture2D) (& Rectangle) void*)
+              void)))
+        (f texture rec pixels))))
   (define GenTextureMipmaps
-    (foreign-procedure #f "GenTextureMipmaps"
-      ((* Texture2D))
-      void))
+    (let ([f #f])
+      (lambda (texture)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenTextureMipmaps"
+              ((* Texture2D))
+              void)))
+        (f texture))))
   (define SetTextureFilter
-    (foreign-procedure #f "SetTextureFilter"
-      ((& Texture2D) integer-32)
-      void))
+    (let ([f #f])
+      (lambda (texture filter)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetTextureFilter"
+              ((& Texture2D) integer-32)
+              void)))
+        (f texture filter))))
   (define SetTextureWrap
-    (foreign-procedure #f "SetTextureWrap"
-      ((& Texture2D) integer-32)
-      void))
+    (let ([f #f])
+      (lambda (texture wrap)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetTextureWrap"
+              ((& Texture2D) integer-32)
+              void)))
+        (f texture wrap))))
   (define DrawTexture
-    (foreign-procedure #f "DrawTexture"
-      ((& Texture2D) integer-32 integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (texture posX posY tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTexture"
+              ((& Texture2D) integer-32 integer-32 (& Color))
+              void)))
+        (f texture posX posY tint))))
   (define DrawTextureV
-    (foreign-procedure #f "DrawTextureV"
-      ((& Texture2D) (& Vector2) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (texture position tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTextureV"
+              ((& Texture2D) (& Vector2) (& Color))
+              void)))
+        (f texture position tint))))
   (define DrawTextureEx
-    (foreign-procedure #f "DrawTextureEx"
-      ((& Texture2D)
-       (& Vector2)
-       single-float
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (texture position rotation scale tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTextureEx"
+              ((& Texture2D)
+               (& Vector2)
+               single-float
+               single-float
+               (& Color))
+              void)))
+        (f texture position rotation scale tint))))
   (define DrawTextureRec
-    (foreign-procedure #f "DrawTextureRec"
-      ((& Texture2D) (& Rectangle) (& Vector2) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (texture rec position tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTextureRec"
+              ((& Texture2D) (& Rectangle) (& Vector2) (& Color))
+              void)))
+        (f texture rec position tint))))
   (define DrawTexturePro
-    (foreign-procedure #f "DrawTexturePro"
-      ((& Texture2D)
-       (& Rectangle)
-       (& Rectangle)
-       (& Vector2)
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (texture srcrec dstrec origin rotation tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTexturePro"
+              ((& Texture2D)
+               (& Rectangle)
+               (& Rectangle)
+               (& Vector2)
+               single-float
+               (& Color))
+              void)))
+        (f texture srcrec dstrec origin rotation tint))))
   (define DrawTextureNPatch
-    (foreign-procedure #f "DrawTextureNPatch"
-      ((& Texture2D)
-       (& NPatchInfo)
-       (& Rectangle)
-       (& Vector2)
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (texture nPatchInfo dstrec origin rotation tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTextureNPatch"
+              ((& Texture2D)
+               (& NPatchInfo)
+               (& Rectangle)
+               (& Vector2)
+               single-float
+               (& Color))
+              void)))
+        (f texture nPatchInfo dstrec origin rotation tint))))
   (define ColorIsEqual
-    (foreign-procedure #f "ColorIsEqual"
-      ((& Color) (& Color))
-      stdbool))
+    (let ([f #f])
+      (lambda (col1 col2)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ColorIsEqual"
+              ((& Color) (& Color))
+              stdbool)))
+        (f col1 col2))))
   (define Fade
-    (let ([proc (foreign-procedure #f "Fade"
-                  ((& Color) single-float)
-                  (& Color))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (color alpha)
+        (unless f
+          (set! f
+            (foreign-procedure #f "Fade"
+              ((& Color) single-float)
+              (& Color))))
         (let ([ret-res (make-ftype-pointer
                          Color
                          (foreign-alloc (ftype-sizeof Color)))])
-          (apply proc ret-res xargs)
+          (f ret-res color alpha)
           ret-res))))
   (define ColorToInt
-    (foreign-procedure #f "ColorToInt" ((& Color)) integer-32))
+    (let ([f #f])
+      (lambda (color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ColorToInt" ((& Color)) integer-32)))
+        (f color))))
   (define ColorNormalize
-    (let ([proc (foreign-procedure #f "ColorNormalize"
-                  ((& Color))
-                  (& Vector4))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ColorNormalize"
+              ((& Color))
+              (& Vector4))))
         (let ([ret-res (make-ftype-pointer
                          Vector4
                          (foreign-alloc (ftype-sizeof Vector4)))])
-          (apply proc ret-res xargs)
+          (f ret-res color)
           ret-res))))
   (define ColorFromNormalized
-    (let ([proc (foreign-procedure #f "ColorFromNormalized"
-                  ((& Vector4))
-                  (& Color))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (normalized)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ColorFromNormalized"
+              ((& Vector4))
+              (& Color))))
         (let ([ret-res (make-ftype-pointer
                          Color
                          (foreign-alloc (ftype-sizeof Color)))])
-          (apply proc ret-res xargs)
+          (f ret-res normalized)
           ret-res))))
   (define ColorToHSV
-    (let ([proc (foreign-procedure #f "ColorToHSV"
-                  ((& Color))
-                  (& Vector3))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ColorToHSV"
+              ((& Color))
+              (& Vector3))))
         (let ([ret-res (make-ftype-pointer
                          Vector3
                          (foreign-alloc (ftype-sizeof Vector3)))])
-          (apply proc ret-res xargs)
+          (f ret-res color)
           ret-res))))
   (define ColorFromHSV
-    (let ([proc (foreign-procedure #f "ColorFromHSV"
-                  (single-float single-float single-float)
-                  (& Color))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (hue saturation value)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ColorFromHSV"
+              (single-float single-float single-float)
+              (& Color))))
         (let ([ret-res (make-ftype-pointer
                          Color
                          (foreign-alloc (ftype-sizeof Color)))])
-          (apply proc ret-res xargs)
+          (f ret-res hue saturation value)
           ret-res))))
   (define ColorTint
-    (let ([proc (foreign-procedure #f "ColorTint"
-                  ((& Color) (& Color))
-                  (& Color))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (color tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ColorTint"
+              ((& Color) (& Color))
+              (& Color))))
         (let ([ret-res (make-ftype-pointer
                          Color
                          (foreign-alloc (ftype-sizeof Color)))])
-          (apply proc ret-res xargs)
+          (f ret-res color tint)
           ret-res))))
   (define ColorBrightness
-    (let ([proc (foreign-procedure #f "ColorBrightness"
-                  ((& Color) single-float)
-                  (& Color))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (color factor)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ColorBrightness"
+              ((& Color) single-float)
+              (& Color))))
         (let ([ret-res (make-ftype-pointer
                          Color
                          (foreign-alloc (ftype-sizeof Color)))])
-          (apply proc ret-res xargs)
+          (f ret-res color factor)
           ret-res))))
   (define ColorContrast
-    (let ([proc (foreign-procedure #f "ColorContrast"
-                  ((& Color) single-float)
-                  (& Color))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (color contrast)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ColorContrast"
+              ((& Color) single-float)
+              (& Color))))
         (let ([ret-res (make-ftype-pointer
                          Color
                          (foreign-alloc (ftype-sizeof Color)))])
-          (apply proc ret-res xargs)
+          (f ret-res color contrast)
           ret-res))))
   (define ColorAlpha
-    (let ([proc (foreign-procedure #f "ColorAlpha"
-                  ((& Color) single-float)
-                  (& Color))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (color alpha)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ColorAlpha"
+              ((& Color) single-float)
+              (& Color))))
         (let ([ret-res (make-ftype-pointer
                          Color
                          (foreign-alloc (ftype-sizeof Color)))])
-          (apply proc ret-res xargs)
+          (f ret-res color alpha)
           ret-res))))
   (define ColorAlphaBlend
-    (let ([proc (foreign-procedure #f "ColorAlphaBlend"
-                  ((& Color) (& Color) (& Color))
-                  (& Color))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (dst src tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ColorAlphaBlend"
+              ((& Color) (& Color) (& Color))
+              (& Color))))
         (let ([ret-res (make-ftype-pointer
                          Color
                          (foreign-alloc (ftype-sizeof Color)))])
-          (apply proc ret-res xargs)
+          (f ret-res dst src tint)
           ret-res))))
   (define ColorLerp
-    (let ([proc (foreign-procedure #f "ColorLerp"
-                  ((& Color) (& Color) single-float)
-                  (& Color))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (color1 color2 factor)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ColorLerp"
+              ((& Color) (& Color) single-float)
+              (& Color))))
         (let ([ret-res (make-ftype-pointer
                          Color
                          (foreign-alloc (ftype-sizeof Color)))])
-          (apply proc ret-res xargs)
+          (f ret-res color1 color2 factor)
           ret-res))))
   (define GetColor
-    (let ([proc (foreign-procedure #f "GetColor"
-                  (unsigned-32)
-                  (& Color))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (hexValue)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetColor" (unsigned-32) (& Color))))
         (let ([ret-res (make-ftype-pointer
                          Color
                          (foreign-alloc (ftype-sizeof Color)))])
-          (apply proc ret-res xargs)
+          (f ret-res hexValue)
           ret-res))))
   (define GetPixelColor
-    (let ([proc (foreign-procedure #f "GetPixelColor"
-                  (void* integer-32)
-                  (& Color))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (srcPtr format)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetPixelColor"
+              (void* integer-32)
+              (& Color))))
         (let ([ret-res (make-ftype-pointer
                          Color
                          (foreign-alloc (ftype-sizeof Color)))])
-          (apply proc ret-res xargs)
+          (f ret-res srcPtr format)
           ret-res))))
   (define SetPixelColor
-    (foreign-procedure #f "SetPixelColor"
-      (void* (& Color) integer-32)
-      void))
+    (let ([f #f])
+      (lambda (dstPtr color format)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetPixelColor"
+              (void* (& Color) integer-32)
+              void)))
+        (f dstPtr color format))))
   (define GetPixelDataSize
-    (foreign-procedure #f "GetPixelDataSize"
-      (integer-32 integer-32 integer-32)
-      integer-32))
+    (let ([f #f])
+      (lambda (width height format)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetPixelDataSize"
+              (integer-32 integer-32 integer-32)
+              integer-32)))
+        (f width height format))))
   (define GetFontDefault
-    (let ([proc (foreign-procedure #f "GetFontDefault"
-                  ()
-                  (& Font))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetFontDefault" () (& Font))))
         (let ([ret-res (make-ftype-pointer
                          Font
                          (foreign-alloc (ftype-sizeof Font)))])
-          (apply proc ret-res xargs)
+          (f ret-res)
           ret-res))))
   (define LoadFont
-    (let ([proc (foreign-procedure #f "LoadFont"
-                  (string)
-                  (& Font))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadFont" (string) (& Font))))
         (let ([ret-res (make-ftype-pointer
                          Font
                          (foreign-alloc (ftype-sizeof Font)))])
-          (apply proc ret-res xargs)
+          (f ret-res fileName)
           ret-res))))
   (define LoadFontEx
-    (let ([proc (foreign-procedure #f "LoadFontEx"
-                  (string integer-32 (* integer-32) integer-32)
-                  (& Font))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (fileName fontSize codepoints codepointCount)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadFontEx"
+              (string integer-32 (* integer-32) integer-32)
+              (& Font))))
         (let ([ret-res (make-ftype-pointer
                          Font
                          (foreign-alloc (ftype-sizeof Font)))])
-          (apply proc ret-res xargs)
+          (f ret-res fileName fontSize codepoints codepointCount)
           ret-res))))
   (define LoadFontFromImage
-    (let ([proc (foreign-procedure #f "LoadFontFromImage"
-                  ((& Image) (& Color) integer-32)
-                  (& Font))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (image key firstChar)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadFontFromImage"
+              ((& Image) (& Color) integer-32)
+              (& Font))))
         (let ([ret-res (make-ftype-pointer
                          Font
                          (foreign-alloc (ftype-sizeof Font)))])
-          (apply proc ret-res xargs)
+          (f ret-res image key firstChar)
           ret-res))))
   (define LoadFontFromMemory
-    (let ([proc (foreign-procedure #f "LoadFontFromMemory"
-                  (string
-                   (* unsigned-8)
-                   integer-32
-                   integer-32
-                   (* integer-32)
-                   integer-32)
-                  (& Font))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (fileType fileData dataSize fontSize codepoints
+               codepointCount)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadFontFromMemory"
+              (string
+               (* unsigned-8)
+               integer-32
+               integer-32
+               (* integer-32)
+               integer-32)
+              (& Font))))
         (let ([ret-res (make-ftype-pointer
                          Font
                          (foreign-alloc (ftype-sizeof Font)))])
-          (apply proc ret-res xargs)
+          (f ret-res fileType fileData dataSize fontSize codepoints
+             codepointCount)
           ret-res))))
   (define IsFontValid
-    (foreign-procedure #f "IsFontValid" ((& Font)) stdbool))
+    (let ([f #f])
+      (lambda (font)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsFontValid" ((& Font)) stdbool)))
+        (f font))))
   (define LoadFontData
-    (foreign-procedure #f "LoadFontData"
-      ((* unsigned-8)
-       integer-32
-       integer-32
-       (* integer-32)
-       integer-32
-       integer-32
-       (* integer-32))
-      (* GlyphInfo)))
+    (let ([f #f])
+      (lambda (fileData dataSize fontSize codepoints
+               codepointCount type glyphCount)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadFontData"
+              ((* unsigned-8)
+               integer-32
+               integer-32
+               (* integer-32)
+               integer-32
+               integer-32
+               (* integer-32))
+              (* GlyphInfo))))
+        (f fileData dataSize fontSize codepoints codepointCount type
+           glyphCount))))
   (define GenImageFontAtlas
-    (let ([proc (foreign-procedure #f "GenImageFontAtlas"
-                  ((* GlyphInfo)
-                   (* *Rectangle)
-                   integer-32
-                   integer-32
-                   integer-32
-                   integer-32)
-                  (& Image))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (glyphs glyphRecs glyphCount fontSize padding
+               packMethod)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenImageFontAtlas"
+              ((* GlyphInfo)
+               (* *Rectangle)
+               integer-32
+               integer-32
+               integer-32
+               integer-32)
+              (& Image))))
         (let ([ret-res (make-ftype-pointer
                          Image
                          (foreign-alloc (ftype-sizeof Image)))])
-          (apply proc ret-res xargs)
+          (f ret-res glyphs glyphRecs glyphCount fontSize padding
+             packMethod)
           ret-res))))
   (define UnloadFontData
-    (foreign-procedure #f "UnloadFontData"
-      ((* GlyphInfo) integer-32)
-      void))
+    (let ([f #f])
+      (lambda (glyphs glyphCount)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadFontData"
+              ((* GlyphInfo) integer-32)
+              void)))
+        (f glyphs glyphCount))))
   (define UnloadFont
-    (foreign-procedure #f "UnloadFont" ((& Font)) void))
+    (let ([f #f])
+      (lambda (font)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadFont" ((& Font)) void)))
+        (f font))))
   (define ExportFontAsCode
-    (foreign-procedure #f "ExportFontAsCode"
-      ((& Font) string)
-      stdbool))
+    (let ([f #f])
+      (lambda (font fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ExportFontAsCode"
+              ((& Font) string)
+              stdbool)))
+        (f font fileName))))
   (define DrawFPS
-    (foreign-procedure #f "DrawFPS"
-      (integer-32 integer-32)
-      void))
+    (let ([f #f])
+      (lambda (posX posY)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawFPS"
+              (integer-32 integer-32)
+              void)))
+        (f posX posY))))
   (define DrawText
-    (foreign-procedure #f "DrawText"
-      (string integer-32 integer-32 integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (text posX posY fontSize color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawText"
+              (string integer-32 integer-32 integer-32 (& Color))
+              void)))
+        (f text posX posY fontSize color))))
   (define DrawTextEx
-    (foreign-procedure #f "DrawTextEx"
-      ((& Font)
-       string
-       (& Vector2)
-       single-float
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (font text position fontSize spacing tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTextEx"
+              ((& Font)
+               string
+               (& Vector2)
+               single-float
+               single-float
+               (& Color))
+              void)))
+        (f font text position fontSize spacing tint))))
   (define DrawTextPro
-    (foreign-procedure #f "DrawTextPro"
-      ((& Font)
-       string
-       (& Vector2)
-       (& Vector2)
-       single-float
-       single-float
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (font text position origin rotation fontSize spacing
+               tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTextPro"
+              ((& Font)
+               string
+               (& Vector2)
+               (& Vector2)
+               single-float
+               single-float
+               single-float
+               (& Color))
+              void)))
+        (f font text position origin rotation fontSize spacing
+           tint))))
   (define DrawTextCodepoint
-    (foreign-procedure #f "DrawTextCodepoint"
-      ((& Font) integer-32 (& Vector2) single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (font codepoint position fontSize tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTextCodepoint"
+              ((& Font) integer-32 (& Vector2) single-float (& Color))
+              void)))
+        (f font codepoint position fontSize tint))))
   (define DrawTextCodepoints
-    (foreign-procedure #f "DrawTextCodepoints"
-      ((& Font)
-       (* integer-32)
-       integer-32
-       (& Vector2)
-       single-float
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (font codepoints codepointCount position fontSize
+               spacing tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTextCodepoints"
+              ((& Font)
+               (* integer-32)
+               integer-32
+               (& Vector2)
+               single-float
+               single-float
+               (& Color))
+              void)))
+        (f font codepoints codepointCount position fontSize spacing
+           tint))))
   (define SetTextLineSpacing
-    (foreign-procedure #f "SetTextLineSpacing"
-      (integer-32)
-      void))
+    (let ([f #f])
+      (lambda (spacing)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetTextLineSpacing"
+              (integer-32)
+              void)))
+        (f spacing))))
   (define MeasureText
-    (foreign-procedure #f "MeasureText"
-      (string integer-32)
-      integer-32))
+    (let ([f #f])
+      (lambda (text fontSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "MeasureText"
+              (string integer-32)
+              integer-32)))
+        (f text fontSize))))
   (define MeasureTextEx
-    (let ([proc (foreign-procedure #f "MeasureTextEx"
-                  ((& Font) string single-float single-float)
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (font text fontSize spacing)
+        (unless f
+          (set! f
+            (foreign-procedure #f "MeasureTextEx"
+              ((& Font) string single-float single-float)
+              (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res font text fontSize spacing)
           ret-res))))
   (define MeasureTextCodepoints
-    (let ([proc (foreign-procedure #f "MeasureTextCodepoints"
-                  ((& Font)
-                   (* integer-32)
-                   integer-32
-                   single-float
-                   single-float)
-                  (& Vector2))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (font codepoints length fontSize spacing)
+        (unless f
+          (set! f
+            (foreign-procedure #f "MeasureTextCodepoints"
+              ((& Font)
+               (* integer-32)
+               integer-32
+               single-float
+               single-float)
+              (& Vector2))))
         (let ([ret-res (make-ftype-pointer
                          Vector2
                          (foreign-alloc (ftype-sizeof Vector2)))])
-          (apply proc ret-res xargs)
+          (f ret-res font codepoints length fontSize spacing)
           ret-res))))
   (define GetGlyphIndex
-    (foreign-procedure #f "GetGlyphIndex"
-      ((& Font) integer-32)
-      integer-32))
+    (let ([f #f])
+      (lambda (font codepoint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetGlyphIndex"
+              ((& Font) integer-32)
+              integer-32)))
+        (f font codepoint))))
   (define GetGlyphInfo
-    (let ([proc (foreign-procedure #f "GetGlyphInfo"
-                  ((& Font) integer-32)
-                  (& GlyphInfo))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (font codepoint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetGlyphInfo"
+              ((& Font) integer-32)
+              (& GlyphInfo))))
         (let ([ret-res (make-ftype-pointer
                          GlyphInfo
                          (foreign-alloc (ftype-sizeof GlyphInfo)))])
-          (apply proc ret-res xargs)
+          (f ret-res font codepoint)
           ret-res))))
   (define GetGlyphAtlasRec
-    (let ([proc (foreign-procedure #f "GetGlyphAtlasRec"
-                  ((& Font) integer-32)
-                  (& Rectangle))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (font codepoint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetGlyphAtlasRec"
+              ((& Font) integer-32)
+              (& Rectangle))))
         (let ([ret-res (make-ftype-pointer
                          Rectangle
                          (foreign-alloc (ftype-sizeof Rectangle)))])
-          (apply proc ret-res xargs)
+          (f ret-res font codepoint)
           ret-res))))
   (define LoadUTF8
-    (foreign-procedure #f "LoadUTF8"
-      ((* integer-32) integer-32)
-      string))
+    (let ([f #f])
+      (lambda (codepoints length)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadUTF8"
+              ((* integer-32) integer-32)
+              string)))
+        (f codepoints length))))
   (define UnloadUTF8
-    (foreign-procedure #f "UnloadUTF8" (string) void))
+    (let ([f #f])
+      (lambda (text)
+        (unless f
+          (set! f (foreign-procedure #f "UnloadUTF8" (string) void)))
+        (f text))))
   (define LoadCodepoints
-    (foreign-procedure #f "LoadCodepoints"
-      (string (* integer-32))
-      (* integer-32)))
+    (let ([f #f])
+      (lambda (text count)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadCodepoints"
+              (string (* integer-32))
+              (* integer-32))))
+        (f text count))))
   (define UnloadCodepoints
-    (foreign-procedure #f "UnloadCodepoints"
-      ((* integer-32))
-      void))
+    (let ([f #f])
+      (lambda (codepoints)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadCodepoints"
+              ((* integer-32))
+              void)))
+        (f codepoints))))
   (define GetCodepointCount
-    (foreign-procedure #f "GetCodepointCount"
-      (string)
-      integer-32))
+    (let ([f #f])
+      (lambda (text)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetCodepointCount"
+              (string)
+              integer-32)))
+        (f text))))
   (define GetCodepoint
-    (foreign-procedure #f "GetCodepoint"
-      (string (* integer-32))
-      integer-32))
+    (let ([f #f])
+      (lambda (text codepointSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetCodepoint"
+              (string (* integer-32))
+              integer-32)))
+        (f text codepointSize))))
   (define GetCodepointNext
-    (foreign-procedure #f "GetCodepointNext"
-      (string (* integer-32))
-      integer-32))
+    (let ([f #f])
+      (lambda (text codepointSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetCodepointNext"
+              (string (* integer-32))
+              integer-32)))
+        (f text codepointSize))))
   (define GetCodepointPrevious
-    (foreign-procedure #f "GetCodepointPrevious"
-      (string (* integer-32))
-      integer-32))
+    (let ([f #f])
+      (lambda (text codepointSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetCodepointPrevious"
+              (string (* integer-32))
+              integer-32)))
+        (f text codepointSize))))
   (define CodepointToUTF8
-    (foreign-procedure #f "CodepointToUTF8"
-      (integer-32 (* integer-32))
-      string))
+    (let ([f #f])
+      (lambda (codepoint utf8Size)
+        (unless f
+          (set! f
+            (foreign-procedure #f "CodepointToUTF8"
+              (integer-32 (* integer-32))
+              string)))
+        (f codepoint utf8Size))))
   (define LoadTextLines
-    (foreign-procedure #f "LoadTextLines"
-      (string (* integer-32))
-      (* *char)))
+    (let ([f #f])
+      (lambda (text count)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadTextLines"
+              (string (* integer-32))
+              (* *char))))
+        (f text count))))
   (define UnloadTextLines
-    (foreign-procedure #f "UnloadTextLines"
-      ((* *char) integer-32)
-      void))
+    (let ([f #f])
+      (lambda (text lineCount)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadTextLines"
+              ((* *char) integer-32)
+              void)))
+        (f text lineCount))))
   (define TextCopy
-    (foreign-procedure #f "TextCopy"
-      (string string)
-      integer-32))
+    (let ([f #f])
+      (lambda (dst src)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextCopy"
+              (string string)
+              integer-32)))
+        (f dst src))))
   (define TextIsEqual
-    (foreign-procedure #f "TextIsEqual"
-      (string string)
-      stdbool))
+    (let ([f #f])
+      (lambda (text1 text2)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextIsEqual"
+              (string string)
+              stdbool)))
+        (f text1 text2))))
   (define TextLength
-    (foreign-procedure #f "TextLength" (string) unsigned-32))
+    (let ([f #f])
+      (lambda (text)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextLength" (string) unsigned-32)))
+        (f text))))
   (define TextFormat
-    (foreign-procedure #f "TextFormat" (string) string))
+    (let ([f #f])
+      (lambda (text)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextFormat" (string) string)))
+        (f text))))
   (define TextSubtext
-    (foreign-procedure #f "TextSubtext"
-      (string integer-32 integer-32)
-      string))
+    (let ([f #f])
+      (lambda (text position length)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextSubtext"
+              (string integer-32 integer-32)
+              string)))
+        (f text position length))))
   (define TextRemoveSpaces
-    (foreign-procedure #f "TextRemoveSpaces" (string) string))
+    (let ([f #f])
+      (lambda (text)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextRemoveSpaces" (string) string)))
+        (f text))))
   (define GetTextBetween
-    (foreign-procedure #f "GetTextBetween"
-      (string string string)
-      string))
+    (let ([f #f])
+      (lambda (text begin end)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetTextBetween"
+              (string string string)
+              string)))
+        (f text begin end))))
   (define TextReplace
-    (foreign-procedure #f "TextReplace"
-      (string string string)
-      string))
+    (let ([f #f])
+      (lambda (text search replacement)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextReplace"
+              (string string string)
+              string)))
+        (f text search replacement))))
   (define TextReplaceAlloc
-    (foreign-procedure #f "TextReplaceAlloc"
-      (string string string)
-      string))
+    (let ([f #f])
+      (lambda (text search replacement)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextReplaceAlloc"
+              (string string string)
+              string)))
+        (f text search replacement))))
   (define TextReplaceBetween
-    (foreign-procedure #f "TextReplaceBetween"
-      (string string string string)
-      string))
+    (let ([f #f])
+      (lambda (text begin end replacement)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextReplaceBetween"
+              (string string string string)
+              string)))
+        (f text begin end replacement))))
   (define TextReplaceBetweenAlloc
-    (foreign-procedure #f "TextReplaceBetweenAlloc"
-      (string string string string)
-      string))
+    (let ([f #f])
+      (lambda (text begin end replacement)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextReplaceBetweenAlloc"
+              (string string string string)
+              string)))
+        (f text begin end replacement))))
   (define TextInsert
-    (foreign-procedure #f "TextInsert"
-      (string string integer-32)
-      string))
+    (let ([f #f])
+      (lambda (text insert position)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextInsert"
+              (string string integer-32)
+              string)))
+        (f text insert position))))
   (define TextInsertAlloc
-    (foreign-procedure #f "TextInsertAlloc"
-      (string string integer-32)
-      string))
+    (let ([f #f])
+      (lambda (text insert position)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextInsertAlloc"
+              (string string integer-32)
+              string)))
+        (f text insert position))))
   (define TextJoin
-    (foreign-procedure #f "TextJoin"
-      ((* *char) integer-32 string)
-      string))
+    (let ([f #f])
+      (lambda (textList count delimiter)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextJoin"
+              ((* *char) integer-32 string)
+              string)))
+        (f textList count delimiter))))
   (define TextSplit
-    (foreign-procedure #f "TextSplit"
-      (string char (* integer-32))
-      (* *char)))
+    (let ([f #f])
+      (lambda (text delimiter count)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextSplit"
+              (string char (* integer-32))
+              (* *char))))
+        (f text delimiter count))))
   (define TextAppend
-    (foreign-procedure #f "TextAppend"
-      (string string (* integer-32))
-      void))
+    (let ([f #f])
+      (lambda (text append position)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextAppend"
+              (string string (* integer-32))
+              void)))
+        (f text append position))))
   (define TextFindIndex
-    (foreign-procedure #f "TextFindIndex"
-      (string string)
-      integer-32))
+    (let ([f #f])
+      (lambda (text search)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextFindIndex"
+              (string string)
+              integer-32)))
+        (f text search))))
   (define TextToUpper
-    (foreign-procedure #f "TextToUpper" (string) string))
+    (let ([f #f])
+      (lambda (text)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextToUpper" (string) string)))
+        (f text))))
   (define TextToLower
-    (foreign-procedure #f "TextToLower" (string) string))
+    (let ([f #f])
+      (lambda (text)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextToLower" (string) string)))
+        (f text))))
   (define TextToPascal
-    (foreign-procedure #f "TextToPascal" (string) string))
+    (let ([f #f])
+      (lambda (text)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextToPascal" (string) string)))
+        (f text))))
   (define TextToSnake
-    (foreign-procedure #f "TextToSnake" (string) string))
+    (let ([f #f])
+      (lambda (text)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextToSnake" (string) string)))
+        (f text))))
   (define TextToCamel
-    (foreign-procedure #f "TextToCamel" (string) string))
+    (let ([f #f])
+      (lambda (text)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextToCamel" (string) string)))
+        (f text))))
   (define TextToInteger
-    (foreign-procedure #f "TextToInteger" (string) integer-32))
+    (let ([f #f])
+      (lambda (text)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextToInteger" (string) integer-32)))
+        (f text))))
   (define TextToFloat
-    (foreign-procedure #f "TextToFloat" (string) single-float))
+    (let ([f #f])
+      (lambda (text)
+        (unless f
+          (set! f
+            (foreign-procedure #f "TextToFloat" (string) single-float)))
+        (f text))))
   (define DrawLine3D
-    (foreign-procedure #f "DrawLine3D"
-      ((& Vector3) (& Vector3) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (startPos endPos color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawLine3D"
+              ((& Vector3) (& Vector3) (& Color))
+              void)))
+        (f startPos endPos color))))
   (define DrawPoint3D
-    (foreign-procedure #f "DrawPoint3D"
-      ((& Vector3) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (position color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawPoint3D"
+              ((& Vector3) (& Color))
+              void)))
+        (f position color))))
   (define DrawCircle3D
-    (foreign-procedure #f "DrawCircle3D"
-      ((& Vector3)
-       single-float
-       (& Vector3)
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (center radius rotationAxis rotationAngle color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCircle3D"
+              ((& Vector3)
+               single-float
+               (& Vector3)
+               single-float
+               (& Color))
+              void)))
+        (f center radius rotationAxis rotationAngle color))))
   (define DrawTriangle3D
-    (foreign-procedure #f "DrawTriangle3D"
-      ((& Vector3) (& Vector3) (& Vector3) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (v1 v2 v3 color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTriangle3D"
+              ((& Vector3) (& Vector3) (& Vector3) (& Color))
+              void)))
+        (f v1 v2 v3 color))))
   (define DrawTriangleStrip3D
-    (foreign-procedure #f "DrawTriangleStrip3D"
-      ((* Vector3) integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (points pointCount color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawTriangleStrip3D"
+              ((* Vector3) integer-32 (& Color))
+              void)))
+        (f points pointCount color))))
   (define DrawCube
-    (foreign-procedure #f "DrawCube"
-      ((& Vector3)
-       single-float
-       single-float
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (position width height length color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCube"
+              ((& Vector3)
+               single-float
+               single-float
+               single-float
+               (& Color))
+              void)))
+        (f position width height length color))))
   (define DrawCubeV
-    (foreign-procedure #f "DrawCubeV"
-      ((& Vector3) (& Vector3) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (position size color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCubeV"
+              ((& Vector3) (& Vector3) (& Color))
+              void)))
+        (f position size color))))
   (define DrawCubeWires
-    (foreign-procedure #f "DrawCubeWires"
-      ((& Vector3)
-       single-float
-       single-float
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (position width height length color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCubeWires"
+              ((& Vector3)
+               single-float
+               single-float
+               single-float
+               (& Color))
+              void)))
+        (f position width height length color))))
   (define DrawCubeWiresV
-    (foreign-procedure #f "DrawCubeWiresV"
-      ((& Vector3) (& Vector3) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (position size color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCubeWiresV"
+              ((& Vector3) (& Vector3) (& Color))
+              void)))
+        (f position size color))))
   (define DrawSphere
-    (foreign-procedure #f "DrawSphere"
-      ((& Vector3) single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (centerPos radius color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawSphere"
+              ((& Vector3) single-float (& Color))
+              void)))
+        (f centerPos radius color))))
   (define DrawSphereEx
-    (foreign-procedure #f "DrawSphereEx"
-      ((& Vector3) single-float integer-32 integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (centerPos radius rings slices color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawSphereEx"
+              ((& Vector3) single-float integer-32 integer-32 (& Color))
+              void)))
+        (f centerPos radius rings slices color))))
   (define DrawSphereWires
-    (foreign-procedure #f "DrawSphereWires"
-      ((& Vector3) single-float integer-32 integer-32 (& Color))
-      void))
+    (let ([f #f])
+      (lambda (centerPos radius rings slices color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawSphereWires"
+              ((& Vector3) single-float integer-32 integer-32 (& Color))
+              void)))
+        (f centerPos radius rings slices color))))
   (define DrawCylinder
-    (foreign-procedure #f "DrawCylinder"
-      ((& Vector3)
-       single-float
-       single-float
-       single-float
-       integer-32
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (position radiusTop radiusBottom height sides color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCylinder"
+              ((& Vector3)
+               single-float
+               single-float
+               single-float
+               integer-32
+               (& Color))
+              void)))
+        (f position radiusTop radiusBottom height sides color))))
   (define DrawCylinderEx
-    (foreign-procedure #f "DrawCylinderEx"
-      ((& Vector3)
-       (& Vector3)
-       single-float
-       single-float
-       integer-32
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (startPos endPos startRadius endRadius sides color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCylinderEx"
+              ((& Vector3)
+               (& Vector3)
+               single-float
+               single-float
+               integer-32
+               (& Color))
+              void)))
+        (f startPos endPos startRadius endRadius sides color))))
   (define DrawCylinderWires
-    (foreign-procedure #f "DrawCylinderWires"
-      ((& Vector3)
-       single-float
-       single-float
-       single-float
-       integer-32
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (position radiusTop radiusBottom height sides color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCylinderWires"
+              ((& Vector3)
+               single-float
+               single-float
+               single-float
+               integer-32
+               (& Color))
+              void)))
+        (f position radiusTop radiusBottom height sides color))))
   (define DrawCylinderWiresEx
-    (foreign-procedure #f "DrawCylinderWiresEx"
-      ((& Vector3)
-       (& Vector3)
-       single-float
-       single-float
-       integer-32
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (startPos endPos startRadius endRadius sides color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCylinderWiresEx"
+              ((& Vector3)
+               (& Vector3)
+               single-float
+               single-float
+               integer-32
+               (& Color))
+              void)))
+        (f startPos endPos startRadius endRadius sides color))))
   (define DrawCapsule
-    (foreign-procedure #f "DrawCapsule"
-      ((& Vector3)
-       (& Vector3)
-       single-float
-       integer-32
-       integer-32
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (startPos endPos radius rings slices color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCapsule"
+              ((& Vector3)
+               (& Vector3)
+               single-float
+               integer-32
+               integer-32
+               (& Color))
+              void)))
+        (f startPos endPos radius rings slices color))))
   (define DrawCapsuleWires
-    (foreign-procedure #f "DrawCapsuleWires"
-      ((& Vector3)
-       (& Vector3)
-       single-float
-       integer-32
-       integer-32
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (startPos endPos radius rings slices color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawCapsuleWires"
+              ((& Vector3)
+               (& Vector3)
+               single-float
+               integer-32
+               integer-32
+               (& Color))
+              void)))
+        (f startPos endPos radius rings slices color))))
   (define DrawPlane
-    (foreign-procedure #f "DrawPlane"
-      ((& Vector3) (& Vector2) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (centerPos size color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawPlane"
+              ((& Vector3) (& Vector2) (& Color))
+              void)))
+        (f centerPos size color))))
   (define DrawRay
-    (foreign-procedure #f "DrawRay" ((& Ray) (& Color)) void))
+    (let ([f #f])
+      (lambda (ray color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawRay" ((& Ray) (& Color)) void)))
+        (f ray color))))
   (define DrawGrid
-    (foreign-procedure #f "DrawGrid"
-      (integer-32 single-float)
-      void))
+    (let ([f #f])
+      (lambda (slices spacing)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawGrid"
+              (integer-32 single-float)
+              void)))
+        (f slices spacing))))
   (define LoadModel
-    (let ([proc (foreign-procedure #f "LoadModel"
-                  (string)
-                  (& Model))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadModel" (string) (& Model))))
         (let ([ret-res (make-ftype-pointer
                          Model
                          (foreign-alloc (ftype-sizeof Model)))])
-          (apply proc ret-res xargs)
+          (f ret-res fileName)
           ret-res))))
   (define LoadModelFromMesh
-    (let ([proc (foreign-procedure #f "LoadModelFromMesh"
-                  ((& Mesh))
-                  (& Model))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (mesh)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadModelFromMesh"
+              ((& Mesh))
+              (& Model))))
         (let ([ret-res (make-ftype-pointer
                          Model
                          (foreign-alloc (ftype-sizeof Model)))])
-          (apply proc ret-res xargs)
+          (f ret-res mesh)
           ret-res))))
   (define IsModelValid
-    (foreign-procedure #f "IsModelValid" ((& Model)) stdbool))
+    (let ([f #f])
+      (lambda (model)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsModelValid" ((& Model)) stdbool)))
+        (f model))))
   (define UnloadModel
-    (foreign-procedure #f "UnloadModel" ((& Model)) void))
+    (let ([f #f])
+      (lambda (model)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadModel" ((& Model)) void)))
+        (f model))))
   (define GetModelBoundingBox
-    (let ([proc (foreign-procedure #f "GetModelBoundingBox"
-                  ((& Model))
-                  (& BoundingBox))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (model)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetModelBoundingBox"
+              ((& Model))
+              (& BoundingBox))))
         (let ([ret-res (make-ftype-pointer
                          BoundingBox
                          (foreign-alloc (ftype-sizeof BoundingBox)))])
-          (apply proc ret-res xargs)
+          (f ret-res model)
           ret-res))))
   (define DrawModel
-    (foreign-procedure #f "DrawModel"
-      ((& Model) (& Vector3) single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (model position scale tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawModel"
+              ((& Model) (& Vector3) single-float (& Color))
+              void)))
+        (f model position scale tint))))
   (define DrawModelEx
-    (foreign-procedure #f "DrawModelEx"
-      ((& Model)
-       (& Vector3)
-       (& Vector3)
-       single-float
-       (& Vector3)
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (model position rotationAxis rotationAngle scale
+               tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawModelEx"
+              ((& Model)
+               (& Vector3)
+               (& Vector3)
+               single-float
+               (& Vector3)
+               (& Color))
+              void)))
+        (f model position rotationAxis rotationAngle scale tint))))
   (define DrawModelWires
-    (foreign-procedure #f "DrawModelWires"
-      ((& Model) (& Vector3) single-float (& Color))
-      void))
+    (let ([f #f])
+      (lambda (model position scale tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawModelWires"
+              ((& Model) (& Vector3) single-float (& Color))
+              void)))
+        (f model position scale tint))))
   (define DrawModelWiresEx
-    (foreign-procedure #f "DrawModelWiresEx"
-      ((& Model)
-       (& Vector3)
-       (& Vector3)
-       single-float
-       (& Vector3)
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (model position rotationAxis rotationAngle scale
+               tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawModelWiresEx"
+              ((& Model)
+               (& Vector3)
+               (& Vector3)
+               single-float
+               (& Vector3)
+               (& Color))
+              void)))
+        (f model position rotationAxis rotationAngle scale tint))))
   (define DrawBoundingBox
-    (foreign-procedure #f "DrawBoundingBox"
-      ((& BoundingBox) (& Color))
-      void))
+    (let ([f #f])
+      (lambda (box color)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawBoundingBox"
+              ((& BoundingBox) (& Color))
+              void)))
+        (f box color))))
   (define DrawBillboard
-    (foreign-procedure #f "DrawBillboard"
-      ((& Camera)
-       (& Texture2D)
-       (& Vector3)
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (camera texture position scale tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawBillboard"
+              ((& Camera)
+               (& Texture2D)
+               (& Vector3)
+               single-float
+               (& Color))
+              void)))
+        (f camera texture position scale tint))))
   (define DrawBillboardRec
-    (foreign-procedure #f "DrawBillboardRec"
-      ((& Camera)
-       (& Texture2D)
-       (& Rectangle)
-       (& Vector3)
-       (& Vector2)
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (camera texture rec position size tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawBillboardRec"
+              ((& Camera)
+               (& Texture2D)
+               (& Rectangle)
+               (& Vector3)
+               (& Vector2)
+               (& Color))
+              void)))
+        (f camera texture rec position size tint))))
   (define DrawBillboardPro
-    (foreign-procedure #f "DrawBillboardPro"
-      ((& Camera)
-       (& Texture2D)
-       (& Rectangle)
-       (& Vector3)
-       (& Vector3)
-       (& Vector2)
-       (& Vector2)
-       single-float
-       (& Color))
-      void))
+    (let ([f #f])
+      (lambda (camera texture rec position up size origin rotation
+               tint)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawBillboardPro"
+              ((& Camera)
+               (& Texture2D)
+               (& Rectangle)
+               (& Vector3)
+               (& Vector3)
+               (& Vector2)
+               (& Vector2)
+               single-float
+               (& Color))
+              void)))
+        (f camera texture rec position up size origin rotation
+           tint))))
   (define UploadMesh
-    (foreign-procedure #f "UploadMesh" ((* Mesh) stdbool) void))
+    (let ([f #f])
+      (lambda (mesh dynamic)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UploadMesh"
+              ((* Mesh) stdbool)
+              void)))
+        (f mesh dynamic))))
   (define UpdateMeshBuffer
-    (foreign-procedure #f "UpdateMeshBuffer"
-      ((& Mesh) integer-32 void* integer-32 integer-32)
-      void))
+    (let ([f #f])
+      (lambda (mesh index data dataSize offset)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UpdateMeshBuffer"
+              ((& Mesh) integer-32 void* integer-32 integer-32)
+              void)))
+        (f mesh index data dataSize offset))))
   (define UnloadMesh
-    (foreign-procedure #f "UnloadMesh" ((& Mesh)) void))
+    (let ([f #f])
+      (lambda (mesh)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadMesh" ((& Mesh)) void)))
+        (f mesh))))
   (define DrawMesh
-    (foreign-procedure #f "DrawMesh"
-      ((& Mesh) (& Material) (& Matrix))
-      void))
+    (let ([f #f])
+      (lambda (mesh material transform)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawMesh"
+              ((& Mesh) (& Material) (& Matrix))
+              void)))
+        (f mesh material transform))))
   (define DrawMeshInstanced
-    (foreign-procedure #f "DrawMeshInstanced"
-      ((& Mesh) (& Material) (* Matrix) integer-32)
-      void))
+    (let ([f #f])
+      (lambda (mesh material transforms instances)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DrawMeshInstanced"
+              ((& Mesh) (& Material) (* Matrix) integer-32)
+              void)))
+        (f mesh material transforms instances))))
   (define GetMeshBoundingBox
-    (let ([proc (foreign-procedure #f "GetMeshBoundingBox"
-                  ((& Mesh))
-                  (& BoundingBox))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (mesh)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetMeshBoundingBox"
+              ((& Mesh))
+              (& BoundingBox))))
         (let ([ret-res (make-ftype-pointer
                          BoundingBox
                          (foreign-alloc (ftype-sizeof BoundingBox)))])
-          (apply proc ret-res xargs)
+          (f ret-res mesh)
           ret-res))))
   (define GenMeshTangents
-    (foreign-procedure #f "GenMeshTangents" ((* Mesh)) void))
+    (let ([f #f])
+      (lambda (mesh)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenMeshTangents" ((* Mesh)) void)))
+        (f mesh))))
   (define ExportMesh
-    (foreign-procedure #f "ExportMesh"
-      ((& Mesh) string)
-      stdbool))
+    (let ([f #f])
+      (lambda (mesh fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ExportMesh"
+              ((& Mesh) string)
+              stdbool)))
+        (f mesh fileName))))
   (define ExportMeshAsCode
-    (foreign-procedure #f "ExportMeshAsCode"
-      ((& Mesh) string)
-      stdbool))
+    (let ([f #f])
+      (lambda (mesh fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ExportMeshAsCode"
+              ((& Mesh) string)
+              stdbool)))
+        (f mesh fileName))))
   (define GenMeshPoly
-    (let ([proc (foreign-procedure #f "GenMeshPoly"
-                  (integer-32 single-float)
-                  (& Mesh))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (sides radius)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenMeshPoly"
+              (integer-32 single-float)
+              (& Mesh))))
         (let ([ret-res (make-ftype-pointer
                          Mesh
                          (foreign-alloc (ftype-sizeof Mesh)))])
-          (apply proc ret-res xargs)
+          (f ret-res sides radius)
           ret-res))))
   (define GenMeshPlane
-    (let ([proc (foreign-procedure #f "GenMeshPlane"
-                  (single-float single-float integer-32 integer-32)
-                  (& Mesh))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (width length resX resZ)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenMeshPlane"
+              (single-float single-float integer-32 integer-32)
+              (& Mesh))))
         (let ([ret-res (make-ftype-pointer
                          Mesh
                          (foreign-alloc (ftype-sizeof Mesh)))])
-          (apply proc ret-res xargs)
+          (f ret-res width length resX resZ)
           ret-res))))
   (define GenMeshCube
-    (let ([proc (foreign-procedure #f "GenMeshCube"
-                  (single-float single-float single-float)
-                  (& Mesh))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (width height length)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenMeshCube"
+              (single-float single-float single-float)
+              (& Mesh))))
         (let ([ret-res (make-ftype-pointer
                          Mesh
                          (foreign-alloc (ftype-sizeof Mesh)))])
-          (apply proc ret-res xargs)
+          (f ret-res width height length)
           ret-res))))
   (define GenMeshSphere
-    (let ([proc (foreign-procedure #f "GenMeshSphere"
-                  (single-float integer-32 integer-32)
-                  (& Mesh))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (radius rings slices)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenMeshSphere"
+              (single-float integer-32 integer-32)
+              (& Mesh))))
         (let ([ret-res (make-ftype-pointer
                          Mesh
                          (foreign-alloc (ftype-sizeof Mesh)))])
-          (apply proc ret-res xargs)
+          (f ret-res radius rings slices)
           ret-res))))
   (define GenMeshHemiSphere
-    (let ([proc (foreign-procedure #f "GenMeshHemiSphere"
-                  (single-float integer-32 integer-32)
-                  (& Mesh))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (radius rings slices)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenMeshHemiSphere"
+              (single-float integer-32 integer-32)
+              (& Mesh))))
         (let ([ret-res (make-ftype-pointer
                          Mesh
                          (foreign-alloc (ftype-sizeof Mesh)))])
-          (apply proc ret-res xargs)
+          (f ret-res radius rings slices)
           ret-res))))
   (define GenMeshCylinder
-    (let ([proc (foreign-procedure #f "GenMeshCylinder"
-                  (single-float single-float integer-32)
-                  (& Mesh))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (radius height slices)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenMeshCylinder"
+              (single-float single-float integer-32)
+              (& Mesh))))
         (let ([ret-res (make-ftype-pointer
                          Mesh
                          (foreign-alloc (ftype-sizeof Mesh)))])
-          (apply proc ret-res xargs)
+          (f ret-res radius height slices)
           ret-res))))
   (define GenMeshCone
-    (let ([proc (foreign-procedure #f "GenMeshCone"
-                  (single-float single-float integer-32)
-                  (& Mesh))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (radius height slices)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenMeshCone"
+              (single-float single-float integer-32)
+              (& Mesh))))
         (let ([ret-res (make-ftype-pointer
                          Mesh
                          (foreign-alloc (ftype-sizeof Mesh)))])
-          (apply proc ret-res xargs)
+          (f ret-res radius height slices)
           ret-res))))
   (define GenMeshTorus
-    (let ([proc (foreign-procedure #f "GenMeshTorus"
-                  (single-float single-float integer-32 integer-32)
-                  (& Mesh))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (radius size radSeg sides)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenMeshTorus"
+              (single-float single-float integer-32 integer-32)
+              (& Mesh))))
         (let ([ret-res (make-ftype-pointer
                          Mesh
                          (foreign-alloc (ftype-sizeof Mesh)))])
-          (apply proc ret-res xargs)
+          (f ret-res radius size radSeg sides)
           ret-res))))
   (define GenMeshKnot
-    (let ([proc (foreign-procedure #f "GenMeshKnot"
-                  (single-float single-float integer-32 integer-32)
-                  (& Mesh))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (radius size radSeg sides)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenMeshKnot"
+              (single-float single-float integer-32 integer-32)
+              (& Mesh))))
         (let ([ret-res (make-ftype-pointer
                          Mesh
                          (foreign-alloc (ftype-sizeof Mesh)))])
-          (apply proc ret-res xargs)
+          (f ret-res radius size radSeg sides)
           ret-res))))
   (define GenMeshHeightmap
-    (let ([proc (foreign-procedure #f "GenMeshHeightmap"
-                  ((& Image) (& Vector3))
-                  (& Mesh))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (heightmap size)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenMeshHeightmap"
+              ((& Image) (& Vector3))
+              (& Mesh))))
         (let ([ret-res (make-ftype-pointer
                          Mesh
                          (foreign-alloc (ftype-sizeof Mesh)))])
-          (apply proc ret-res xargs)
+          (f ret-res heightmap size)
           ret-res))))
   (define GenMeshCubicmap
-    (let ([proc (foreign-procedure #f "GenMeshCubicmap"
-                  ((& Image) (& Vector3))
-                  (& Mesh))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (cubicmap cubeSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GenMeshCubicmap"
+              ((& Image) (& Vector3))
+              (& Mesh))))
         (let ([ret-res (make-ftype-pointer
                          Mesh
                          (foreign-alloc (ftype-sizeof Mesh)))])
-          (apply proc ret-res xargs)
+          (f ret-res cubicmap cubeSize)
           ret-res))))
   (define LoadMaterials
-    (foreign-procedure #f "LoadMaterials"
-      (string (* integer-32))
-      (* Material)))
+    (let ([f #f])
+      (lambda (fileName materialCount)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadMaterials"
+              (string (* integer-32))
+              (* Material))))
+        (f fileName materialCount))))
   (define LoadMaterialDefault
-    (let ([proc (foreign-procedure #f "LoadMaterialDefault"
-                  ()
-                  (& Material))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadMaterialDefault"
+              ()
+              (& Material))))
         (let ([ret-res (make-ftype-pointer
                          Material
                          (foreign-alloc (ftype-sizeof Material)))])
-          (apply proc ret-res xargs)
+          (f ret-res)
           ret-res))))
   (define IsMaterialValid
-    (foreign-procedure #f "IsMaterialValid"
-      ((& Material))
-      stdbool))
+    (let ([f #f])
+      (lambda (material)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsMaterialValid"
+              ((& Material))
+              stdbool)))
+        (f material))))
   (define UnloadMaterial
-    (foreign-procedure #f "UnloadMaterial" ((& Material)) void))
+    (let ([f #f])
+      (lambda (material)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadMaterial"
+              ((& Material))
+              void)))
+        (f material))))
   (define SetMaterialTexture
-    (foreign-procedure #f "SetMaterialTexture"
-      ((* Material) integer-32 (& Texture2D))
-      void))
+    (let ([f #f])
+      (lambda (material mapType texture)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetMaterialTexture"
+              ((* Material) integer-32 (& Texture2D))
+              void)))
+        (f material mapType texture))))
   (define SetModelMeshMaterial
-    (foreign-procedure #f "SetModelMeshMaterial"
-      ((* Model) integer-32 integer-32)
-      void))
+    (let ([f #f])
+      (lambda (model meshId materialId)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetModelMeshMaterial"
+              ((* Model) integer-32 integer-32)
+              void)))
+        (f model meshId materialId))))
   (define LoadModelAnimations
-    (foreign-procedure #f "LoadModelAnimations"
-      (string (* integer-32))
-      (* ModelAnimation)))
+    (let ([f #f])
+      (lambda (fileName animCount)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadModelAnimations"
+              (string (* integer-32))
+              (* ModelAnimation))))
+        (f fileName animCount))))
   (define UpdateModelAnimation
-    (foreign-procedure #f "UpdateModelAnimation"
-      ((& Model) (& ModelAnimation) single-float)
-      void))
+    (let ([f #f])
+      (lambda (model anim frame)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UpdateModelAnimation"
+              ((& Model) (& ModelAnimation) single-float)
+              void)))
+        (f model anim frame))))
   (define UpdateModelAnimationEx
-    (foreign-procedure #f "UpdateModelAnimationEx"
-      ((& Model)
-       (& ModelAnimation)
-       single-float
-       (& ModelAnimation)
-       single-float
-       single-float)
-      void))
+    (let ([f #f])
+      (lambda (model animA frameA animB frameB blend)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UpdateModelAnimationEx"
+              ((& Model)
+               (& ModelAnimation)
+               single-float
+               (& ModelAnimation)
+               single-float
+               single-float)
+              void)))
+        (f model animA frameA animB frameB blend))))
   (define UnloadModelAnimations
-    (foreign-procedure #f "UnloadModelAnimations"
-      ((* ModelAnimation) integer-32)
-      void))
+    (let ([f #f])
+      (lambda (animations animCount)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadModelAnimations"
+              ((* ModelAnimation) integer-32)
+              void)))
+        (f animations animCount))))
   (define IsModelAnimationValid
-    (foreign-procedure #f "IsModelAnimationValid"
-      ((& Model) (& ModelAnimation))
-      stdbool))
+    (let ([f #f])
+      (lambda (model anim)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsModelAnimationValid"
+              ((& Model) (& ModelAnimation))
+              stdbool)))
+        (f model anim))))
   (define CheckCollisionSpheres
-    (foreign-procedure #f "CheckCollisionSpheres"
-      ((& Vector3) single-float (& Vector3) single-float)
-      stdbool))
+    (let ([f #f])
+      (lambda (center1 radius1 center2 radius2)
+        (unless f
+          (set! f
+            (foreign-procedure #f "CheckCollisionSpheres"
+              ((& Vector3) single-float (& Vector3) single-float)
+              stdbool)))
+        (f center1 radius1 center2 radius2))))
   (define CheckCollisionBoxes
-    (foreign-procedure #f "CheckCollisionBoxes"
-      ((& BoundingBox) (& BoundingBox))
-      stdbool))
+    (let ([f #f])
+      (lambda (box1 box2)
+        (unless f
+          (set! f
+            (foreign-procedure #f "CheckCollisionBoxes"
+              ((& BoundingBox) (& BoundingBox))
+              stdbool)))
+        (f box1 box2))))
   (define CheckCollisionBoxSphere
-    (foreign-procedure #f "CheckCollisionBoxSphere"
-      ((& BoundingBox) (& Vector3) single-float)
-      stdbool))
+    (let ([f #f])
+      (lambda (box center radius)
+        (unless f
+          (set! f
+            (foreign-procedure #f "CheckCollisionBoxSphere"
+              ((& BoundingBox) (& Vector3) single-float)
+              stdbool)))
+        (f box center radius))))
   (define GetRayCollisionSphere
-    (let ([proc (foreign-procedure #f "GetRayCollisionSphere"
-                  ((& Ray) (& Vector3) single-float)
-                  (& RayCollision))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (ray center radius)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetRayCollisionSphere"
+              ((& Ray) (& Vector3) single-float)
+              (& RayCollision))))
         (let ([ret-res (make-ftype-pointer
                          RayCollision
                          (foreign-alloc (ftype-sizeof RayCollision)))])
-          (apply proc ret-res xargs)
+          (f ret-res ray center radius)
           ret-res))))
   (define GetRayCollisionBox
-    (let ([proc (foreign-procedure #f "GetRayCollisionBox"
-                  ((& Ray) (& BoundingBox))
-                  (& RayCollision))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (ray box)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetRayCollisionBox"
+              ((& Ray) (& BoundingBox))
+              (& RayCollision))))
         (let ([ret-res (make-ftype-pointer
                          RayCollision
                          (foreign-alloc (ftype-sizeof RayCollision)))])
-          (apply proc ret-res xargs)
+          (f ret-res ray box)
           ret-res))))
   (define GetRayCollisionMesh
-    (let ([proc (foreign-procedure #f "GetRayCollisionMesh"
-                  ((& Ray) (& Mesh) (& Matrix))
-                  (& RayCollision))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (ray mesh transform)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetRayCollisionMesh"
+              ((& Ray) (& Mesh) (& Matrix))
+              (& RayCollision))))
         (let ([ret-res (make-ftype-pointer
                          RayCollision
                          (foreign-alloc (ftype-sizeof RayCollision)))])
-          (apply proc ret-res xargs)
+          (f ret-res ray mesh transform)
           ret-res))))
   (define GetRayCollisionTriangle
-    (let ([proc (foreign-procedure #f "GetRayCollisionTriangle"
-                  ((& Ray) (& Vector3) (& Vector3) (& Vector3))
-                  (& RayCollision))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (ray p1 p2 p3)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetRayCollisionTriangle"
+              ((& Ray) (& Vector3) (& Vector3) (& Vector3))
+              (& RayCollision))))
         (let ([ret-res (make-ftype-pointer
                          RayCollision
                          (foreign-alloc (ftype-sizeof RayCollision)))])
-          (apply proc ret-res xargs)
+          (f ret-res ray p1 p2 p3)
           ret-res))))
   (define GetRayCollisionQuad
-    (let ([proc (foreign-procedure #f "GetRayCollisionQuad"
-                  ((& Ray) (& Vector3) (& Vector3) (& Vector3) (& Vector3))
-                  (& RayCollision))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (ray p1 p2 p3 p4)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetRayCollisionQuad"
+              ((& Ray) (& Vector3) (& Vector3) (& Vector3) (& Vector3))
+              (& RayCollision))))
         (let ([ret-res (make-ftype-pointer
                          RayCollision
                          (foreign-alloc (ftype-sizeof RayCollision)))])
-          (apply proc ret-res xargs)
+          (f ret-res ray p1 p2 p3 p4)
           ret-res))))
   (define InitAudioDevice
-    (foreign-procedure #f "InitAudioDevice" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "InitAudioDevice" () void)))
+        (f))))
   (define CloseAudioDevice
-    (foreign-procedure #f "CloseAudioDevice" () void))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f (foreign-procedure #f "CloseAudioDevice" () void)))
+        (f))))
   (define IsAudioDeviceReady
-    (foreign-procedure #f "IsAudioDeviceReady" () stdbool))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsAudioDeviceReady" () stdbool)))
+        (f))))
   (define SetMasterVolume
-    (foreign-procedure #f "SetMasterVolume"
-      (single-float)
-      void))
+    (let ([f #f])
+      (lambda (volume)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetMasterVolume"
+              (single-float)
+              void)))
+        (f volume))))
   (define GetMasterVolume
-    (foreign-procedure #f "GetMasterVolume" () single-float))
+    (let ([f #f])
+      (lambda ()
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetMasterVolume" () single-float)))
+        (f))))
   (define LoadWave
-    (let ([proc (foreign-procedure #f "LoadWave"
-                  (string)
-                  (& Wave))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadWave" (string) (& Wave))))
         (let ([ret-res (make-ftype-pointer
                          Wave
                          (foreign-alloc (ftype-sizeof Wave)))])
-          (apply proc ret-res xargs)
+          (f ret-res fileName)
           ret-res))))
   (define LoadWaveFromMemory
-    (let ([proc (foreign-procedure #f "LoadWaveFromMemory"
-                  (string (* unsigned-8) integer-32)
-                  (& Wave))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (fileType fileData dataSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadWaveFromMemory"
+              (string (* unsigned-8) integer-32)
+              (& Wave))))
         (let ([ret-res (make-ftype-pointer
                          Wave
                          (foreign-alloc (ftype-sizeof Wave)))])
-          (apply proc ret-res xargs)
+          (f ret-res fileType fileData dataSize)
           ret-res))))
   (define IsWaveValid
-    (foreign-procedure #f "IsWaveValid" ((& Wave)) stdbool))
+    (let ([f #f])
+      (lambda (wave)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsWaveValid" ((& Wave)) stdbool)))
+        (f wave))))
   (define LoadSound
-    (let ([proc (foreign-procedure #f "LoadSound"
-                  (string)
-                  (& Sound))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadSound" (string) (& Sound))))
         (let ([ret-res (make-ftype-pointer
                          Sound
                          (foreign-alloc (ftype-sizeof Sound)))])
-          (apply proc ret-res xargs)
+          (f ret-res fileName)
           ret-res))))
   (define LoadSoundFromWave
-    (let ([proc (foreign-procedure #f "LoadSoundFromWave"
-                  ((& Wave))
-                  (& Sound))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (wave)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadSoundFromWave"
+              ((& Wave))
+              (& Sound))))
         (let ([ret-res (make-ftype-pointer
                          Sound
                          (foreign-alloc (ftype-sizeof Sound)))])
-          (apply proc ret-res xargs)
+          (f ret-res wave)
           ret-res))))
   (define LoadSoundAlias
-    (let ([proc (foreign-procedure #f "LoadSoundAlias"
-                  ((& Sound))
-                  (& Sound))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (source)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadSoundAlias"
+              ((& Sound))
+              (& Sound))))
         (let ([ret-res (make-ftype-pointer
                          Sound
                          (foreign-alloc (ftype-sizeof Sound)))])
-          (apply proc ret-res xargs)
+          (f ret-res source)
           ret-res))))
   (define IsSoundValid
-    (foreign-procedure #f "IsSoundValid" ((& Sound)) stdbool))
+    (let ([f #f])
+      (lambda (sound)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsSoundValid" ((& Sound)) stdbool)))
+        (f sound))))
   (define UpdateSound
-    (foreign-procedure #f "UpdateSound"
-      ((& Sound) void* integer-32)
-      void))
+    (let ([f #f])
+      (lambda (sound data frameCount)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UpdateSound"
+              ((& Sound) void* integer-32)
+              void)))
+        (f sound data frameCount))))
   (define UnloadWave
-    (foreign-procedure #f "UnloadWave" ((& Wave)) void))
+    (let ([f #f])
+      (lambda (wave)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadWave" ((& Wave)) void)))
+        (f wave))))
   (define UnloadSound
-    (foreign-procedure #f "UnloadSound" ((& Sound)) void))
+    (let ([f #f])
+      (lambda (sound)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadSound" ((& Sound)) void)))
+        (f sound))))
   (define UnloadSoundAlias
-    (foreign-procedure #f "UnloadSoundAlias" ((& Sound)) void))
+    (let ([f #f])
+      (lambda (alias)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadSoundAlias" ((& Sound)) void)))
+        (f alias))))
   (define ExportWave
-    (foreign-procedure #f "ExportWave"
-      ((& Wave) string)
-      stdbool))
+    (let ([f #f])
+      (lambda (wave fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ExportWave"
+              ((& Wave) string)
+              stdbool)))
+        (f wave fileName))))
   (define ExportWaveAsCode
-    (foreign-procedure #f "ExportWaveAsCode"
-      ((& Wave) string)
-      stdbool))
+    (let ([f #f])
+      (lambda (wave fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ExportWaveAsCode"
+              ((& Wave) string)
+              stdbool)))
+        (f wave fileName))))
   (define PlaySound
-    (foreign-procedure #f "PlaySound" ((& Sound)) void))
+    (let ([f #f])
+      (lambda (sound)
+        (unless f
+          (set! f
+            (foreign-procedure #f "PlaySound" ((& Sound)) void)))
+        (f sound))))
   (define StopSound
-    (foreign-procedure #f "StopSound" ((& Sound)) void))
+    (let ([f #f])
+      (lambda (sound)
+        (unless f
+          (set! f
+            (foreign-procedure #f "StopSound" ((& Sound)) void)))
+        (f sound))))
   (define PauseSound
-    (foreign-procedure #f "PauseSound" ((& Sound)) void))
+    (let ([f #f])
+      (lambda (sound)
+        (unless f
+          (set! f
+            (foreign-procedure #f "PauseSound" ((& Sound)) void)))
+        (f sound))))
   (define ResumeSound
-    (foreign-procedure #f "ResumeSound" ((& Sound)) void))
+    (let ([f #f])
+      (lambda (sound)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ResumeSound" ((& Sound)) void)))
+        (f sound))))
   (define IsSoundPlaying
-    (foreign-procedure #f "IsSoundPlaying" ((& Sound)) stdbool))
+    (let ([f #f])
+      (lambda (sound)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsSoundPlaying"
+              ((& Sound))
+              stdbool)))
+        (f sound))))
   (define SetSoundVolume
-    (foreign-procedure #f "SetSoundVolume"
-      ((& Sound) single-float)
-      void))
+    (let ([f #f])
+      (lambda (sound volume)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetSoundVolume"
+              ((& Sound) single-float)
+              void)))
+        (f sound volume))))
   (define SetSoundPitch
-    (foreign-procedure #f "SetSoundPitch"
-      ((& Sound) single-float)
-      void))
+    (let ([f #f])
+      (lambda (sound pitch)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetSoundPitch"
+              ((& Sound) single-float)
+              void)))
+        (f sound pitch))))
   (define SetSoundPan
-    (foreign-procedure #f "SetSoundPan"
-      ((& Sound) single-float)
-      void))
+    (let ([f #f])
+      (lambda (sound pan)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetSoundPan"
+              ((& Sound) single-float)
+              void)))
+        (f sound pan))))
   (define WaveCopy
-    (let ([proc (foreign-procedure #f "WaveCopy"
-                  ((& Wave))
-                  (& Wave))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (wave)
+        (unless f
+          (set! f
+            (foreign-procedure #f "WaveCopy" ((& Wave)) (& Wave))))
         (let ([ret-res (make-ftype-pointer
                          Wave
                          (foreign-alloc (ftype-sizeof Wave)))])
-          (apply proc ret-res xargs)
+          (f ret-res wave)
           ret-res))))
   (define WaveCrop
-    (foreign-procedure #f "WaveCrop"
-      ((* Wave) integer-32 integer-32)
-      void))
+    (let ([f #f])
+      (lambda (wave initFrame finalFrame)
+        (unless f
+          (set! f
+            (foreign-procedure #f "WaveCrop"
+              ((* Wave) integer-32 integer-32)
+              void)))
+        (f wave initFrame finalFrame))))
   (define WaveFormat
-    (foreign-procedure #f "WaveFormat"
-      ((* Wave) integer-32 integer-32 integer-32)
-      void))
+    (let ([f #f])
+      (lambda (wave sampleRate sampleSize channels)
+        (unless f
+          (set! f
+            (foreign-procedure #f "WaveFormat"
+              ((* Wave) integer-32 integer-32 integer-32)
+              void)))
+        (f wave sampleRate sampleSize channels))))
   (define LoadWaveSamples
-    (foreign-procedure #f "LoadWaveSamples"
-      ((& Wave))
-      (* single-float)))
+    (let ([f #f])
+      (lambda (wave)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadWaveSamples"
+              ((& Wave))
+              (* single-float))))
+        (f wave))))
   (define UnloadWaveSamples
-    (foreign-procedure #f "UnloadWaveSamples"
-      ((* single-float))
-      void))
+    (let ([f #f])
+      (lambda (samples)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadWaveSamples"
+              ((* single-float))
+              void)))
+        (f samples))))
   (define LoadMusicStream
-    (let ([proc (foreign-procedure #f "LoadMusicStream"
-                  (string)
-                  (& Music))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (fileName)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadMusicStream"
+              (string)
+              (& Music))))
         (let ([ret-res (make-ftype-pointer
                          Music
                          (foreign-alloc (ftype-sizeof Music)))])
-          (apply proc ret-res xargs)
+          (f ret-res fileName)
           ret-res))))
   (define LoadMusicStreamFromMemory
-    (let ([proc (foreign-procedure #f "LoadMusicStreamFromMemory"
-                  (string (* unsigned-8) integer-32)
-                  (& Music))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (fileType data dataSize)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadMusicStreamFromMemory"
+              (string (* unsigned-8) integer-32)
+              (& Music))))
         (let ([ret-res (make-ftype-pointer
                          Music
                          (foreign-alloc (ftype-sizeof Music)))])
-          (apply proc ret-res xargs)
+          (f ret-res fileType data dataSize)
           ret-res))))
   (define IsMusicValid
-    (foreign-procedure #f "IsMusicValid" ((& Music)) stdbool))
+    (let ([f #f])
+      (lambda (music)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsMusicValid" ((& Music)) stdbool)))
+        (f music))))
   (define UnloadMusicStream
-    (foreign-procedure #f "UnloadMusicStream" ((& Music)) void))
+    (let ([f #f])
+      (lambda (music)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadMusicStream"
+              ((& Music))
+              void)))
+        (f music))))
   (define PlayMusicStream
-    (foreign-procedure #f "PlayMusicStream" ((& Music)) void))
+    (let ([f #f])
+      (lambda (music)
+        (unless f
+          (set! f
+            (foreign-procedure #f "PlayMusicStream" ((& Music)) void)))
+        (f music))))
   (define IsMusicStreamPlaying
-    (foreign-procedure #f "IsMusicStreamPlaying"
-      ((& Music))
-      stdbool))
+    (let ([f #f])
+      (lambda (music)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsMusicStreamPlaying"
+              ((& Music))
+              stdbool)))
+        (f music))))
   (define UpdateMusicStream
-    (foreign-procedure #f "UpdateMusicStream" ((& Music)) void))
+    (let ([f #f])
+      (lambda (music)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UpdateMusicStream"
+              ((& Music))
+              void)))
+        (f music))))
   (define StopMusicStream
-    (foreign-procedure #f "StopMusicStream" ((& Music)) void))
+    (let ([f #f])
+      (lambda (music)
+        (unless f
+          (set! f
+            (foreign-procedure #f "StopMusicStream" ((& Music)) void)))
+        (f music))))
   (define PauseMusicStream
-    (foreign-procedure #f "PauseMusicStream" ((& Music)) void))
+    (let ([f #f])
+      (lambda (music)
+        (unless f
+          (set! f
+            (foreign-procedure #f "PauseMusicStream" ((& Music)) void)))
+        (f music))))
   (define ResumeMusicStream
-    (foreign-procedure #f "ResumeMusicStream" ((& Music)) void))
+    (let ([f #f])
+      (lambda (music)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ResumeMusicStream"
+              ((& Music))
+              void)))
+        (f music))))
   (define SeekMusicStream
-    (foreign-procedure #f "SeekMusicStream"
-      ((& Music) single-float)
-      void))
+    (let ([f #f])
+      (lambda (music position)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SeekMusicStream"
+              ((& Music) single-float)
+              void)))
+        (f music position))))
   (define SetMusicVolume
-    (foreign-procedure #f "SetMusicVolume"
-      ((& Music) single-float)
-      void))
+    (let ([f #f])
+      (lambda (music volume)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetMusicVolume"
+              ((& Music) single-float)
+              void)))
+        (f music volume))))
   (define SetMusicPitch
-    (foreign-procedure #f "SetMusicPitch"
-      ((& Music) single-float)
-      void))
+    (let ([f #f])
+      (lambda (music pitch)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetMusicPitch"
+              ((& Music) single-float)
+              void)))
+        (f music pitch))))
   (define SetMusicPan
-    (foreign-procedure #f "SetMusicPan"
-      ((& Music) single-float)
-      void))
+    (let ([f #f])
+      (lambda (music pan)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetMusicPan"
+              ((& Music) single-float)
+              void)))
+        (f music pan))))
   (define GetMusicTimeLength
-    (foreign-procedure #f "GetMusicTimeLength"
-      ((& Music))
-      single-float))
+    (let ([f #f])
+      (lambda (music)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetMusicTimeLength"
+              ((& Music))
+              single-float)))
+        (f music))))
   (define GetMusicTimePlayed
-    (foreign-procedure #f "GetMusicTimePlayed"
-      ((& Music))
-      single-float))
+    (let ([f #f])
+      (lambda (music)
+        (unless f
+          (set! f
+            (foreign-procedure #f "GetMusicTimePlayed"
+              ((& Music))
+              single-float)))
+        (f music))))
   (define LoadAudioStream
-    (let ([proc (foreign-procedure #f "LoadAudioStream"
-                  (unsigned-32 unsigned-32 unsigned-32)
-                  (& AudioStream))])
-      (lambda xargs
+    (let ([f #f])
+      (lambda (sampleRate sampleSize channels)
+        (unless f
+          (set! f
+            (foreign-procedure #f "LoadAudioStream"
+              (unsigned-32 unsigned-32 unsigned-32)
+              (& AudioStream))))
         (let ([ret-res (make-ftype-pointer
                          AudioStream
                          (foreign-alloc (ftype-sizeof AudioStream)))])
-          (apply proc ret-res xargs)
+          (f ret-res sampleRate sampleSize channels)
           ret-res))))
   (define IsAudioStreamValid
-    (foreign-procedure #f "IsAudioStreamValid"
-      ((& AudioStream))
-      stdbool))
+    (let ([f #f])
+      (lambda (stream)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsAudioStreamValid"
+              ((& AudioStream))
+              stdbool)))
+        (f stream))))
   (define UnloadAudioStream
-    (foreign-procedure #f "UnloadAudioStream"
-      ((& AudioStream))
-      void))
+    (let ([f #f])
+      (lambda (stream)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UnloadAudioStream"
+              ((& AudioStream))
+              void)))
+        (f stream))))
   (define UpdateAudioStream
-    (foreign-procedure #f "UpdateAudioStream"
-      ((& AudioStream) void* integer-32)
-      void))
+    (let ([f #f])
+      (lambda (stream data frameCount)
+        (unless f
+          (set! f
+            (foreign-procedure #f "UpdateAudioStream"
+              ((& AudioStream) void* integer-32)
+              void)))
+        (f stream data frameCount))))
   (define IsAudioStreamProcessed
-    (foreign-procedure #f "IsAudioStreamProcessed"
-      ((& AudioStream))
-      stdbool))
+    (let ([f #f])
+      (lambda (stream)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsAudioStreamProcessed"
+              ((& AudioStream))
+              stdbool)))
+        (f stream))))
   (define PlayAudioStream
-    (foreign-procedure #f "PlayAudioStream"
-      ((& AudioStream))
-      void))
+    (let ([f #f])
+      (lambda (stream)
+        (unless f
+          (set! f
+            (foreign-procedure #f "PlayAudioStream"
+              ((& AudioStream))
+              void)))
+        (f stream))))
   (define PauseAudioStream
-    (foreign-procedure #f "PauseAudioStream"
-      ((& AudioStream))
-      void))
+    (let ([f #f])
+      (lambda (stream)
+        (unless f
+          (set! f
+            (foreign-procedure #f "PauseAudioStream"
+              ((& AudioStream))
+              void)))
+        (f stream))))
   (define ResumeAudioStream
-    (foreign-procedure #f "ResumeAudioStream"
-      ((& AudioStream))
-      void))
+    (let ([f #f])
+      (lambda (stream)
+        (unless f
+          (set! f
+            (foreign-procedure #f "ResumeAudioStream"
+              ((& AudioStream))
+              void)))
+        (f stream))))
   (define IsAudioStreamPlaying
-    (foreign-procedure #f "IsAudioStreamPlaying"
-      ((& AudioStream))
-      stdbool))
+    (let ([f #f])
+      (lambda (stream)
+        (unless f
+          (set! f
+            (foreign-procedure #f "IsAudioStreamPlaying"
+              ((& AudioStream))
+              stdbool)))
+        (f stream))))
   (define StopAudioStream
-    (foreign-procedure #f "StopAudioStream"
-      ((& AudioStream))
-      void))
+    (let ([f #f])
+      (lambda (stream)
+        (unless f
+          (set! f
+            (foreign-procedure #f "StopAudioStream"
+              ((& AudioStream))
+              void)))
+        (f stream))))
   (define SetAudioStreamVolume
-    (foreign-procedure #f "SetAudioStreamVolume"
-      ((& AudioStream) single-float)
-      void))
+    (let ([f #f])
+      (lambda (stream volume)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetAudioStreamVolume"
+              ((& AudioStream) single-float)
+              void)))
+        (f stream volume))))
   (define SetAudioStreamPitch
-    (foreign-procedure #f "SetAudioStreamPitch"
-      ((& AudioStream) single-float)
-      void))
+    (let ([f #f])
+      (lambda (stream pitch)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetAudioStreamPitch"
+              ((& AudioStream) single-float)
+              void)))
+        (f stream pitch))))
   (define SetAudioStreamPan
-    (foreign-procedure #f "SetAudioStreamPan"
-      ((& AudioStream) single-float)
-      void))
+    (let ([f #f])
+      (lambda (stream pan)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetAudioStreamPan"
+              ((& AudioStream) single-float)
+              void)))
+        (f stream pan))))
   (define SetAudioStreamBufferSizeDefault
-    (foreign-procedure #f "SetAudioStreamBufferSizeDefault"
-      (integer-32)
-      void))
+    (let ([f #f])
+      (lambda (size)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetAudioStreamBufferSizeDefault"
+              (integer-32)
+              void)))
+        (f size))))
   (define SetAudioStreamCallback
-    (foreign-procedure #f "SetAudioStreamCallback"
-      ((& AudioStream) (* AudioCallback))
-      void))
+    (let ([f #f])
+      (lambda (stream callback)
+        (unless f
+          (set! f
+            (foreign-procedure #f "SetAudioStreamCallback"
+              ((& AudioStream) void*)
+              void)))
+        (f stream callback))))
   (define AttachAudioStreamProcessor
-    (foreign-procedure #f "AttachAudioStreamProcessor"
-      ((& AudioStream) (* AudioCallback))
-      void))
+    (let ([f #f])
+      (lambda (stream processor)
+        (unless f
+          (set! f
+            (foreign-procedure #f "AttachAudioStreamProcessor"
+              ((& AudioStream) void*)
+              void)))
+        (f stream processor))))
   (define DetachAudioStreamProcessor
-    (foreign-procedure #f "DetachAudioStreamProcessor"
-      ((& AudioStream) (* AudioCallback))
-      void))
+    (let ([f #f])
+      (lambda (stream processor)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DetachAudioStreamProcessor"
+              ((& AudioStream) void*)
+              void)))
+        (f stream processor))))
   (define AttachAudioMixedProcessor
-    (foreign-procedure #f "AttachAudioMixedProcessor"
-      ((* AudioCallback))
-      void))
+    (let ([f #f])
+      (lambda (processor)
+        (unless f
+          (set! f
+            (foreign-procedure #f "AttachAudioMixedProcessor"
+              (void*)
+              void)))
+        (f processor))))
   (define DetachAudioMixedProcessor
-    (foreign-procedure #f "DetachAudioMixedProcessor"
-      ((* AudioCallback))
-      void)))
+    (let ([f #f])
+      (lambda (processor)
+        (unless f
+          (set! f
+            (foreign-procedure #f "DetachAudioMixedProcessor"
+              (void*)
+              void)))
+        (f processor)))))

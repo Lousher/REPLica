@@ -259,31 +259,47 @@
                                    (cond
                                     [(and (symbol? t)
                                           (string-ends-with? (symbol->string t) "Callback"))
-                                     `(* ,t)]
+                                     'void*] ; Using void*
                                     [(and (symbol? t)
                                           (has-uppercase? (symbol->string t)))
                                      `(& ,t)]
                                     [else (normalize-pointer-spec t)]))
-                                 arg-types)])
+                                 arg-types)]
+		[arg-names
+		 (let loop ([ps params] [i 0] [acc '()])
+		   (if (null? ps)
+		       (reverse acc)
+		       (let* ([p (car ps)]
+			      [n (field 'name p)]
+			      [sym (if (and n (string? n))
+				       (string->symbol n)
+				       (string->symbol (format "arg~a" i)))])
+			 (loop (cdr ps) (+ i 1) (cons sym acc)))))])
            (if (and (symbol? raw-ret)
                     (has-uppercase? (symbol->string raw-ret)))
-               ;; struct 返回：第一个参数为 ret 指针，返回 void
+               ;; struct 返回：第一个参数为 ret 指
                `(define ,name
-                  (let ([proc (foreign-procedure
-                               #f ,name-str
-                               (,@arg-ftypes)
-                               (& ,raw-ret))])
-                    (lambda xargs
+		  (let ([f #f])
+                    (lambda ,arg-names
+		      (unless f (set! f (foreign-procedure
+					 #f ,name-str
+					 (,@arg-ftypes)
+					 (& ,raw-ret))))
                       (let ([ret-res (make-ftype-pointer
                                       ,raw-ret
                                       (foreign-alloc (ftype-sizeof ,raw-ret)))])
-                        (apply proc ret-res xargs)
-                        ret-res))))
+			(f ret-res ,@arg-names)
+			ret-res))))
                (let ([ret (normalize-pointer-spec raw-ret)])
                  `(define ,name
-                    (foreign-procedure #f ,name-str
-                                       (,@arg-ftypes)
-                                       ,ret))))))
+		    (let ([f #f])
+		      (lambda ,arg-names
+			(unless f
+			  (set! f 
+				(foreign-procedure #f ,name-str
+						   (,@arg-ftypes)
+						   ,ret)))
+			(f ,@arg-names))))))))
        (filter (lambda (func) (foreign-entry? (field 'name func))) funcs)))
 
 ;; ---------- 主流程 ----------

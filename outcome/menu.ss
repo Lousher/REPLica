@@ -1,4 +1,3 @@
-
 (load-shared-object "ffi/raylib/libraylib.so.6.2.0")
 (load-shared-object "ffi/rini/librini.so")
 (import (ffi raylib binding))
@@ -12,6 +11,32 @@
 (import (game event))
 (import (game ticker))
 (import (game tool))
+
+(define ANSI-RESET "\x1B;[0m")
+
+(define my-tracelog-callback
+  (lambda (log-level str va-list)
+    (let ([color (case log-level
+                   [(0) "\x1B;[90m"]	 ; ALL   - 灰
+                   [(1) "\x1B;[90m"]	 ; TRACE - 灰
+                   [(2) "\x1B;[36m"]	 ; DEBUG - 青
+                   [(3) "\x1B;[32m"]	 ; INFO  - 绿
+                   [(4) "\x1B;[33m"]	 ; WARNING - 黄
+                   [(5) "\x1B;[31m"]	 ; ERROR - 红
+                   [(6) "\x1B;[1;97;41m"] ; FATAL - 白字红底
+                   [(7) "\x1B;[37m"]	 ; NONE
+                   [else "\x1B;[0m"])])
+      (display color)
+      (display str)
+      (display ANSI-RESET)
+      (newline))))
+
+(define cb-code
+  (foreign-callable my-tracelog-callback
+		    (integer-32 string void*)
+		    void))
+(lock-object cb-code)
+(SetTraceLogCallback (foreign-callable-entry-point cb-code))
 
 (alias resource resource-fuzzy-query)
 
@@ -65,6 +90,7 @@
 
 
 (define g (init "config.ini"))
+
 
 (g (column (row s1 char-changed-s s1 char-changed-s s1) (row char-changed-s s1 char-changed-s s1 char-changed-s) ))
 
