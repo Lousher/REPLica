@@ -1,7 +1,8 @@
 (library (game window)
   (export make-frame frame? frame-dest frame-origin frame-rotation frame-tint
-	  make-window window-delta window-delta-set!
+	  make-window window-delta window-delta-set! window-mouse
 	  window-frame window-channel
+	  mouse-position
 	  tick uptime
 	  frame-change-tint frame-change-dest
 	  window-change-frame
@@ -30,7 +31,19 @@
     (lambda (win)
       (let ([passed (window-delta win)])
 	(window-delta-set! win (+ passed (GetFrameTime)))
+	(window-mouse-set! win (mouse-snapshot (window-mouse win)))
 	win)))
+  
+  (define mouse-snapshot
+    (lambda (prev)
+      (let* ([x (GetMouseX)]
+	     [y (GetMouseY)]
+	     [px (if prev (vector2-x (mouse-position prev)) x)]
+	     [py (if prev (vector2-y (mouse-position prev)) y)])
+	(make-mouse
+	 (make-vector2 x y)
+	 (make-vector2 (- x px) (- y py))
+	 (GetMouseWheelMove)))))
 
   (define-record-type channel
     (fields volume pan pitch)
@@ -39,15 +52,22 @@
        (case-lambda
 	 [() (new 1.0 0.0 1.0)]
 	 [(v pa pi) (new v pa pi)]))))
+
+  (define-record-type mouse
+    (fields
+     position offset wheel))
   
   (define-record-type window
-    (fields frame channel (mutable delta) inputs)
+    (fields frame channel (mutable delta) (mutable mouse))
     (protocol
      (lambda (new)
        (case-lambda
 	 [(fr c d i) (new fr c d i)]
 	 [(fr)
-	  (new fr (make-channel) 0.0 '())]))))
+	  (new fr (make-channel) 0.0
+	       (make-mouse (make-vector2 0 0)
+			   (make-vector2 0 0)
+			   0))]))))
 
   (define uptime window-delta)
 
@@ -69,6 +89,6 @@
     (lambda (w f)
       (let ([c (window-channel w)]
 	    [d (window-delta w)]
-	    [inputs (window-inputs w)])
-	(make-window f c d inputs))))
+	    [m (window-mouse w)])
+	(make-window f c d m))))
   )

@@ -12,7 +12,7 @@
 
   (define-record-type picture
     (fields drawer deps))
-  
+
   #| default picture could be any combined |#
   (define default
     (lambda (tex)
@@ -21,7 +21,7 @@
 	 (draw-texture tex f))
        (list tex))))
 
-  #| show src in dest with changing ratio |#
+  #| show src in dest without changing ratio |#
   (define calculate-dest
     (lambda (dest src)
       (let-values ([(dx dy dw dh) (rectangle-values dest)]

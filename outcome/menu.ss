@@ -72,11 +72,13 @@
 (define s2 (parallel
 	    (hold (loop 2 ani2))))
 
-(define char-stage (hold (pingpong 5 (motivate
-				      (still c1-pic)
-				      (lambda (p)
-					(lambda (x y)
-					  (values (+ (- x 960) (* p 1920)) y)))))))
+(define char-moving-stage
+  (lambda (char-pic)
+    (pingpong 5 (motivate
+		 (still char-pic)
+		 (lambda (p)
+		   (lambda (x y)
+		     (values (+ (- x 540) (* p 1080)) y)))))))
 
 (define s1 (change (clicked? MOUSE_BUTTON_LEFT)
 		   (parallel (hold bgm)
@@ -84,13 +86,10 @@
 		   s2))
 
 (define char-changed-s (toggle hovered?
-			       (hold (loop 3 (still c1-pic)))
-			       (hold (loop 3 (still c2-pic)))))
-
-
+			(hold (char-moving-stage c1-pic))
+			(hold (char-moving-stage c2-pic))))
 
 (define g (init "config.ini"))
 
-
-(g (column (row s1 char-changed-s s1 char-changed-s s1) (row char-changed-s s1 char-changed-s s1 char-changed-s) ))
+(g (column (row s1 char-changed-s) (row char-changed-s s1)))
 

@@ -1,6 +1,6 @@
 (library (game stage)
   (export stage? stage-perform stage-deps
-   hold 
+   hold tacet
    parallel change row column sequential toggle)
   (import
    (game resource)
@@ -12,6 +12,10 @@
     (fields perform deps))
   #| stage 是 接收 res 并进行实际演出的函数 |#
 
+  (define tacet
+    (make-stage
+     (lambda (win) (void))
+     '())) ; do nothing
   #| hold 是最简单的stage,持续在win上保持timer?存在|#
   (define hold
     (lambda (timer)

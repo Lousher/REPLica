@@ -4,6 +4,7 @@
 	  make-rectangle rectangle? Rectangle<=rectangle rectangle<=Rectangle
 	  rectangle-x rectangle-y rectangle-width rectangle-height
 	  make-vector2 vector? Vector2<=vector2 vector2<=Vector2
+	  vector2-x vector2-y
 	  color-values rectangle-values vector2-values
 	  ftype-alloc
 	  )

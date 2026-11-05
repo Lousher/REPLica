@@ -1,6 +1,7 @@
 (library (game resource)
   (export loader unloader resource-difference merge-deps resource->key
 	  texture? make-texture texture-name texture-data texture-data-set! texture-source texture-source-set!
+	  image? make-image image-name image-data image-data-set! image-width image-width-set! image-height image-height-set!
 	  music? make-music music-name music-data music-data-set!
 	  sound? make-sound sound-name sound-data sound-data-set!
 	  shader? make-shader shader-fs shader-vs shader-data shader-data-set! shader-locations
@@ -21,6 +22,17 @@
 	 [(n)
 	  (new n #f #f)]
 	 [(n d s) (new n d s)]))))
+
+  (define-record-type image
+    (fields name
+	    (mutable data)
+	    (mutable width)
+	    (mutable height))
+    (protocol
+     (lambda (new)
+       (case-lambda
+	 [(n) (new n #f #f #f)]
+	 [(n d w h) (new n d w h)]))))
 
   (define-record-type music
     (fields name
@@ -216,7 +228,7 @@
        [(shader? r) (format "~a | ~a"
 			    (or (shader-vs r) "")
 			    (or (shader-fs r) ""))]
-       [else (error 'resource->key "[Resource] Cannot generate key for resource" r)])))
+       [else (error 'resource->key "[Resource] Cannot generate key for resource" r)]))) 
 
   (define resource-difference
     (lambda (a b) ; a & b are both resource list
