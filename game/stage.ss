@@ -36,7 +36,7 @@
 	   (cond
 	    [done? #f]
 	    [else
-	     (let ([out (trk win)])
+	     (let ([out (trk (window-timeline win))])
 	       (cond
 		[(not out) (set! done? #t) #f]
 		[(eqv? (void) out) #t] ;delaying

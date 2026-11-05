@@ -5,27 +5,27 @@
 
   (define on
     (lambda (clock curve)
-      (lambda (win)
-	(let ([p (clock win)])
+      (lambda (tl)
+	(let ([p (clock tl)])
 	  (if p (curve p) #f)))))
 
   (define sequential
     (lambda tracks
       (let ([current-idx 0])
-	(lambda (win)
+	(lambda (tl)
 	  (let loop ([idx current-idx])
 	    (if (>= idx (length tracks))
 		#f
 		(let* ([trk (list-ref tracks idx)]
-		       [res (trk win)])
+		       [res (trk tl)])
 		  (if res
 		      (begin (set! current-idx idx) res)
 		      (loop (+ idx 1))))))))))
 
   (define parallel
     (lambda (combiner . tracks)
-      (lambda (win)
-	(let* ([ress (map (lambda (trk) (trk win)) tracks)]
+      (lambda (tl)
+	(let* ([ress (map (lambda (trk) (trk tl)) tracks)]
 	       [valid (filter (lambda (r) r) ress)])
 	  (if (null? valid)
 	      #f
@@ -34,10 +34,10 @@
   (define repeat
     (lambda (track-thunk)
       (let ([current (track-thunk)])
-	(lambda (win)
-	  (let ([res (current win)])
+	(lambda (tl)
+	  (let ([res (current tl)])
 	    (if res res
 		(begin
 		  (set! current (track-thunk))
-		  (current win))))))))
+		  (current tl))))))))
   )

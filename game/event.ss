@@ -35,7 +35,7 @@
   (define inside-animator?
     (lambda (visual-track)
       (lambda (win)
-	(let ([pic (visual-track win)])
+	(let ([pic (visual-track (window-timeline win))])
 	  (if pic
 	      (let ([mouse-pos (mouse-position (window-mouse win))]
 		    [frame (window-frame win)])

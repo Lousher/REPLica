@@ -3,48 +3,49 @@
   (import (chezscheme)
 	  (game window))
 
+  #| clock -> timeline -> p |#
   (define loop
     (lambda (dur)
       (let ([started #f])
-	(lambda (win)
-	  (unless started (set! started (uptime win)))
-	  (mod (/ (- (uptime win) started) dur) 1.0)))))
+	(lambda (tl)
+	  (unless started (set! started (timeline-uptime tl)))
+	  (mod (/ (- (timeline-uptime tl) started) dur) 1.0)))))
 
   (define once
     (lambda (dur)
       (let ([started #f])
-	(lambda (win)
-	  (unless started (set! started (uptime win)))
-	  (let ([p (/ (- (uptime win) started) dur)])
+	(lambda (tl)
+	  (unless started (set! started (timeline-uptime tl)))
+	  (let ([p (/ (- (timeline-uptime tl) started) dur)])
 	    (if (>= p 1.0) #f p))))))
 
   (define backward
     (lambda (dur)
       (let ([started #f])
-	(lambda (win)
-	  (unless started (set! started (uptime win)))
-	  (let ([p (- 1.0 (/ (- (uptime win) started) dur))])
+	(lambda (tl)
+	  (unless started (set! started (timeline-uptime tl)))
+	  (let ([p (- 1.0 (/ (- (timeline-uptime tl) started) dur))])
 	    (if (<= p 0.0) #f p))))))
 
   (define freeze
     (lambda (p)
-      (lambda (win) p)))
+      (lambda (tl) p)))
 
   (define pingpong
     (lambda (dur)
       (let ([started #f])
-	(lambda (win)
-	  (unless started (set! started (uptime win)))
-	  (let* ([t     (/ (- (uptime win) started) dur)]
+	(lambda (tl)
+	  (unless started (set! started (timeline-uptime tl)))
+	  (let* ([t (/ (- (timeline-uptime tl) started) dur)]
 		 [phase (mod t 2.0)])
             (if (<= phase 1.0) phase (- 2.0 phase)))))))
 
   (define after
     (lambda (sec clk)
       (let ([started #f])
-	(lambda (win)
-	  (unless started (set! started (uptime win)))
-	  (if (< (- (uptime win) started) sec)
+	(lambda (tl)
+	  (unless started (set! started (timeline-uptime tl)))
+	  (if (< (- (timeline-uptime tl) started) sec)
 	      0.0
-	      (clk win))))))
+	      (clk tl))))))
   )
