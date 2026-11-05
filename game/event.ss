@@ -50,38 +50,31 @@
 	      (UnloadImage img)
 	      alpha
 	      ))))))
-  (define (point-in-hitmap? p hp rect)
-    (let-values ([(px py) (vector2-values p)]
-		 [(rx ry rw rh) (rectangle-values rect)])
-      (if (and (>= px rx) (< px (+ rx rw))
-               (>= py ry) (< py (+ ry rh)))
-          (let* ([hw HITMAP_WIDTH]
-		 [hh HITMAP_HEIGHT]
-		 [lx (- px rx)]
-		 [tx (min (- hw 1) (inexact->exact (floor (* lx (/ hw rw)))))]
-		 [ty (min (- hh 1) (inexact->exact (floor (* (- py ry) (/ hh rh)))))]
-		 [idx (+ (* ty hw) tx)]
-		 [a (flvector-ref hp idx)])
-            (> a 0.0))
-          #f)))
 
   (define hitmap-pool (make-eq-hashtable))
   (define point-in-picture?
     (lambda (pic)
-      (lambda (p f)
-	(let ([dest (frame-dest f)])
-	  (let-values ([(x y w h) (rectangle-values dest)])
-	    (let* ([w-int (to-int w)]
-		   [h-int (to-int h)]
-		   [hitmap-key pic]
-		   [hitmap (if (hashtable-contains? hitmap-pool hitmap-key)
-			       (hashtable-ref hitmap-pool hitmap-key #f)
-			       (let ([hp (picture->hitmap pic)])
-				 (hashtable-set! hitmap-pool hitmap-key hp)
-				 hp))])
+      (lambda (p)
+	(let* ([hitmap-key pic]
+	       [hitmap (if (hashtable-contains? hitmap-pool hitmap-key)
+			   (hashtable-ref hitmap-pool hitmap-key #f)
+			   (let ([hp (picture->hitmap pic)])
+			     (hashtable-set! hitmap-pool hitmap-key hp)
+			     hp))])
+	  (let-values ([(px py) (vector2-values p)])
+	    (if (and (>= px 0) (< px 1.0)
+		     (>= py 0) (< py 1.0))
+		(let* ([hw HITMAP_WIDTH]
+                       [hh HITMAP_HEIGHT]
+                       ;; 映射到具体的像素索引
+                       [tx (min (- hw 1) (inexact->exact (floor (* px hw))))]
+                       [ty (min (- hh 1) (inexact->exact (floor (* py hh))))]
+                       [idx (+ (* ty hw) tx)]
+                       [a (flvector-ref hitmap idx)])
+		  ;; 4. 阈值判定（用你已经 LUT 处理过的 alpha 值）
+		  (> a 0.1))
+		#f)))))) ; releative
 
-	      (point-in-hitmap? p hitmap dest)))))))
-  
   #| event 是一个输入 条件，与起始状态，满足条件后会改变输出状态的函数 |#
   (define hovered?
     (lambda (win)

@@ -12,6 +12,7 @@
 (import (game ticker))
 (import (game tool))
 (import (game window))
+(import (game type))
 
 (define ANSI-RESET "\x1B;[0m")
 
@@ -94,13 +95,18 @@
 
 (define wipe (default (resource 'test )))
 (define pic-hit? (point-in-picture? c1-pic))
-(define changed-char (toggle
-		      (lambda (win)
-			(pic-hit?
-			 (mouse-position (window-mouse win))
-			 (window-frame win)))
-		      (hold (freeze 0 (still c1-pic)))
-		      (hold (freeze 0 (still c2-pic)))))
+(define (is-hovering-c1? win)
+  (let* ([m (mouse-position (window-mouse win))]
+         [dest (frame-dest (window-frame win))]
+         ;; 屏幕坐标 -> 相对比例
+         [rx (/ (- (vector2-x m) (rectangle-x dest)) (rectangle-width dest))]
+         [ry (/ (- (vector2-y m) (rectangle-y dest)) (rectangle-height dest))])
+    ;; 把相对比例喂给完全纯净的测试器
+    (pic-hit? (make-vector2 rx ry))))
+
+(define changed-char (toggle is-hovering-c1?
+			     (hold (freeze 0 (still c1-pic)))
+			     (hold (freeze 0 (still c2-pic)))))
 
 (g changed-char)
 
