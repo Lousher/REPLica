@@ -10,31 +10,38 @@
   (define HITMAP_WIDTH 256)
   (define HITMAP_HEIGHT 256)
   (define (to-int x) (inexact->exact (round x)))
+  (define alpha-lut
+    (let ([lut (make-flvector 256)])
+      (do ([i 0 (+ i 1)])
+	  ((= i 256))
+	(flvector-set! lut i
+		       (min 1.0 (sqrt (/ i 255.0)))))
+      lut))
   (define point-in-rectangle?
-    (lambda (p rect)
-      (let-values ([(px py) (vector2-values p)]
-		   [(rx ry rw rh) (rectangle-values rect)])
-	(and (>= px rx) (< px (+ rx rw))
-	     (>= py ry) (< py (+ ry rh))))))
+       (lambda (p rect)
+	 (let-values ([(px py) (vector2-values p)]
+		      [(rx ry rw rh) (rectangle-values rect)])
+	   (and (>= px rx) (< px (+ rx rw))
+		(>= py ry) (< py (+ ry rh))))))
   (define picture->hitmap
     (let ([f (make-frame HITMAP_WIDTH HITMAP_HEIGHT)])
       (lambda (pic)
 	(for-each loader (picture-deps pic))
-	(let ([rt (LoadRenderTextureEx HITMAP_WIDTH HITMAP_HEIGHT PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)])
+	(let ([rt (LoadRenderTexture HITMAP_WIDTH HITMAP_HEIGHT)])
 	  (BeginTextureMode rt)
 	  ((picture-drawer pic) f)
 	  (EndTextureMode)
 	  (let ([img (LoadImageFromTexture (ftype-&ref RenderTexture (texture) rt))])
 	    (UnloadRenderTexture rt)
-;	    (ImageFormat img PIXELFORMAT_)
 	    (let* ([base (ftype-ref Image (data) img)]
-		   [alpha (make-bytevector (* HITMAP_WIDTH HITMAP_HEIGHT))]
-		   )
+		   [alpha (make-flvector (* HITMAP_WIDTH HITMAP_HEIGHT))])
 	      (do ([i 0 (+ i 1)])
 		  ((= i (* HITMAP_WIDTH HITMAP_HEIGHT)))
 		(let* ([pixel-addr (+ base (* i 4))]
-		       [a-ptr (make-ftype-pointer unsigned-8 (+ pixel-addr 3))])
-		  (bytevector-u8-set! alpha i (ftype-ref unsigned-8 () a-ptr))))
+		       [a-ptr (make-ftype-pointer unsigned-8 (+ pixel-addr 3))]
+		       [raw (ftype-ref unsigned-8 () a-ptr)]
+		       [fixed-alpha (flvector-ref alpha-lut raw)])
+		  (flvector-set! alpha i fixed-alpha)))
 	      (UnloadImage img)
 	      alpha
 	      ))))))
@@ -49,10 +56,10 @@
 		 [tx (min (- hw 1) (inexact->exact (floor (* lx (/ hw rw)))))]
 		 [ty (min (- hh 1) (inexact->exact (floor (* (- py ry) (/ hh rh)))))]
 		 [idx (+ (* ty hw) tx)]
-		 [a (bytevector-u8-ref hp idx)])
+		 [a (flvector-ref hp idx)])
 	    (TraceLog LOG_ERROR
 		      (format "px=~a rx=~a rw=~a tx=~a alpha=~a~n" px rx rw tx a))
-            (> a 128))
+            (> a 0.5))
           #f)))
 
   (define hitmap-pool (make-eq-hashtable))
