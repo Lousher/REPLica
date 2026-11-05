@@ -4,6 +4,7 @@
 	  (game type)
 	  (game window)
 	  (game picture)
+	  (game color)
 	  (game resource)
 	  (ffi raylib binding))
 
@@ -24,14 +25,18 @@
 	   (and (>= px rx) (< px (+ rx rw))
 		(>= py ry) (< py (+ ry rh))))))
   (define picture->hitmap
-    (let ([f (make-frame HITMAP_WIDTH HITMAP_HEIGHT)])
+    (let ([f (make-frame HITMAP_WIDTH HITMAP_HEIGHT)]
+	  [C (ftype-alloc Color)])
       (lambda (pic)
 	(for-each loader (picture-deps pic))
 	(let ([rt (LoadRenderTexture HITMAP_WIDTH HITMAP_HEIGHT)])
 	  (BeginTextureMode rt)
+	  (ClearBackground (Color<=color blank C))
 	  ((picture-drawer pic) f)
 	  (EndTextureMode)
 	  (let ([img (LoadImageFromTexture (ftype-&ref RenderTexture (texture) rt))])
+	    (ImageFormat img PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)
+	    (ImageFlipVertical img)
 	    (UnloadRenderTexture rt)
 	    (let* ([base (ftype-ref Image (data) img)]
 		   [alpha (make-flvector (* HITMAP_WIDTH HITMAP_HEIGHT))])
@@ -57,9 +62,7 @@
 		 [ty (min (- hh 1) (inexact->exact (floor (* (- py ry) (/ hh rh)))))]
 		 [idx (+ (* ty hw) tx)]
 		 [a (flvector-ref hp idx)])
-	    (TraceLog LOG_ERROR
-		      (format "px=~a rx=~a rw=~a tx=~a alpha=~a~n" px rx rw tx a))
-            (> a 0.5))
+            (> a 0.0))
           #f)))
 
   (define hitmap-pool (make-eq-hashtable))
@@ -77,10 +80,7 @@
 				 (hashtable-set! hitmap-pool hitmap-key hp)
 				 hp))])
 
-	      (let ([res
-		     (point-in-hitmap? p hitmap dest)])
-		(TraceLog LOG_ERROR (format "[HITMAP] Result is ~a" res))
-		res)))))))
+	      (point-in-hitmap? p hitmap dest)))))))
   
   #| event 是一个输入 条件，与起始状态，满足条件后会改变输出状态的函数 |#
   (define hovered?

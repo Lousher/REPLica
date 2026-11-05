@@ -93,14 +93,14 @@
 (define g (init "config.ini"))
 
 (define wipe (default (resource 'test )))
-(define pic-hit? (point-in-picture? wipe))
+(define pic-hit? (point-in-picture? c1-pic))
 (define changed-char (toggle
 		      (lambda (win)
 			(pic-hit?
 			 (mouse-position (window-mouse win))
 			 (window-frame win)))
-		      (hold (freeze 0 (still wipe)))
-		      (hold (freeze 0 (still wipe)))))
+		      (hold (freeze 0 (still c1-pic)))
+		      (hold (freeze 0 (still c2-pic)))))
 
 (g changed-char)
 
