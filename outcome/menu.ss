@@ -11,6 +11,7 @@
 (import (game event))
 (import (game ticker))
 (import (game tool))
+(import (game window))
 
 (define ANSI-RESET "\x1B;[0m")
 
@@ -91,5 +92,15 @@
 
 (define g (init "config.ini"))
 
-(g (column (row s1 char-changed-s) (row char-changed-s s1)))
+(define wipe (default (resource 'test )))
+(define pic-hit? (point-in-picture? wipe))
+(define changed-char (toggle
+		      (lambda (win)
+			(pic-hit?
+			 (mouse-position (window-mouse win))
+			 (window-frame win)))
+		      (hold (freeze 0 (still wipe)))
+		      (hold (freeze 0 (still wipe)))))
+
+(g changed-char)
 
