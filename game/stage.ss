@@ -1,7 +1,7 @@
 (library (game stage)
   (export stage? stage-perform stage-deps
-   hold 
-   parallel change row column sequential toggle)
+	  hold place zoom move
+	  parallel change row column sequential toggle)
   (import
    (game resource)
    (game type)
@@ -14,7 +14,7 @@
     (fields perform deps))
   #| stage 是 接收 res 并进行实际演出的函数 |#
 
-    #| hold 是最简单的stage,持续在win上保持track |#
+  #| hold 是最简单的stage,持续在win上保持track |#
   (define hold
     (lambda (trk)
       (let ([all-deps '()] [done? #f] [last-deps #f]
@@ -148,5 +148,34 @@
            ((stage-perform sg1) win)))
      (lambda ()
        (merge-deps ((stage-deps sg1)) ((stage-deps sg2))))))   ; ← 两个都合并，都预加载
+  
+  (define (place fn-dest inner-stage)
+    (make-stage
+     (lambda (win)
+       (let* ([f (window-frame win)]
+              [d (frame-dest f)]
+              [x (rectangle-x d)]
+              [y (rectangle-y d)]
+              [w (rectangle-width d)]
+              [h (rectangle-height d)])
+	 (let-values ([(nx ny nw nh) (fn-dest x y w h)])
+           ((stage-perform inner-stage)
+            (window-change-frame win
+				 (frame-change-dest f (make-rectangle nx ny nw nh)))))))
+     (lambda ()
+       ((stage-deps inner-stage)))))
+
+  ;; 只改坐标
+  (define (move fn-xy stage)
+    (place (lambda (x y w h)
+             (let-values ([(nx ny) (fn-xy x y)])
+               (values nx ny w h)))
+           stage))
+
+  ;; 只改尺寸（左上角不动）
+  (define (zoom times stage)
+    (place (lambda (x y w h)
+             (values x y (* w times) (* h times)))
+           stage))
 
   )

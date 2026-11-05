@@ -5,7 +5,7 @@
 	  music? make-music music-name music-data music-data-set!
 	  sound? make-sound sound-name sound-data sound-data-set!
 	  shader? make-shader shader-fs shader-vs shader-data shader-data-set! shader-locations
-	  directory-walk load-directory resource-fuzzy-query)
+	  directory-walk load-directory resource-fuzzy-query resolve)
   (import (chezscheme)
 	  (game tool)
 	  (game type)
@@ -107,6 +107,7 @@
 	(if str
 	    (hashtable-ref RESOURCES str #f)
 	    #f))))
+  (alias resolve resource-fuzzy-query)
   
   (define file-name
     (lambda (path)

@@ -28,8 +28,10 @@
 	    (if (<= p 0.0) #f p))))))
 
   (define freeze
-    (lambda (p)
-      (lambda (tl) p)))
+    (case-lambda
+      [(p)
+       (lambda (tl) p)]
+      [() (freeze 0)]))
 
   (define pingpong
     (lambda (dur)
