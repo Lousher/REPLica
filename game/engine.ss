@@ -15,8 +15,7 @@
 	     [w (rini_get_value ini-cfg "width")]
 	     [h (rini_get_value ini-cfg "height")]
 	     [fps (rini_get_value ini-cfg "fps")])
-	(let* ([fr (make-frame w h)]
-	       [win-init (make-window fr)]
+	(let* ([win-init (make-window w h)]
 	       [C (ftype-alloc Color)])
 	  (lambda (s)		; given stage
 	    (InitWindow w h title)

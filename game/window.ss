@@ -1,18 +1,30 @@
 (library (game window)
-  (export make-frame frame? frame-dest frame-origin frame-rotation frame-tint
-	  make-window window-delta window-delta-set! window-mouse
-	  window-frame window-channel
-	  mouse-position
-	  tick uptime
-	  frame-change-tint frame-change-dest
-	  window-change-frame
-	  make-channel channel? channel-volume channel-pan channel-pitch
-	  )
+  (export 
+   make-timeline timeline? timeline-uptime timeline-uptime-set!
+   make-window window?
+   window-timeline window-frame window-mouse window-channel
+   uptime
+   make-frame
+   frame? frame-dest frame-origin frame-rotation frame-tint
+   mouse-position
+   channel? channel-volume channel-pan channel-pitch
+   
+   frame-change-tint frame-change-dest
+   window-change-frame
+   tick tick-time tick-input)
   (import (chezscheme)
 	  (ffi raylib binding)
 	  (game type)
 	  (game color))
-  
+
+  (define-record-type timeline
+    (fields (mutable uptime))
+    (protocol
+     (lambda (new)
+       (case-lambda
+	 [() (new 0.0)]
+	 [(t) (new t)]))))
+
   (define-record-type frame
     (fields dest origin rotation tint)
     (protocol
@@ -20,30 +32,12 @@
        (case-lambda
 	 [(d o r t) (new d o r t)]
 	 [(w h)
-	  (let* ([dest-init (make-rectangle 0.0 0.0 (inexact w) (inexact h))]
-		 [origin-init (make-vector2 0.0 0.0)]
-		 [rot-init 0]
-		 [tint white])
-	    (new dest-init origin-init rot-init tint))
-	  ]))))
+	  (new (make-rectangle 0.0 0.0 (inexact w) (inexact h))
+	       (make-vector2 0.0 0.0)
+	       0 white)]))))
 
-  (define tick
-    (lambda (win)
-      (let ([passed (window-delta win)])
-	(window-delta-set! win (+ passed (GetFrameTime)))
-	(window-mouse-set! win (mouse-snapshot (window-mouse win)))
-	win)))
-  
-  (define mouse-snapshot
-    (lambda (prev)
-      (let* ([x (GetMouseX)]
-	     [y (GetMouseY)]
-	     [px (if prev (vector2-x (mouse-position prev)) x)]
-	     [py (if prev (vector2-y (mouse-position prev)) y)])
-	(make-mouse
-	 (make-vector2 x y)
-	 (make-vector2 (- x px) (- y py))
-	 (GetMouseWheelMove)))))
+  (define-record-type mouse
+    (fields position offset wheel))
 
   (define-record-type channel
     (fields volume pan pitch)
@@ -53,42 +47,56 @@
 	 [() (new 1.0 0.0 1.0)]
 	 [(v pa pi) (new v pa pi)]))))
 
-  (define-record-type mouse
-    (fields
-     position offset wheel))
-  
   (define-record-type window
-    (fields frame channel (mutable delta) (mutable mouse))
+    (fields timeline
+	    frame
+	    (mutable mouse)
+	    channel)
     (protocol
      (lambda (new)
        (case-lambda
-	 [(fr c d i) (new fr c d i)]
-	 [(fr)
-	  (new fr (make-channel) 0.0
-	       (make-mouse (make-vector2 0 0)
-			   (make-vector2 0 0)
-			   0))]))))
+	 [(w h)
+	  (new (make-timeline)
+	       (make-frame w h)
+	       (make-mouse (make-vector2 0 0) (make-vector2 0 0) 0)
+	       (make-channel))]
+	 [(t f m c) (new t f m c)]))))
 
-  (define uptime window-delta)
+  (define (uptime win)
+    (timeline-uptime (window-timeline win)))
 
-  (define frame-change-tint
-    (lambda (f t)
-      (let ([dest (frame-dest f)]
-	    [origin (frame-origin f)]
-	    [rotation (frame-rotation f)])
-	(make-frame dest origin rotation t))))
+  (define (frame-change-tint f t)
+    (make-frame (frame-dest f) (frame-origin f) (frame-rotation f) t))
 
-  (define frame-change-dest
-    (lambda (f dest)
-      (let ([origin (frame-origin f)]
-	    [rotation (frame-rotation f)]
-	    [tint (frame-tint f)])
-	(make-frame dest origin rotation tint))))
+  (define (frame-change-dest f dest)
+    (make-frame dest (frame-origin f) (frame-rotation f) (frame-tint f)))
 
-  (define window-change-frame
-    (lambda (w f)
-      (let ([c (window-channel w)]
-	    [d (window-delta w)]
-	    [m (window-mouse w)])
-	(make-window f c d m))))
+  (define (window-change-frame win new-frame)
+    (make-window (window-timeline win)
+		  new-frame
+		  (window-mouse win)
+		  (window-channel win)))
+
+  (define (tick-time win)
+    (timeline-uptime-set! (window-timeline win)
+			  (+ (uptime win) (GetFrameTime)))
+    win)
+
+  (define (mouse-snapshot prev)
+    (let* ([x (GetMouseX)] [y (GetMouseY)]
+	   [px (if prev (vector2-x (mouse-position prev)) x)]
+	   [py (if prev (vector2-y (mouse-position prev)) y)])
+      (make-mouse (make-vector2 x y)
+		  (make-vector2 (- x px) (- y py))
+		  (GetMouseWheelMove))))
+
+  (define (tick-input win)
+    (make-window (window-timeline win)
+		  (window-frame win)
+		  (mouse-snapshot (window-mouse win))
+		  (window-channel win)))
+
+  ;; 兼容旧的 tick
+  (define (tick win)
+    (tick-input (tick-time win)))
   )

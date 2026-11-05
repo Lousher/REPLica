@@ -80,7 +80,6 @@
 
 (define g (init "config.ini"))
 
-
 (g (column (row s-c s-bg) (row s-bg s-c) ))
 
 
