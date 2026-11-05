@@ -1,7 +1,7 @@
 (library (game stage)
   (export stage? stage-perform stage-deps
-	  hold place zoom move
-	  parallel change row column sequential toggle)
+	  hold place zoom move spawn
+	  series change row column toggle together)
   (import
    (game resource)
    (game type)
@@ -52,7 +52,18 @@
 		 (error 'hold "Unknow Resource Type" out)]))]))
 	 (lambda () all-deps)))))
 
-  (define (sequential . stages)
+  (define (toggle ev trk1 trk2)
+    (let ([sg1 (hold trk1)]
+          [sg2 (hold trk2)])
+      (make-stage
+       (lambda (win)
+	 (if (ev win)
+             ((stage-perform sg2) win)
+             ((stage-perform sg1) win)))
+       (lambda ()
+	 (merge-deps ((stage-deps sg1)) ((stage-deps sg2)))))))
+  
+  (define (series . stages)
     (let ([idx 0])
       (make-stage
        (lambda (win)
@@ -67,7 +78,7 @@
        (lambda ()
          (apply merge-deps (map (lambda (s) ((stage-deps s))) stages))))))
   
-  (define parallel
+  (define together
     (lambda sgs
       (make-stage
        (lambda (win)
@@ -78,6 +89,22 @@
 		 (loop (cdr rest) (and all-done? (not r)))))))
        (lambda ()
 	 (apply merge-deps (map (lambda (s) ((stage-deps s))) sgs))))))
+
+  (define (spawn ev track-thunk base-stage)
+    (let ([active '()])
+      (make-stage
+       (lambda (win)
+	 (when (ev win)
+           (set! active (cons (hold (track-thunk)) active)))
+	 ;; 执行 + 清理死亡 stage
+	 (set! active
+               (filter (lambda (sg) ((stage-perform sg) win)) active))
+	 ;; 基础舞台
+	 ((stage-perform base-stage) win))
+       (lambda ()
+	 (apply merge-deps
+		((stage-deps base-stage))
+		(map (lambda (sg) ((stage-deps sg))) active))))))
 
   (define change
     (lambda (ev sg1 sg2)
@@ -139,15 +166,6 @@
                        (loop (cdr rest) (+ i 1) (and all-done? (not r))))))))))
        (lambda ()
          (apply merge-deps (map (lambda (s) ((stage-deps s))) sgs))))))
-
-  (define (toggle ev sg1 sg2)
-    (make-stage
-     (lambda (win)
-       (if (ev win)
-           ((stage-perform sg2) win)
-           ((stage-perform sg1) win)))
-     (lambda ()
-       (merge-deps ((stage-deps sg1)) ((stage-deps sg2))))))   ; ← 两个都合并，都预加载
   
   (define (place fn-dest inner-stage)
     (make-stage

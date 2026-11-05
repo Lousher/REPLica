@@ -1,5 +1,5 @@
 (library (game track) ;track is a function  win -> (resource)??
-  (export on sequential parallel repeat)
+  (export on sequential repeat parallel)
   (import (chezscheme)
 	  (game window))
 
