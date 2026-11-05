@@ -15,9 +15,8 @@
 	 (fade (ani1 p) (max (- 1 p) 0))
 	 (fade (ani2 p) (min 1 p))))))
 
-
   (define motivate
     (lambda (ani mot)
       (lambda (p)
-	(at (ani p) (mot p))))) ; mot -> p -> (values x y)
+	(at (ani p) (mot p))))) ; mot -> p -> (values x y)q
   )

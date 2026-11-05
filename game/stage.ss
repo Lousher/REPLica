@@ -1,55 +1,71 @@
 (library (game stage)
   (export stage? stage-perform stage-deps
-   hold tacet
+   hold 
    parallel change row column sequential toggle)
   (import
    (game resource)
    (game type)
    (game window)
+   (game picture)
+   (game clip)
    (chezscheme))
 
   (define-record-type stage
     (fields perform deps))
   #| stage 是 接收 res 并进行实际演出的函数 |#
 
-  (define tacet
-    (make-stage
-     (lambda (win) (void))
-     '())) ; do nothing
-  #| hold 是最简单的stage,持续在win上保持timer?存在|#
+    #| hold 是最简单的stage,持续在win上保持track |#
   (define hold
-    (lambda (timer)
-      (let ([deps #f] [done? #f]
+    (lambda (trk)
+      (let ([all-deps '()] [done? #f] [last-deps #f]
 	    [loaded (make-hashtable string-hash string=?)])
+	(define load-and-collect
+	  (lambda (deps)
+	    (unless (eq? deps last-deps)
+	      (for-each
+	       (lambda (r)
+		 (let ([k (resource->key r)])
+		   (unless (hashtable-contains? loaded k)
+		     (hashtable-set! loaded k #t)
+		     (loader r))))
+	       deps)
+	      (set! all-deps (merge-deps all-deps deps))
+	      (set! last-deps deps))))
 	(make-stage
 	 (lambda (win)
 	   (cond
 	    [done? #f]
-	    [else 
-	     (let ([d (timer win)])
-	       (if (not d)
-		   (begin (set! done? #t) #f)
-		   (begin 
-		     (unless deps (set! deps d))
-		     (for-each
-		      (lambda (r)
-			(let ([k (resource->key r)])
-			  (unless (hashtable-contains? loaded k)
-			    (hashtable-set! loaded k #t)
-			    (loader r))))
-		      d)
-		     #t)))]))
-	 (lambda () (or deps '()))))))
+	    [else
+	     (let ([out (trk win)])
+	       (cond
+		[(not out) (set! done? #t) #f]
+		[(eqv? (void) out) #t] ;delaying
+		[(picture? out)
+		 (load-and-collect (picture-deps out))
+		 ((picture-drawer out) (window-frame win))
+		 #t]
+		[(clip? out)
+		 (load-and-collect (clip-deps out))
+		 ((clip-player out) (window-channel win))
+		 #t]
+		[else
+		 (error 'hold "Unknow Resource Type" out)]))]))
+	 (lambda () all-deps)))))
 
-  (define sequential
-    (lambda sgs
-      (let ([idx 0])
-	(make-stage
-	 (lambda (win)
-	   (if (>= idx (length sgs)) #f
-	       (let ([r ((stage-perform (list-ref sgs idx)) win)])
-		 (if r #t (begin (set! idx (+ idx 1)) #t)))))
-	 (lambda () (apply merge-deps (map (lambda (s) ((stage-deps s))) sgs)))))))
+  (define (sequential . stages)
+    (let ([idx 0])
+      (make-stage
+       (lambda (win)
+         (if (>= idx (length stages))
+             #f
+             (let ([alive? ((stage-perform (list-ref stages idx)) win)])
+               (if alive?
+                   #t
+                   (begin
+                     (set! idx (+ idx 1))
+                     #t)))))
+       (lambda ()
+         (apply merge-deps (map (lambda (s) ((stage-deps s))) stages))))))
   
   (define parallel
     (lambda sgs

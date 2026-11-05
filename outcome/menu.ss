@@ -9,7 +9,8 @@
 (import (game clip))
 (import (game envelope))
 (import (game event))
-(import (game ticker))
+(import (game clock))
+(import (game track))
 (import (game tool))
 (import (game window))
 (import (game type))
@@ -44,15 +45,6 @@
 
 (load-directory ".")
 
-(define rule (above (beside (default (resource 'wipes 2))
-			    (default (resource 'wipes 3)))
-		    (beside (default (resource 'wipes 4))
-			    (default (resource 'wipes 5)))))
-
-(define bgm (loop 3 (plain (dry (resource 'piano 'mp3)))))
-(define c1-pic (contain (resource 'c1 'png)))
-(define c2-pic (contain (resource 'c2 'png)))
-
 (define shaded-ani
   (lambda (ani1 ani2)
     (lambda (p)
@@ -60,53 +52,38 @@
 	      `(("texture2" . ,(ani2 p)) ("texture1" . ,(ani1 p))
 		("rule" . ,rule) ("progress" . ,p) ("feather" . 0.0))))))
 
-(define ani1 (crossfade (still (default (resource 'morning)))
-			(still (default (resource 'afternoon)))))
+(define c1-pic (contain (resource 'c1 'png)))
+(define c2-pic (contain (resource 'c2 'png)))
+(define mor-pic (default (resource 'morning)))
+(define c-moving-curve
+  (lambda (c-pic)
+    (motivate (still c-pic)
+	      (lambda (p)
+		(lambda (x y)
+		  (values (+ (- x 300) (* p 600)) y))))))
 
-(define ani2 (shaded-ani (still (scale (default (resource 'afternoon)) 2))
-			 (still (default (resource 'afternoon)))))
+(define c-clock (after 3 (pingpong 5)))
+(define bg-clock (loop 5))
 
-(define mor (default (resource 'morning)))
-(define aft (default (resource 'afternoon)))
-(define four-matrix-pic (above (beside mor aft)
-			       (beside aft mor)))
+(define c1-track (on c-clock (c-moving-curve c1-pic)))
+(define c2-track (on c-clock (c-moving-curve c2-pic)))
+(define bg-track (on bg-clock (still mor-pic)))
 
-(define s2 (parallel
-	    (hold (loop 2 ani2))))
+;; 在 event.ss 或 mouse.ss 中
 
-(define char-moving-stage
-  (lambda (char-pic)
-    (pingpong 5 (motivate
-		 (still char-pic)
-		 (lambda (p)
-		   (lambda (x y)
-		     (values (+ (- x 540) (* p 1080)) y)))))))
+(define c1-ani (c-moving-curve c1-pic))
 
-(define s1 (change (clicked? MOUSE_BUTTON_LEFT)
-		   (parallel (hold bgm)
-			     (hold  (loop 3 (still mor))))
-		   s2))
-
-(define char-changed-s (toggle hovered?
-			(hold (char-moving-stage c1-pic))
-			(hold (char-moving-stage c2-pic))))
+(define s-c (toggle (inside-animator? c1-track)
+		    (hold c1-track)
+		    (hold c2-track)))
+(define s-bg (hold bg-track))
 
 (define g (init "config.ini"))
 
-(define wipe (default (resource 'test )))
-(define pic-hit? (point-in-picture? c1-pic))
-(define (is-hovering-c1? win)
-  (let* ([m (mouse-position (window-mouse win))]
-         [dest (frame-dest (window-frame win))]
-         ;; 屏幕坐标 -> 相对比例
-         [rx (/ (- (vector2-x m) (rectangle-x dest)) (rectangle-width dest))]
-         [ry (/ (- (vector2-y m) (rectangle-y dest)) (rectangle-height dest))])
-    ;; 把相对比例喂给完全纯净的测试器
-    (pic-hit? (make-vector2 rx ry))))
 
-(define changed-char (toggle is-hovering-c1?
-			     (hold (freeze 0 (still c1-pic)))
-			     (hold (freeze 0 (still c2-pic)))))
+(g (column (row s-c s-bg) (row s-bg s-c) ))
 
-(g changed-char)
+
+
+
 

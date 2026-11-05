@@ -1,6 +1,6 @@
 (library (game picture)
   (export picture? picture-drawer picture-deps
-	  default contain
+	  default contain 
 	  fade composite scale at shaded beside above)
   (import (chezscheme)
 	  (ffi raylib binding)
@@ -11,7 +11,7 @@
 	  (game color))
 
   (define-record-type picture
-    (fields drawer deps))
+    (fields drawer deps)) ; id for identify the shape!
 
   #| default picture could be any combined |#
   (define default
