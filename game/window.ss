@@ -18,7 +18,7 @@
 	  (game color))
 
   (define-record-type timeline
-    (fields (mutable uptime))
+    (fields time mouse )
     (protocol
      (lambda (new)
        (case-lambda

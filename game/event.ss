@@ -22,7 +22,7 @@
 	     [f (window-frame win)]
 	     [dest (frame-dest f)])
 	(point-in-rectangle? mouse-pos dest))))
-  
+    
   (define clicked?
     (lambda (key)
       (lambda (win)

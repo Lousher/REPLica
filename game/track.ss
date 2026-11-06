@@ -1,13 +1,32 @@
 (library (game track) ;track is a function  win -> (resource)??
-  (export on sequential repeat parallel)
+  (export on sequential repeat parallel gate warp)
   (import (chezscheme)
-	  (game window))
+	  (game window)
+	  (game picture))
 
   (define on
     (lambda (clock curve)
       (lambda (tl)
 	(let ([p (clock tl)])
 	  (if p (curve p) #f)))))
+
+  (define gate
+    (lambda (ev trk1 trk2)
+      (lambda (tl)
+	(let ([res (ev tl)])
+	  (if res
+	      (trk1 tl)
+	      (trk2 tl))))))
+
+  ;; 通用变换器
+  (define (warp fn trk)
+    (lambda (tl)
+      (let ([res (trk tl)])
+	(cond
+         [(not res) #f]
+         [(eqv? (void) res) res]
+         [(picture? res) (fn res)] ; 比如传入 (lambda (pic) (scale pic 1.5))
+         [else res]))))
 
   (define sequential
     (lambda tracks

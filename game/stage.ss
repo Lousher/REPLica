@@ -1,6 +1,6 @@
 (library (game stage)
   (export stage? stage-perform stage-deps
-	  hold place zoom move spawn
+	  hold place zoom move spawn with
 	  series change row column toggle together)
   (import
    (game resource)
@@ -52,16 +52,23 @@
 		 (error 'hold "Unknow Resource Type" out)]))]))
 	 (lambda () all-deps)))))
 
-  (define (toggle ev trk1 trk2)
-    (let ([sg1 (hold trk1)]
-          [sg2 (hold trk2)])
+  (define (with effect-fn trk)
+    (let ([inner-stage (hold trk)])
       (make-stage
        (lambda (win)
-	 (if (ev win)
-             ((stage-perform sg2) win)
-             ((stage-perform sg1) win)))
+	 (effect-fn win)
+	 ((stage-perform inner-stage) win))
        (lambda ()
-	 (merge-deps ((stage-deps sg1)) ((stage-deps sg2)))))))
+	 ((stage-deps inner-stage))))))
+
+  (define (toggle ev sg1 sg2)
+    (make-stage
+     (lambda (win)
+       (if (ev win)
+           ((stage-perform sg2) win)
+           ((stage-perform sg1) win)))
+     (lambda ()
+       (merge-deps ((stage-deps sg1)) ((stage-deps sg2))))))
   
   (define (series . stages)
     (let ([idx 0])
