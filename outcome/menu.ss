@@ -42,7 +42,6 @@
 
 (define start-button-track
   (gate (lambda (tl)
-	  (TraceLog LOG_ERROR (format "TL is ~a" tl))
 	  start-hovered?)
 	button-start-track2
 	button-start-track1))

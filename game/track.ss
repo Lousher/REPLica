@@ -2,7 +2,7 @@
   (export on sequential repeat parallel gate warp)
   (import (chezscheme)
 	  (game window)
-	  (game picture))
+	  (game effect))
 
   (define on
     (lambda (clock curve)
@@ -25,7 +25,7 @@
 	(cond
          [(not res) #f]
          [(eqv? (void) res) res]
-         [(picture? res) (fn res)] ; 比如传入 (lambda (pic) (scale pic 1.5))
+	 [(effect? res) (fn res)]
          [else res]))))
 
   (define sequential

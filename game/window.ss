@@ -1,7 +1,7 @@
 (library (game window)
   (export 
    make-timeline timeline? timeline-uptime timeline-uptime-set!
-   make-window window?
+   make-window window? window-values
    window-timeline window-frame window-mouse window-channel
    uptime
    make-frame
@@ -18,7 +18,7 @@
 	  (game color))
 
   (define-record-type timeline
-    (fields time mouse )
+    (fields (mutable uptime))
     (protocol
      (lambda (new)
        (case-lambda
@@ -61,6 +61,14 @@
 	       (make-mouse (make-vector2 0 0) (make-vector2 0 0) 0)
 	       (make-channel))]
 	 [(t f m c) (new t f m c)]))))
+
+  (define window-values
+    (lambda (win)
+      (values
+       (window-timeline win)
+       (window-frame win)
+       (window-mouse win)
+       (window-channel win))))
 
   (define (uptime win)
     (timeline-uptime (window-timeline win)))

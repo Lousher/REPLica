@@ -6,8 +6,7 @@
    (game resource)
    (game type)
    (game window)
-   (game picture)
-   (game clip)
+   (game effect)
    (chezscheme))
 
   (define-record-type stage
@@ -40,14 +39,12 @@
 	       (cond
 		[(not out) (set! done? #t) #f]
 		[(eqv? (void) out) #t] ;delaying
-		[(picture? out)
-		 (load-and-collect (picture-deps out))
-		 ((picture-drawer out) (window-frame win))
-		 #t]
-		[(clip? out)
-		 (load-and-collect (clip-deps out))
-		 ((clip-player out) (window-channel win))
-		 #t]
+		[(effect? out)
+		 (load-and-collect (effect-deps out))
+		 (call-with-values
+		     (lambda () (window-values win))
+		   (lambda ctxs
+ 		     (apply effect-execute! out ctxs)))]
 		[else
 		 (error 'hold "Unknow Resource Type" out)]))]))
 	 (lambda () all-deps)))))
