@@ -3,7 +3,7 @@
 	  inside-animator?)
   (import (chezscheme)
 	  (game type)
-	  (game window)
+	  (game world)
 	  (game color)
 	  (game picture)
 	  (ffi raylib binding))

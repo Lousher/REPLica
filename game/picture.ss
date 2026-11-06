@@ -6,7 +6,7 @@
 	  (ffi raylib binding)
 	  (game resource) ;texture
 	  (game raylib render)
-	  (game window)
+	  (game world)
 	  (game type)
 	  (game color))
 

@@ -4,7 +4,7 @@
   (import (chezscheme)
 	  (game picture)
 	  (game clip)
-	  (game window)
+	  (game world)
 	  (ffi raylib binding))
 
   #| claim? judging effect type, accept? judging context type |#

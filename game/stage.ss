@@ -5,7 +5,7 @@
   (import
    (game resource)
    (game type)
-   (game window)
+   (game world)
    (game effect)
    (chezscheme))
 

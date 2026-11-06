@@ -1,4 +1,4 @@
-(library (game window)
+(library (game world)
   (export 
    make-timeline timeline? timeline-uptime timeline-uptime-set!
    make-window window? window-values
@@ -16,6 +16,9 @@
 	  (ffi raylib binding)
 	  (game type)
 	  (game color))
+
+  (define-record-type snapshot
+    (fields time mouse keyboard))
 
   (define-record-type timeline
     (fields (mutable uptime))

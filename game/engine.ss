@@ -1,7 +1,7 @@
 (library (game engine)
   (export init)
   (import (chezscheme)
-	  (game window)
+	  (game world)
 	  (game stage)
 	  (game color)
 	  (game type)

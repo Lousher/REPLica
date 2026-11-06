@@ -1,7 +1,7 @@
 (library (game clock)
   (export loop once backward freeze pingpong after)
   (import (chezscheme)
-	  (game window))
+	  (game world))
 
   #| clock -> timeline -> p |#
   (define loop

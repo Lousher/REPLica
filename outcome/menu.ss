@@ -16,7 +16,7 @@
 (import (game stage))
 (import (game event))
 
-(import (game window))
+(import (game world))
 
 (load-directory "store/")
 
