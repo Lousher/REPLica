@@ -1,10 +1,10 @@
 (library (game engine)
   (export init)
   (import (chezscheme)
-	  (game world)
 	  (game stage)
 	  (game color)
 	  (game type)
+	  (game context)
 	  (ffi raylib binding)
 	  (ffi rini binding))
   
@@ -39,19 +39,25 @@
 	     [w (rini_get_value ini-cfg "width")]
 	     [h (rini_get_value ini-cfg "height")]
 	     [fps (rini_get_value ini-cfg "fps")])
-	(let* ([win-init (make-window w h)]
+	(let* ([start-ctx (context-with
+			   (make-empty-context)
+			   [MOMENT (moment-zero)]
+			   [FRAME (make-frame w h)])]
 	       [C (ftype-alloc Color)])
 	  (lambda (s)			; given stage
 	    (InitWindow w h title)
 	    (InitAudioDevice)
 	    (SetTargetFPS fps)
-	    (let loop ([win win-init])
+	    (let loop ([ctx start-ctx])
 	      (unless (WindowShouldClose)
 		(BeginDrawing)
 		(ClearBackground (Color<=color black C))
-		((stage-perform s) win)
+		((stage-perform s) ctx)
 		(EndDrawing)
-		(loop (tick win))))
+		(loop (context-update
+		       ctx MOMENT
+		       (lambda (m)
+			 (moment-advance m (GetFrameTime)))))))
 	    (CloseAudioDevice)
 	    (CloseWindow))))))
 

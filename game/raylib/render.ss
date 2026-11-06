@@ -4,7 +4,7 @@
   (import (chezscheme)
 	  (game type)
 	  (game resource)
-	  (game world)
+	  (game context)
 	  (ffi raylib binding))
 
   (define draw-texture

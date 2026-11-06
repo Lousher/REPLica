@@ -3,7 +3,7 @@
    dry)
   (import (chezscheme)
 	  (game resource)
-	  (game world) ;广义上的window
+	  (game context)
 	  (game raylib audio))
 
   (define-record-type clip

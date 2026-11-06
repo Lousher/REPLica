@@ -18,5 +18,5 @@
   (define motivate
     (lambda (ani mot)
       (lambda (p)
-	(at (ani p) (mot p))))) ; mot -> p -> (values x y)q
+	(at (ani p) (mot p))))) ; mot -> p -> (values x y)
   )
