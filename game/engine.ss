@@ -5,6 +5,7 @@
 	  (game color)
 	  (game type)
 	  (game context)
+	  (game effect)
 	  (ffi raylib binding)
 	  (ffi rini binding))
   
@@ -72,7 +73,13 @@
 		(let ([ctx (tick-context ctx)])
 		  (BeginDrawing)
 		  (ClearBackground (Color<=color black C))
-		  ((stage-perform s) ctx)
+		  (call-with-values
+		      (lambda () ((stage-perform s) ctx))
+		    (lambda (alive? scene)
+		      (for-each
+		       (lambda (s)
+			 (effect-execute! (car s) (cdr s)))
+		       scene)))
 		  (EndDrawing)
 		  (loop ctx))))
 	    (CloseAudioDevice)

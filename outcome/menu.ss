@@ -48,6 +48,7 @@
 
 (game
  (together
+  (enact bgm-track)
   (enact background-track1)
   (slot 0.05 0.05 0.2 0.2
 	(together
