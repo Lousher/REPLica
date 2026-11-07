@@ -3,7 +3,7 @@
    ;; key 常量
     MOMENT FRAME MOUSE CHANNEL
    ;; context 环境
-   context? make-empty-context 
+   context? make-empty-context context-set
    context-with context-let context-ref context-update
    context-ref-or context-has? context-fetch context-fetch-or
    context-env context-values project
@@ -51,9 +51,9 @@
   (define-syntax context-let
     (syntax-rules ()
       [(_ ctx () body ...)
-       (let ([ctx ctx]) body ...)]
+       (begin body ...)]
       [(_ ctx ([k v] rest ...) body ...)
-       (let ([ctx (context-with k v)])
+       (let ([ctx (_context-with ctx k v)])
 	 (context-let ctx (rest ...) body ...))]))
 
   ;; 强制存在，缺 key 报错
@@ -69,6 +69,12 @@
       [(_ ctx ([var key default] ...) body ...)
        (let ([var (context-ref-or ctx key default)] ...)
 	 body ...)]))
+
+  ;; context.ss
+  (define (context-set ctx k v)
+    (if (context-has? ctx k)
+	(context-update ctx k (lambda (_) v))   ; 原地替换，长度不变
+	(_context-with ctx k v)))                 ; 首次注入
   
   (define (context-update ctx k fn)
     (define (replace env)
@@ -147,7 +153,14 @@
 
   ;; ---------- mouse ----------
   (define-record-type mouse
-    (fields position offset wheel))
+    (fields position offset wheel)
+    (protocol
+     (lambda (new)
+       (case-lambda
+	 [() (new (make-vector2 0 0)
+		  (make-vector2 0 0)
+		  0)]
+	 [(p o w) (new p o w)]))))
 
   ;; place 变换 frame 时同步平移 mouse，保证 hovered? 在嵌套作用域同系
   (define (mouse-translate m dx dy)

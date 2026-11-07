@@ -16,26 +16,31 @@
 
 (define game (init "config.ini"))
 
+(define rule-picture (above (beside (default (resolve 'wipes 3)) (default (resolve 'wipes 4)))
+			    (beside (default (resolve 'wipes 5)) (default (resolve 'wipes 6)))))
 (define reveal
   (lambda (ani1 ani2)
     (lambda (p)
       (shaded (resolve 'dissolve 'fs)
-	      `(("texture1" . ,(ani1 p)) ("texture2" . ,(ani2 p)) ("rule" . ,(default (resolve 'wipes 3))) ("feather" . 0.01) ("progress" . ,p))))))
+	      `(("texture1" . ,(ani1 p)) ("texture2" . ,(ani2 p))
+		("rule" . ,rule-picture) ("feather" . 0.01) ("progress" . ,p))))))
 
 (define background-track1 (on (freeze 0) (still (default (resolve 'morning)))))
+(define background-track2 (on (freeze 0) (still (default (resolve 'afternoon)))))
 
 (define background-changing-track
   (sequential
    (on (once 5) (reveal (still (default (resolve 'morning)))
-			   (still (default (resolve 'afternoon)))))
-   (on (freeze 0) (still (default (resolve 'morning))))))
+			(still (default (resolve 'afternoon)))))
+   (on (freeze 0) (still (default (resolve 'afternoon))))))
 
+(define button-track (on (freeze 0)
+			 (still (contain (resolve 'start 'png)))))
 
 (define bgm-enve (plain (dry (resolve 'piano 'mp3))))
-(define bgm-track (on (loop 3) bgm-enve))
-
+(define bgm-track (on (loop 4) bgm-enve))
 
 (game (together
        (enact bgm-track)
-       (enact background-changing-track)))
-
+       (enact background-track1)
+       (slot 0.05 0.05 0.2 0.2 (enact button-track))))

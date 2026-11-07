@@ -31,6 +31,24 @@
     (foreign-callable colored-tracelog-callback
 		      (integer-32 string void*)
 		      void))
+
+  (define mouse-snapshot
+    (lambda (prev)
+      (let* ([x (GetMouseX)] [y (GetMouseY)]
+	     [px (if prev (vector2-x (mouse-position prev)) x)]
+	     [py (if prev (vector2-y (mouse-position prev)) y)])
+	(make-mouse (make-vector2 (inexact x) (inexact y))
+		    (make-vector2 (inexact (- x px)) (inexact (- y py)))
+		    (inexact (GetMouseWheelMove))))))
+
+  (define tick-context
+    (lambda (ctx)
+      (let* ([m (moment-advance (context-ref ctx MOMENT) (GetFrameTime))]
+	     [prev (context-ref-or ctx MOUSE #f)]
+	     [mouse (mouse-snapshot prev)])
+	(context-set
+	 (context-set ctx MOMENT m)
+	 MOUSE mouse))))
   
   (define init
     (lambda (config)
@@ -51,14 +69,12 @@
 	    (SetTargetFPS fps)
 	    (let loop ([ctx start-ctx])
 	      (unless (WindowShouldClose)
-		(BeginDrawing)
-		(ClearBackground (Color<=color black C))
-		((stage-perform s) ctx)
-		(EndDrawing)
-		(loop (context-update
-		       ctx MOMENT
-		       (lambda (m)
-			 (moment-advance m (GetFrameTime)))))))
+		(let ([ctx (tick-context ctx)])
+		  (BeginDrawing)
+		  (ClearBackground (Color<=color black C))
+		  ((stage-perform s) ctx)
+		  (EndDrawing)
+		  (loop ctx))))
 	    (CloseAudioDevice)
 	    (CloseWindow))))))
 

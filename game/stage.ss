@@ -1,11 +1,13 @@
 (library (game stage)
   (export stage? stage-perform stage-deps
-	  enact backstage together hold loading)
+	  enact backstage together hold loading
+	  place slot)
   (import
    (game effect)
    (game context)
    (only (game resource) resource->key loader merge-deps)
    (only (game track) prefetch)
+   (game type)
    (chezscheme))
 
   (define-record-type stage
@@ -20,6 +22,33 @@
 	  (if deps
 	      (begin (for-each loader deps) #t)
 	      #f)))))
+
+  (define place
+    (lambda (fn-dest inner)
+      (make-stage
+       (lambda (ctx)
+	 (context-fetch
+	  ctx ([f FRAME] [mou MOUSE])
+	  (let ([d (frame-dest f)])
+	    (call-with-values
+		(lambda () (rectangle-values d))
+	      (lambda (x y w h)
+		(let-values ([(nx ny nw nh) (fn-dest x y w h)])
+		  (context-let
+		   ctx ([FRAME (frame-change-dest f (make-rectangle nx ny nw nh))]
+			[MOUSE (mouse-translate mou (- nx x) (- ny y))])
+		   ((stage-perform inner) ctx))))))))
+       (stage-deps inner))))
+
+  (define slot
+    (lambda (x y w h inner)
+      (place
+       (lambda (px py pw ph)
+	 (values (+ px (* x pw))
+		 (+ py (* y ph))
+		 (* w pw)
+		 (* h ph)))
+       inner)))
 
   (define (hold trk)
     (let ([done? #f] [started #f]
@@ -50,7 +79,7 @@
     (lambda (trk)
       (let ([back (backstage (loading (prefetch PREFETCH_TIME trk)))]
 	    [front (hold trk)])
-	(together front back))))
+	(together back front))))
 
   (define backstage
     (lambda (trk)			; t->bool
@@ -66,13 +95,18 @@
 		  ))))
 	 (lambda () '())))))
 
+  #| map 是乱序！ |#
   (define together
     (lambda stages
       (make-stage
        (lambda (ctx)
-	 (let ([results (map (lambda (stage) ((stage-perform stage) ctx)) stages)])
-	   (and (pair? results)
-		(for-all (lambda (s) s) results))))
+	 (let loop ([ss stages] [all-alive? #t] [any? #f])
+	   (if (null? ss)
+	       (and any? all-alive?)
+	       (let ([alive? ((stage-perform (car ss)) ctx)])
+		 (loop (cdr ss)
+		       (and all-alive? alive?)
+		       (or any? alive?))))))
        (lambda ()
 	 (apply merge-deps
 		(map
