@@ -19,16 +19,13 @@
 
   (define sequential
     (lambda tracks
-      (let ([current-idx 0])
-	(lambda (t)
-	  (let loop ([idx current-idx])
-	    (if (>= idx (length tracks))
-		#f
-		(let* ([trk (list-ref tracks idx)]
-		       [res (trk t)])
-		  (if res
-		      (begin (set! current-idx idx) res)
-		      (loop (+ idx 1))))))))))
+      (lambda (t)
+	(let loop ([ts tracks])
+	  (if (null? ts)
+	      #f
+	      (let ([out ((car ts) t)])
+		(if out out
+		    (loop (cdr ts)))))))))
 
   (define parallel
     (lambda (combiner . tracks)

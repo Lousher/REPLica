@@ -22,7 +22,7 @@
 	      #f)))))
 
   (define (hold trk)
-    (let ([done? #f]
+    (let ([done? #f] [started #f]
 	  [all-deps-so-far '()])
       (make-stage
        (lambda (ctx)
@@ -30,25 +30,27 @@
              #f
              (context-fetch
 	      ctx ([m MOMENT])
-	      (let* ([t (moment-uptime m)]
-		     [out (trk t)])
-		(if out
-		    (begin
-		      (set! all-deps-so-far
-			    (merge-deps all-deps-so-far
-					(effect-deps out)))
-		      (effect-execute! out ctx)
-		      #t)
-		    (begin (set! done? #t) #f))))))
+	      (let ([t (moment-uptime m)])
+		(unless started (set! started t))
+		(let* ([rt (- t started)]
+		       [out (trk rt)])
+		  (if out
+		      (begin
+			(set! all-deps-so-far
+			      (merge-deps all-deps-so-far
+					  (effect-deps out)))
+			(effect-execute! out ctx)
+			#t)
+		      (begin (set! done? #t) #f)))))))
        (lambda () all-deps-so-far))))
   
-  (define PREFETCH_TIME 2)
+  (define PREFETCH_TIME 3)
   
   (define enact
     (lambda (trk)
       (let ([back (backstage (loading (prefetch PREFETCH_TIME trk)))]
 	    [front (hold trk)])
-	(together back front))))
+	(together front back))))
 
   (define backstage
     (lambda (trk)			; t->bool

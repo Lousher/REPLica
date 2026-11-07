@@ -21,19 +21,21 @@
     (lambda (p)
       (shaded (resolve 'dissolve 'fs)
 	      `(("texture1" . ,(ani1 p)) ("texture2" . ,(ani2 p)) ("rule" . ,(default (resolve 'wipes 3))) ("feather" . 0.01) ("progress" . ,p))))))
-(define button-start (contain (resolve 'start 'png)))
-(define button-start-hovered (contain (resolve 'start 'chosen 'png)))
 
 (define background-track1 (on (freeze 0) (still (default (resolve 'morning)))))
-(define button-start-track1 (on (freeze 0)
-			(still button-start)))
-(define button-start-track2 (on (freeze 0)
-			(still button-start-hovered)))
+
+(define background-changing-track
+  (sequential
+   (on (once 5) (reveal (still (default (resolve 'morning)))
+			   (still (default (resolve 'afternoon)))))
+   (on (freeze 0) (still (default (resolve 'morning))))))
+
 
 (define bgm-enve (plain (dry (resolve 'piano 'mp3))))
 (define bgm-track (on (loop 3) bgm-enve))
 
+
 (game (together
        (enact bgm-track)
-       (enact background-track1)))
+       (enact background-changing-track)))
 
