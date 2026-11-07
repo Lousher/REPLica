@@ -42,7 +42,8 @@
 	(let* ([start-ctx (context-with
 			   (make-empty-context)
 			   [MOMENT (moment-zero)]
-			   [FRAME (make-frame w h)])]
+			   [FRAME (make-frame w h)]
+			   [CHANNEL (make-channel)])]
 	       [C (ftype-alloc Color)])
 	  (lambda (s)			; given stage
 	    (InitWindow w h title)

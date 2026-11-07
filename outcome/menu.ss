@@ -9,6 +9,9 @@
 (import (game track))
 (import (game stage))
 
+(import (game clip))
+(import (game envelope))
+
 (load-directory "store/")
 
 (define game (init "config.ini"))
@@ -27,5 +30,10 @@
 (define button-start-track2 (on (freeze 0)
 			(still button-start-hovered)))
 
-(game (show background-track1))
+(define bgm-enve (plain (dry (resolve 'piano 'mp3))))
+(define bgm-track (on (loop 3) bgm-enve))
+
+(game (together
+       (enact bgm-track)
+       (enact background-track1)))
 

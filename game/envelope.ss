@@ -1,7 +1,6 @@
 (library (game envelope)
   (export plain)
-  (import (chezscheme)
-	  (game clip))
+  (import (chezscheme))
 
   #| envelop -> (p) -> clip |#
 

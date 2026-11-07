@@ -37,25 +37,25 @@
 	    (error 'effect-deps "Unknown effect" e)))))
 
   (define effect-execute!
-    (lambda (e . ctxs)
+    (lambda (e ctxs)
       (let ([h (handler-ref e)])
 	(if h
-	    (let ([matched-ctx (find (handler-accept? h) ctxs)])
+	    (let ([matched-ctx ((handler-accept? h) ctxs)])
 	      (if matched-ctx
-		  ((handler-executer h) e matched-ctx)
+		  ((handler-executer h) e (cdr matched-ctx))
 		  (error 'effect-execute! "No matching context" e)))
 	    (error 'effect-execute! "Unknow effect" e)))))
   
   #| begin registry |#
 
   (register-effect
-   picture? frame?
+   picture? (project frame?)
    (lambda (pic frame)
      ((picture-drawer pic) frame))
    picture-deps)
 
   (register-effect
-   clip? channel?
+   clip? (project channel?)
    (lambda (cp chl)
      ((clip-player cp) chl))
    clip-deps)

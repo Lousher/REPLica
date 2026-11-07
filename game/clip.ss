@@ -2,7 +2,6 @@
   (export clip? clip-player clip-deps
    dry)
   (import (chezscheme)
-	  (game resource)
 	  (game context)
 	  (game raylib audio))
 
