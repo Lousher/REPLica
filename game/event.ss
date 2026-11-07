@@ -1,5 +1,5 @@
 (library (game event)
-  (export hovered?)
+  (export hovered? clicked?)
   (import (chezscheme)
 	  (game type)
 	  (game picture)
@@ -20,6 +20,11 @@
        ctx ([m MOUSE] [f FRAME])
        (point-in-rectangle? (mouse-position m)
 			    (frame-dest f)))))
+  (define clicked?
+    (lambda (key)
+      (lambda (ctx)
+	(and (hovered? ctx)
+	     (IsMouseButtonPressed key)))))
 #|
   (define inside-animator?
     (lambda (visual-track)

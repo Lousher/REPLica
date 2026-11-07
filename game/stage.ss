@@ -1,7 +1,7 @@
 (library (game stage)
   (export stage? stage-perform stage-deps
-	  enact backstage together hold loading
-	  place slot branch)
+	  enact backstage together hold loading tacet
+	  place slot branch listen)
   (import
    (game effect)
    (game context)
@@ -112,18 +112,29 @@
 		 (lambda (s) ((stage-deps s)))
 		 stages))))))
 
+  (define (listen ev action)
+    (let ([fired? #f])
+      (make-stage
+       (lambda (ctx)
+	 (unless fired?
+           (when (ev ctx)
+             (action ctx)
+             (set! fired? #t)))
+	 (not fired?))
+       (lambda () '()))))
+
   (define branch
-    (lambda (pred deft altr)
-      (let ([current deft])
+    (lambda (pred then else)
+      (let ([current then])
 	(make-stage
 	 (lambda (ctx)
 	   (if (pred ctx)
 	       (begin
-		 (set! current altr)
-		 ((stage-perform altr) ctx))
+		 (set! current then)
+		 ((stage-perform then) ctx))
 	       (begin
-		 (set! current deft)
-		 ((stage-perform deft) ctx))))
+		 (set! current else)
+		 ((stage-perform else) ctx))))
 	 (lambda ()
 	   ((stage-deps current)))))))
 

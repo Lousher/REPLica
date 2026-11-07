@@ -12,6 +12,7 @@
 (import (game clip))
 (import (game envelope))
 (import (game event))
+(import (only (ffi raylib binding) MOUSE_BUTTON_LEFT))
 
 (load-directory "store/")
 
@@ -43,10 +44,15 @@
 (define bgm-enve (plain (dry (resolve 'piano 'mp3))))
 (define bgm-track (on (loop 4) bgm-enve))
 
-(game (together
-       (enact bgm-track)
-       (enact background-track1)
-       (slot 0.05 0.05 0.2 0.2
-	     (branch hovered?
-	      (enact button-track)
-	      (enact button-chosen-track)))))
+(define end? #f)
+
+(game
+ (together
+  (enact background-track1)
+  (slot 0.05 0.05 0.2 0.2
+	(together
+	 (listen (clicked? MOUSE_BUTTON_LEFT)
+		 (lambda (_) (set! end? #t)))
+	 (branch hovered?
+		 (enact button-chosen-track)
+		 (enact button-track))))))
