@@ -1,7 +1,7 @@
 (library (game stage)
   (export stage? stage-perform stage-deps
 	  enact backstage together hold loading
-	  place slot)
+	  place slot branch)
   (import
    (game effect)
    (game context)
@@ -35,8 +35,7 @@
 	      (lambda (x y w h)
 		(let-values ([(nx ny nw nh) (fn-dest x y w h)])
 		  (context-let
-		   ctx ([FRAME (frame-change-dest f (make-rectangle nx ny nw nh))]
-			[MOUSE (mouse-translate mou (- nx x) (- ny y))])
+		   ctx ([FRAME (frame-change-dest f (make-rectangle nx ny nw nh))])
 		   ((stage-perform inner) ctx))))))))
        (stage-deps inner))))
 
@@ -111,4 +110,23 @@
 	 (apply merge-deps
 		(map
 		 (lambda (s) ((stage-deps s)))
-		 stages)))))))
+		 stages))))))
+
+  (define branch
+    (lambda (pred deft altr)
+      (let ([current deft])
+	(make-stage
+	 (lambda (ctx)
+	   (if (pred ctx)
+	       (begin
+		 (set! current altr)
+		 ((stage-perform altr) ctx))
+	       (begin
+		 (set! current deft)
+		 ((stage-perform deft) ctx))))
+	 (lambda ()
+	   ((stage-deps current)))))))
+
+  )
+
+

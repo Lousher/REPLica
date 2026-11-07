@@ -11,6 +11,7 @@
 
 (import (game clip))
 (import (game envelope))
+(import (game event))
 
 (load-directory "store/")
 
@@ -36,6 +37,8 @@
 
 (define button-track (on (freeze 0)
 			 (still (contain (resolve 'start 'png)))))
+(define button-chosen-track (on (freeze 0)
+				(still (contain (resolve 'start 'chosen 'png)))))
 
 (define bgm-enve (plain (dry (resolve 'piano 'mp3))))
 (define bgm-track (on (loop 4) bgm-enve))
@@ -43,4 +46,7 @@
 (game (together
        (enact bgm-track)
        (enact background-track1)
-       (slot 0.05 0.05 0.2 0.2 (enact button-track))))
+       (slot 0.05 0.05 0.2 0.2
+	     (branch hovered?
+	      (enact button-track)
+	      (enact button-chosen-track)))))

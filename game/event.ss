@@ -1,11 +1,9 @@
 (library (game event)
-  (export clicked? hovered?
-	  inside-animator?)
+  (export hovered?)
   (import (chezscheme)
 	  (game type)
-	  (game world)
-	  (game color)
 	  (game picture)
+	  (game context)
 	  (ffi raylib binding))
 
   (define point-in-rectangle?
@@ -15,23 +13,14 @@
 	(and (>= px rx) (< px (+ rx rw))
 		(>= py ry) (< py (+ ry rh))))))
 
-  #| event 是一个输入 条件，与起始状态，满足条件后会改变输出状态的函数 |#
-  (define hovered?
-    (lambda (win)
-      (let* ([mouse-pos (mouse-position (window-mouse win))]
-	     [f (window-frame win)]
-	     [dest (frame-dest f)])
-	(point-in-rectangle? mouse-pos dest))))
-    
-  (define clicked?
-    (lambda (key)
-      (lambda (win)
-	(let* ([mouse-pos (mouse-position (window-mouse win))]
-	       [f (window-frame win)]
-	       [dest (frame-dest f)])
-	  (and (hovered? win)
-	       (IsMouseButtonPressed key))))))
 
+  (define hovered?
+    (lambda (ctx)
+      (context-fetch
+       ctx ([m MOUSE] [f FRAME])
+       (point-in-rectangle? (mouse-position m)
+			    (frame-dest f)))))
+#|
   (define inside-animator?
     (lambda (visual-track)
       (lambda (win)
@@ -74,5 +63,5 @@
 					    (make-ftype-pointer unsigned-8 a-addr))]
 			  [fixed-a (flvector-ref alpha-lut raw-a)])
 		     (UnloadImage img)
-		     (> fixed-a 0.5))))))))) 
+		     (> fixed-a 0.5)))))))))  |#
    )
